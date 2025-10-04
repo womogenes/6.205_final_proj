@@ -31,3 +31,7 @@ Initialization loop:
    - CMD55 is `0x77 00 00 00 00 65` (not 100% sure about the `0x65`)
    - ACMD41 is `0x69 40 00 00 00 77` (again, not 100% usr)
 4. Read data
+
+## CPU
+
+Lives in `hdl/cpu` and implements a minimal RISC-V processor.
