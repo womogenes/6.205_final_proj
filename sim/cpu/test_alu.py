@@ -90,7 +90,7 @@ def runner():
 
     hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
     sim = os.getenv("SIM", "icarus")
-    proj_path = Path(__file__).resolve().parent.parent
+    proj_path = Path(__file__).resolve().parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [proj_path / "hdl" / "cpu" / f"{module_name}.sv"]
     build_test_args = ["-Wall"]

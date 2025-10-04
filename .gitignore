@@ -4,7 +4,7 @@ __pycache__/
 obj*/
 
 # Simulation files
-**/sim/sim_build/
+**/sim/**/sim_build/
 **/_history/
 *.bit
 *.bin
