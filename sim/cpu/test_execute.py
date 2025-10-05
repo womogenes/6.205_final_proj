@@ -1,3 +1,5 @@
+# DISCLAIMER: this test file was almost entirely LLM-generated
+
 import os
 import sys
 from pathlib import Path
@@ -8,21 +10,25 @@ from cocotb.triggers import Timer, ClockCycles, RisingEdge, FallingEdge, ReadOnl
 from cocotb.runner import get_runner
 
 from proc_types import IType, AluFunc, BrFunc, MemFunc, DecodedInst
+from utils import intt
 
 test_file = os.path.basename(__file__).replace(".py", "")
-    
 
 @cocotb.test()
 async def test_module(dut):
-    pass
+    dut.inst.value = 0
+    dut.r_val1.value = 0
+    dut.r_val2.value = 0
+    dut.pc.value = 0
 
+    await Timer(10, "ns")
+    print(dut.einst.value.binstr)
 
 def runner():
     """Module tester."""
 
-    module_name = "execute"
+    module_name = "execute_tb"
 
-    hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
     sim = os.getenv("SIM", "icarus")
     proj_path = Path(__file__).resolve().parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
@@ -30,7 +36,9 @@ def runner():
         proj_path / "hdl" / "cpu" / "alu.sv",
         proj_path / "hdl" / "cpu" / "mem_types.sv",
         proj_path / "hdl" / "cpu" / "proc_types.sv",
+        proj_path / "hdl" / "cpu" / "decoder.sv", 
         proj_path / "hdl" / "cpu" / "execute.sv",
+        proj_path / "hdl" / "cpu" / "execute_tb.sv",
     ]
     build_test_args = ["-Wall"]
 

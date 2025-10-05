@@ -75,9 +75,9 @@ module execute (
     // Branching logic
     r_val1_plus_imm = r_val1 + imm;
     case (dinst.itype)
-      BRANCH: next_pc = br_alu_out ? r_val1_plus_imm : pc_plus_4;
+      BRANCH: next_pc = br_alu_out ? pc_plus_imm : pc_plus_4;
       JAL: next_pc = pc_plus_imm;
-      JALR: next_pc = r_val1_plus_imm & ~1'b1;  // clear out bottom bit
+      JALR: next_pc = r_val1_plus_imm & ~32'b1;  // clear out bottom bit
       default: next_pc = pc_plus_4;
     endcase
 
@@ -90,7 +90,6 @@ module execute (
     einst.next_pc = next_pc;
     einst.mem_func = dinst.mem_func;
   end
-
 endmodule
 
 `default_nettype wire

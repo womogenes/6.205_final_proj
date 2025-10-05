@@ -17,8 +17,23 @@ def verify_decode(dinst: DecodedInst, expected: DecodedInst):
     for field in dinst.__dict__:
         if getattr(dinst, field) != getattr(expected, field):
             # dst field only needs to match if valid
-            if field == "dst" and expected.dst_valid == 1:
-                return False
+            if field == "imm" and expected.itype != IType.OPIMM:
+                continue
+            if field == "dst" and (expected.dst_valid == 0 or expected.dst == -1):
+                continue
+            if field == "alu_func" and expected.alu_func == AluFunc.Null:
+                continue
+            if field == "br_func" and expected.br_func == BrFunc.Null:
+                continue
+            if field == "mem_func" and expected.mem_func == MemFunc.Null:
+                continue
+            if field == "src1" and expected.src1 == -1:
+                continue
+            if field == "src2" and expected.src2 == -1:
+                continue
+
+            print(f"violation encountered in field {field}")
+            return False
     return True
     
 
@@ -30,6 +45,8 @@ async def test_module(dut):
         
         try:
             dinst = DecodedInst(dut.dinst.value.binstr)
+            print(dinst)
+            
         except ValueError as e:
             print(f"Encountered error when decoding {dut.dinst.value.binstr}")
             print(f"Test case: {expected}")

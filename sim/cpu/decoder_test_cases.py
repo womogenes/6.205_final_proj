@@ -1,260 +1,262 @@
-from proc_types import AluFunc, BrFunc, IType, MemFunc, DecodedInst
+from proc_types import AluFunc, BrFunc, ExecuteInst, IType, MemFunc, DecodedInst
 import random
 
-TEST_CASES = [
-    (   # LUI
-        0b0000_0000_0000_0000_0000_0001_00001_0110111,
-        DecodedInst(
-            itype=IType.LUI, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=1, dst_valid=1, src1=-1, src2=-1, imm=1 << 12,
-        )
-    ),
-    (   # JAL
-        0b0000_0000_0100_0000_0000_00010_1101111,
-        DecodedInst(
-            itype=IType.JAL, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=-1, src2=-1, imm=4,
-        )
-    ),
-    (   # JALR
-        0b0000_0000_0100_00010_000_00010_1100111,
-        DecodedInst(
-            itype=IType.JALR, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=2, src2=-1, imm=4,
-        )
-    ),
-    (   # BEQ
-        0b0000_0000_0010_0001_0000_0100_01100011,
-        DecodedInst(
-            itype=IType.BRANCH, alufunc=AluFunc.Null, brfunc=BrFunc.EQ, memfunc=MemFunc.Null,
-            dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-        )
-    ),
-    (   # BNE
-        0b0000_0000_0010_0001_0001_0100_01100011,
-        DecodedInst(
-            itype=IType.BRANCH, alufunc=AluFunc.Null, brfunc=BrFunc.NEQ, memfunc=MemFunc.Null,
-            dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-        )
-    ),
-    (   # BLT
-        0b0000_0000_0010_0001_0100_0100_01100011,
-        DecodedInst(
-            itype=IType.BRANCH, alufunc=AluFunc.Null, brfunc=BrFunc.LT, memfunc=MemFunc.Null,
-            dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-        )
-    ),
-    (   # BGE
-        0b0000_0000_0010_0001_0101_0100_01100011,
-        DecodedInst(
-            itype=IType.BRANCH, alufunc=AluFunc.Null, brfunc=BrFunc.GE, memfunc=MemFunc.Null,
-            dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-        )
-    ),
-    (   # BLTU
-        0b0000_0000_0010_0001_0110_0100_01100011,
-        DecodedInst(
-            itype=IType.BRANCH, alufunc=AluFunc.Null, brfunc=BrFunc.LTU, memfunc=MemFunc.Null,
-            dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-        )
-    ),
-    (   # BGEU
-        0b0000_0000_0010_0001_0111_0100_01100011,
-        DecodedInst(
-            itype=IType.BRANCH, alufunc=AluFunc.Null, brfunc=BrFunc.GEU, memfunc=MemFunc.Null,
-            dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-        )
-    ),
-    (   # LB
-        0b0000_0000_0100_00001_000_00010_0000011,
-        DecodedInst(
-            itype=IType.LOAD, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.LB,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # LH
-        0b0000_0000_0100_00001_001_00010_0000011,
-        DecodedInst(
-            itype=IType.LOAD, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.LH,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # LW
-        0b0000_0000_0100_00001_010_00010_0000011,
-        DecodedInst(
-            itype=IType.LOAD, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.LW,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # LBU
-        0b0000_0000_0100_00001_100_00010_0000011,
-        DecodedInst(
-            itype=IType.LOAD, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.LBU,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # LHU
-        0b0000_0000_0100_00001_101_00010_0000011,
-        DecodedInst(
-            itype=IType.LOAD, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.LHU,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # SB
-        0b0000_0000_0010_00001_000_00100_0100011,
-        DecodedInst(
-            itype=IType.STORE, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.SB,
-            dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-        )
-    ),
-    (   # SH
-        0b0000_0000_0010_00001_001_00100_0100011,
-        DecodedInst(
-            itype=IType.STORE, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.SH,
-            dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-        )
-    ),
-    (   # SW
-        0b0000_0000_0010_00001_010_00100_0100011,
-        DecodedInst(
-            itype=IType.STORE, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.SW,
-            dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-        )
-    ),
-    (   # ADDI
-        0b0000_0000_0100_00001_000_00010_0010011,
-        DecodedInst(
-            itype=IType.OPIMM, alufunc=AluFunc.ADD, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # SLTI
-        0b0000_0000_0100_00001_010_00010_0010011,
-        DecodedInst(
-            itype=IType.OPIMM, alufunc=AluFunc.SLT, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # SLTIU
-        0b0000_0000_0100_00001_011_00010_0010011,
-        DecodedInst(
-            itype=IType.OPIMM, alufunc=AluFunc.SLTU, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # XORI
-        0b0000_0000_0100_00001_100_00010_0010011,
-        DecodedInst(
-            itype=IType.OPIMM, alufunc=AluFunc.XOR, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # ORI
-        0b0000_0000_0100_00001_110_00010_0010011,
-        DecodedInst(
-            itype=IType.OPIMM, alufunc=AluFunc.OR, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # ANDI
-        0b0000_0000_0100_00001_111_00010_0010011,
-        DecodedInst(
-            itype=IType.OPIMM, alufunc=AluFunc.AND, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # SLLI
-        0b0000_0000_0100_00001_001_00010_0010011,
-        DecodedInst(
-            itype=IType.OPIMM, alufunc=AluFunc.SLL, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # SRLI
-        0b0000_0000_0100_00001_101_00010_0010011,
-        DecodedInst(
-            itype=IType.OPIMM, alufunc=AluFunc.SRL, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # SRAI
-        0b0100_0000_0100_00001_101_00010_0010011,
-        DecodedInst(
-            itype=IType.OPIMM, alufunc=AluFunc.SRA, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-        )
-    ),
-    (   # ADD
-        0b0000_0000_0010_00001_000_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.ADD, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-    (   # SUB
-        0b0100_0000_0010_00001_000_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.SUB, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-    (   # SLL
-        0b0000_0000_0010_00001_001_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.SLL, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-    (   # SLT
-        0b0000_0000_0010_00001_010_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.SLT, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-    (   # SLTU
-        0b0000_0000_0010_00001_011_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.SLTU, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-    (   # XOR
-        0b0000_0000_0010_00001_100_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.XOR, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-    (   # SRL
-        0b0000_0000_0010_00001_101_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.SRL, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-    (   # SRA
-        0b0100_0000_0010_00001_101_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.SRA, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-    (   # OR
-        0b0000_0000_0010_00001_110_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.OR, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-    (   # AND
-        0b0000_0000_0010_00001_111_00011_0110011,
-        DecodedInst(
-            itype=IType.OP, alufunc=AluFunc.AND, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-            dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-        )
-    ),
-]
+TEST_CASES = []
+
+# TEST_CASES = [
+#     (   # lui x1, (1<<12)
+#         0b0000_0000_0000_0000_0000_0001_00001_0110111,
+#         DecodedInst(
+#             itype=IType.LUI, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=1, dst_valid=1, src1=-1, src2=-1, imm=(1 << 12),
+#         ),
+#     ),
+#     (   # jal x2, 4
+#         0b0000_0000_0100_0000_0000_00010_1101111,
+#         DecodedInst(
+#             itype=IType.JAL, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=-1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # jalr x2, x2, 4
+#         0b0000_0000_0100_00010_000_00010_1100111,
+#         DecodedInst(
+#             itype=IType.JALR, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=2, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # BEQ
+#         0b0000000_00010_00010_000_0100_01100011,
+#         DecodedInst(
+#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.EQ, mem_func=MemFunc.Null,
+#             dst=-1, dst_valid=0, src1=2, src2=2, imm=4,
+#         )
+#     ),
+#     (   # BNE
+#         0b0000_0000_0010_0001_0001_0100_01100011,
+#         DecodedInst(
+#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.NEQ, mem_func=MemFunc.Null,
+#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
+#         )
+#     ),
+#     (   # BLT
+#         0b0000_0000_0010_0001_0100_0100_01100011,
+#         DecodedInst(
+#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.LT, mem_func=MemFunc.Null,
+#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
+#         )
+#     ),
+#     (   # BGE
+#         0b0000_0000_0010_0001_0101_0100_01100011,
+#         DecodedInst(
+#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.GE, mem_func=MemFunc.Null,
+#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
+#         )
+#     ),
+#     (   # BLTU
+#         0b0000_0000_0010_0001_0110_0100_01100011,
+#         DecodedInst(
+#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.LTU, mem_func=MemFunc.Null,
+#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
+#         )
+#     ),
+#     (   # BGEU
+#         0b0000_0000_0010_0001_0111_0100_01100011,
+#         DecodedInst(
+#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.GEU, mem_func=MemFunc.Null,
+#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
+#         )
+#     ),
+#     (   # LB
+#         0b0000_0000_0100_00001_000_00010_0000011,
+#         DecodedInst(
+#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LB,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # LH
+#         0b0000_0000_0100_00001_001_00010_0000011,
+#         DecodedInst(
+#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LH,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # LW
+#         0b0000_0000_0100_00001_010_00010_0000011,
+#         DecodedInst(
+#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LW,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # LBU
+#         0b0000_0000_0100_00001_100_00010_0000011,
+#         DecodedInst(
+#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LBU,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # LHU
+#         0b0000_0000_0100_00001_101_00010_0000011,
+#         DecodedInst(
+#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LHU,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # SB
+#         0b0000_0000_0010_00001_000_00100_0100011,
+#         DecodedInst(
+#             itype=IType.STORE, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.SB,
+#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
+#         )
+#     ),
+#     (   # SH
+#         0b0000_0000_0010_00001_001_00100_0100011,
+#         DecodedInst(
+#             itype=IType.STORE, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.SH,
+#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
+#         )
+#     ),
+#     (   # SW
+#         0b0000_0000_0010_00001_010_00100_0100011,
+#         DecodedInst(
+#             itype=IType.STORE, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.SW,
+#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
+#         )
+#     ),
+#     (   # ADDI
+#         0b0000_0000_0100_00001_000_00010_0010011,
+#         DecodedInst(
+#             itype=IType.OPIMM, alu_func=AluFunc.ADD, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # SLTI
+#         0b0000_0000_0100_00001_010_00010_0010011,
+#         DecodedInst(
+#             itype=IType.OPIMM, alu_func=AluFunc.SLT, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # SLTIU
+#         0b0000_0000_0100_00001_011_00010_0010011,
+#         DecodedInst(
+#             itype=IType.OPIMM, alu_func=AluFunc.SLTU, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # XORI
+#         0b0000_0000_0100_00001_100_00010_0010011,
+#         DecodedInst(
+#             itype=IType.OPIMM, alu_func=AluFunc.XOR, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # ORI
+#         0b0000_0000_0100_00001_110_00010_0010011,
+#         DecodedInst(
+#             itype=IType.OPIMM, alu_func=AluFunc.OR, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # ANDI
+#         0b0000_0000_0100_00001_111_00010_0010011,
+#         DecodedInst(
+#             itype=IType.OPIMM, alu_func=AluFunc.AND, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # SLLI
+#         0b0000_0000_0100_00001_001_00010_0010011,
+#         DecodedInst(
+#             itype=IType.OPIMM, alu_func=AluFunc.SLL, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # SRLI
+#         0b0000_0000_0100_00001_101_00010_0010011,
+#         DecodedInst(
+#             itype=IType.OPIMM, alu_func=AluFunc.SRL, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # SRAI
+#         0b0100_0000_0100_00001_101_00010_0010011,
+#         DecodedInst(
+#             itype=IType.OPIMM, alu_func=AluFunc.SRA, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
+#         )
+#     ),
+#     (   # ADD
+#         0b0000_0000_0010_00001_000_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.ADD, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+#     (   # SUB
+#         0b0100_0000_0010_00001_000_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.SUB, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+#     (   # SLL
+#         0b0000_0000_0010_00001_001_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.SLL, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+#     (   # SLT
+#         0b0000_0000_0010_00001_010_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.SLT, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+#     (   # SLTU
+#         0b0000_0000_0010_00001_011_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.SLTU, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+#     (   # XOR
+#         0b0000_0000_0010_00001_100_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.XOR, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+#     (   # SRL
+#         0b0000_0000_0010_00001_101_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.SRL, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+#     (   # SRA
+#         0b0100_0000_0010_00001_101_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.SRA, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+#     (   # OR
+#         0b0000_0000_0010_00001_110_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.OR, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+#     (   # AND
+#         0b0000_0000_0010_00001_111_00011_0110011,
+#         DecodedInst(
+#             itype=IType.OP, alu_func=AluFunc.AND, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
+#         )
+#     ),
+# ]
 
 # RISC-V Instruction Encoders
 def encode_r_type(opcode, funct3, funct7, rd, rs1, rs2):
@@ -328,7 +330,7 @@ def generate_random_test_cases(N):
         (0b0110011, 0b111, 0b0000000, IType.OP, AluFunc.AND),   # AND
     ]
     
-    for opcode, funct3, funct7, itype, alufunc in r_type_specs:
+    for opcode, funct3, funct7, itype, alu_func in r_type_specs:
         for _ in range(N):  # Generate 3 random cases per instruction
             rd = random.randint(1, 31)
             rs1 = random.randint(0, 31)
@@ -336,7 +338,7 @@ def generate_random_test_cases(N):
             
             encoded = encode_r_type(opcode, funct3, funct7, rd, rs1, rs2)
             decoded = DecodedInst(
-                itype=itype, alufunc=alufunc, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
+                itype=itype, alu_func=alu_func, br_func=BrFunc.Null, mem_func=MemFunc.Null,
                 dst=rd, dst_valid=1, src1=rs1, src2=rs2, imm=0
             )
             new_cases.append((encoded, decoded))
@@ -351,7 +353,7 @@ def generate_random_test_cases(N):
         (0b0010011, 0b111, IType.OPIMM, AluFunc.AND),   # ANDI
     ]
     
-    for opcode, funct3, itype, alufunc in i_type_alu_specs:
+    for opcode, funct3, itype, alu_func in i_type_alu_specs:
         for _ in range(N):
             rd = random.randint(1, 31)
             rs1 = random.randint(0, 31)
@@ -359,7 +361,7 @@ def generate_random_test_cases(N):
             
             encoded = encode_i_type(opcode, funct3, rd, rs1, imm & 0xFFF)
             decoded = DecodedInst(
-                itype=itype, alufunc=alufunc, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
+                itype=itype, alu_func=alu_func, br_func=BrFunc.Null, mem_func=MemFunc.Null,
                 dst=rd, dst_valid=1, src1=rs1, src2=-1, imm=sign_extend_12(imm & 0xFFF)
             )
             new_cases.append((encoded, decoded))
@@ -371,7 +373,7 @@ def generate_random_test_cases(N):
         (0b0010011, 0b101, 0b0100000, IType.OPIMM, AluFunc.SRA),  # SRAI
     ]
     
-    for opcode, funct3, funct7, itype, alufunc in shift_specs:
+    for opcode, funct3, funct7, itype, alu_func in shift_specs:
         for _ in range(N):
             rd = random.randint(1, 31)
             rs1 = random.randint(0, 31)
@@ -379,8 +381,8 @@ def generate_random_test_cases(N):
             
             encoded = encode_i_type(opcode, funct3, rd, rs1, (funct7 << 5) | shamt)
             decoded = DecodedInst(
-                itype=itype, alufunc=alufunc, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
-                dst=rd, dst_valid=1, src1=rs1, src2=-1, imm=shamt
+                itype=itype, alu_func=alu_func, br_func=BrFunc.Null, mem_func=MemFunc.Null,
+                dst=rd, dst_valid=1, src1=rs1, src2=-1, imm=shamt + (funct7 << 5)
             )
             new_cases.append((encoded, decoded))
     
@@ -393,7 +395,7 @@ def generate_random_test_cases(N):
         (0b0000011, 0b101, IType.LOAD, MemFunc.LHU),  # LHU
     ]
     
-    for opcode, funct3, itype, memfunc in load_specs:
+    for opcode, funct3, itype, mem_func in load_specs:
         for _ in range(N):
             rd = random.randint(1, 31)
             rs1 = random.randint(0, 31)
@@ -401,7 +403,7 @@ def generate_random_test_cases(N):
             
             encoded = encode_i_type(opcode, funct3, rd, rs1, imm & 0xFFF)
             decoded = DecodedInst(
-                itype=itype, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=memfunc,
+                itype=itype, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=mem_func,
                 dst=rd, dst_valid=1, src1=rs1, src2=-1, imm=sign_extend_12(imm & 0xFFF)
             )
             new_cases.append((encoded, decoded))
@@ -413,7 +415,7 @@ def generate_random_test_cases(N):
         (0b0100011, 0b010, IType.STORE, MemFunc.SW),  # SW
     ]
     
-    for opcode, funct3, itype, memfunc in store_specs:
+    for opcode, funct3, itype, mem_func in store_specs:
         for _ in range(N):
             rs1 = random.randint(0, 31)
             rs2 = random.randint(0, 31)
@@ -421,7 +423,7 @@ def generate_random_test_cases(N):
             
             encoded = encode_s_type(opcode, funct3, rs1, rs2, imm & 0xFFF)
             decoded = DecodedInst(
-                itype=itype, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=memfunc,
+                itype=itype, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=mem_func,
                 dst=-1, dst_valid=0, src1=rs1, src2=rs2, imm=sign_extend_12(imm & 0xFFF)
             )
             new_cases.append((encoded, decoded))
@@ -436,7 +438,7 @@ def generate_random_test_cases(N):
         (0b1100011, 0b111, IType.BRANCH, BrFunc.GEU),  # BGEU
     ]
     
-    for opcode, funct3, itype, brfunc in branch_specs:
+    for opcode, funct3, itype, br_func in branch_specs:
         for _ in range(N):
             rs1 = random.randint(0, 31)
             rs2 = random.randint(0, 31)
@@ -444,7 +446,7 @@ def generate_random_test_cases(N):
             
             encoded = encode_b_type(opcode, funct3, rs1, rs2, imm & 0x1FFE)
             decoded = DecodedInst(
-                itype=itype, alufunc=AluFunc.Null, brfunc=brfunc, memfunc=MemFunc.Null,
+                itype=itype, alu_func=AluFunc.Null, br_func=br_func, mem_func=MemFunc.Null,
                 dst=-1, dst_valid=0, src1=rs1, src2=rs2, imm=sign_extend_13(imm & 0x1FFE)
             )
             new_cases.append((encoded, decoded))
@@ -456,7 +458,7 @@ def generate_random_test_cases(N):
         
         encoded = encode_u_type(0b0110111, rd, imm)
         decoded = DecodedInst(
-            itype=IType.LUI, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
+            itype=IType.LUI, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.Null,
             dst=rd, dst_valid=1, src1=-1, src2=-1, imm=imm << 12
         )
         new_cases.append((encoded, decoded))
@@ -468,7 +470,7 @@ def generate_random_test_cases(N):
         
         encoded = encode_j_type(0b1101111, rd, imm & 0x1FFFFE)
         decoded = DecodedInst(
-            itype=IType.JAL, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
+            itype=IType.JAL, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.Null,
             dst=rd, dst_valid=1, src1=-1, src2=-1, imm=sign_extend_21(imm & 0x1FFFFE)
         )
         new_cases.append((encoded, decoded))
@@ -481,7 +483,7 @@ def generate_random_test_cases(N):
         
         encoded = encode_i_type(0b1100111, 0b000, rd, rs1, imm & 0xFFF)
         decoded = DecodedInst(
-            itype=IType.JALR, alufunc=AluFunc.Null, brfunc=BrFunc.Null, memfunc=MemFunc.Null,
+            itype=IType.JALR, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.Null,
             dst=rd, dst_valid=1, src1=rs1, src2=-1, imm=sign_extend_12(imm & 0xFFF)
         )
         new_cases.append((encoded, decoded))
