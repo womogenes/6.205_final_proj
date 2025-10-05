@@ -111,6 +111,7 @@ module decoder (
         case (funct3)
           fn_ADD: case (funct7)
             7'b0000000: dinst.alu_func = ADD;
+            7'b0100000: dinst.alu_func = SUB;
             default: dinst.itype = Unsupported;
           endcase
           fn_AND: case (funct7)
@@ -127,6 +128,10 @@ module decoder (
           endcase
           fn_SLT: case (funct7)
             7'b0000000: dinst.alu_func = SLT;
+            default: dinst.itype = Unsupported;
+          endcase
+          fn_SLTU: case (funct7)
+            7'b0000000: dinst.alu_func = SLTU;
             default: dinst.itype = Unsupported;
           endcase
           fn_SLL: case (funct7)

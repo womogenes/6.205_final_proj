@@ -18,9 +18,9 @@ module alu (
       XOR:  out = a ^ b;
       SLT: out = $signed(a) < $signed(b);
       SLTU: out = a < b;
-      SLL: out = a << b;
-      SRL: out = a >> b;
-      SRA: out = $signed(a) >>> b;  // weird syntax but it works
+      SLL: out = a << b[4:0];
+      SRL: out = a >> b[4:0];
+      SRA: out = $signed(a) >>> b[4:0];  // weird syntax but it works
     endcase;
   end
 endmodule
