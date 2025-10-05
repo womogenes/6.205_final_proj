@@ -27,11 +27,15 @@ module decoder (
     src1 = inst[19:15];       // source register 1
     src2 = inst[24:20];       // source register 2
 
+    // defaults
+    dinst = '0;
+    dinst.itype = Unsupported;
+
     // construct immediates first
 
     // sign-extended B-type imm (branch?)
     immB = { inst[31], inst[7], inst[30:25], inst[11:8] };
-    immB32 = { {(32-12){immB[11]}}, immB };
+    immB32 = { {(32-13){immB[11]}}, immB, 1'b0 };
 
     // sign-extended U-type imm (LUI and JAL)
     immU = inst[31:12];
@@ -76,7 +80,7 @@ module decoder (
         dinst.dst_valid = 1'b1;
 
         case (funct3)
-          fn_ADD: dinst.alufunc = AND;
+          fn_AND: dinst.alufunc = AND;
           fn_OR: dinst.alufunc = OR;
           fn_XOR: dinst.alufunc = XOR;
           fn_ADD: dinst.alufunc = ADD;
@@ -106,7 +110,7 @@ module decoder (
 
         case (funct3)
           fn_ADD: case (funct7)
-            7'b0000000: dinst.alufunc = AND;
+            7'b0000000: dinst.alufunc = ADD;
             default: dinst.itype = Unsupported;
           endcase
           fn_AND: case (funct7)
@@ -208,6 +212,7 @@ module decoder (
           3'b000: begin
             dinst.itype = JALR;
             dinst.dst = dst;
+            dinst.dst_valid = 1'b1;
             dinst.src1 = src1;
             dinst.imm = immI32;
           end

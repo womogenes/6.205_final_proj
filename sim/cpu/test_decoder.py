@@ -27,8 +27,16 @@ async def test_module(dut):
     for inst, expected in TEST_CASES:
         dut.inst.value = inst
         await Timer(10, "ns")
-        assert verify_decode(DecodedInst(dut.dinst.value.binstr), expected), \
-            f"Failed to decode {inst:032b}. Expected:\n  {expected}\nGot:\n  {DecodedInst(dut.dinst.value.binstr)}"
+        
+        try:
+            dinst = DecodedInst(dut.dinst.value.binstr)
+        except ValueError as e:
+            print(f"Encountered error when decoding {dut.dinst.value.binstr}")
+            print(f"Test case: {expected}")
+            raise e
+
+        assert verify_decode(dinst, expected), \
+            f"Failed to decode {inst:032b}. Expected:\n  {expected}\nGot:\n  {dinst}"
 
 
 def runner():
