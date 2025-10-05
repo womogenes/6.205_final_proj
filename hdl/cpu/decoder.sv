@@ -80,20 +80,20 @@ module decoder (
         dinst.dst_valid = 1'b1;
 
         case (funct3)
-          fn_AND: dinst.alufunc = AND;
-          fn_OR: dinst.alufunc = OR;
-          fn_XOR: dinst.alufunc = XOR;
-          fn_ADD: dinst.alufunc = ADD;
-          fn_SLT: dinst.alufunc = SLT;
-          fn_SLTU: dinst.alufunc = SLTU;
+          fn_AND: dinst.alu_func = AND;
+          fn_OR: dinst.alu_func = OR;
+          fn_XOR: dinst.alu_func = XOR;
+          fn_ADD: dinst.alu_func = ADD;
+          fn_SLT: dinst.alu_func = SLT;
+          fn_SLTU: dinst.alu_func = SLTU;
           fn_SLL: case (funct7)
             // check if valid SLLI instruction
-            7'b0000000: dinst.alufunc = SLL;
-            default: dinst.alufunc = Unsupported;
+            7'b0000000: dinst.alu_func = SLL;
+            default: dinst.alu_func = Unsupported;
           endcase
           fn_SR: case (funct7)
-            7'b0000000: dinst.alufunc = SRL;
-            7'b0100000: dinst.alufunc = SRA;
+            7'b0000000: dinst.alu_func = SRL;
+            7'b0100000: dinst.alu_func = SRA;
             default: dinst.itype = Unsupported;
           endcase
           default: dinst.itype = Unsupported;
@@ -110,32 +110,32 @@ module decoder (
 
         case (funct3)
           fn_ADD: case (funct7)
-            7'b0000000: dinst.alufunc = ADD;
+            7'b0000000: dinst.alu_func = ADD;
             default: dinst.itype = Unsupported;
           endcase
           fn_AND: case (funct7)
-            7'b0000000: dinst.alufunc = AND;
+            7'b0000000: dinst.alu_func = AND;
             default: dinst.itype = Unsupported;
           endcase
           fn_OR: case (funct7)
-            7'b0000000: dinst.alufunc = OR;
+            7'b0000000: dinst.alu_func = OR;
             default: dinst.itype = Unsupported;
           endcase
           fn_XOR: case (funct7)
-            7'b0000000: dinst.alufunc = XOR;
+            7'b0000000: dinst.alu_func = XOR;
             default: dinst.itype = Unsupported;
           endcase
           fn_SLT: case (funct7)
-            7'b0000000: dinst.alufunc = SLT;
+            7'b0000000: dinst.alu_func = SLT;
             default: dinst.itype = Unsupported;
           endcase
           fn_SLL: case (funct7)
-            7'b0000000: dinst.alufunc = SLL;
+            7'b0000000: dinst.alu_func = SLL;
             default: dinst.itype = Unsupported;
           endcase
           fn_SR: case (funct7)
-            7'b0000000: dinst.alufunc = SRL;
-            7'b0100000: dinst.alufunc = SRA;
+            7'b0000000: dinst.alu_func = SRL;
+            7'b0100000: dinst.alu_func = SRA;
             default: dinst.itype = Unsupported;
           endcase
           default: dinst.itype = Unsupported;
@@ -151,12 +151,12 @@ module decoder (
         dinst.itype = BRANCH;
 
         case (funct3)
-          fn_BEQ: dinst.brfunc = EQ;
-          fn_BNE: dinst.brfunc = NEQ;
-          fn_BLT: dinst.brfunc = LT;
-          fn_BGE: dinst.brfunc = GE;
-          fn_BLTU: dinst.brfunc = LTU;
-          fn_BGEU: dinst.brfunc = GEU;
+          fn_BEQ: dinst.br_func = EQ;
+          fn_BNE: dinst.br_func = NEQ;
+          fn_BLT: dinst.br_func = LT;
+          fn_BGE: dinst.br_func = GE;
+          fn_BLTU: dinst.br_func = LTU;
+          fn_BGEU: dinst.br_func = GEU;
           default: dinst.itype = Unsupported;
         endcase
       end
@@ -179,11 +179,11 @@ module decoder (
         dinst.dst_valid = 1'b1;
         
         case (funct3)
-          fn_LW: dinst.memfunc = LW;
-          fn_LB: dinst.memfunc = LB;
-          fn_LH: dinst.memfunc = LH;
-          fn_LBU: dinst.memfunc = LBU;
-          fn_LHU: dinst.memfunc = LHU;
+          fn_LW: dinst.mem_func = LW;
+          fn_LB: dinst.mem_func = LB;
+          fn_LH: dinst.mem_func = LH;
+          fn_LBU: dinst.mem_func = LBU;
+          fn_LHU: dinst.mem_func = LHU;
           default: begin
             dinst.itype = Unsupported;
             dinst.dst_valid = 1'b0;
@@ -199,9 +199,9 @@ module decoder (
         dinst.imm = immS32;
         
         case (funct3)
-          fn_SW: dinst.memfunc = SW;
-          fn_SB: dinst.memfunc = SB;
-          fn_SH: dinst.memfunc = SH;
+          fn_SW: dinst.mem_func = SW;
+          fn_SB: dinst.mem_func = SB;
+          fn_SH: dinst.mem_func = SH;
           default: dinst.itype = Unsupported;
         endcase
       end

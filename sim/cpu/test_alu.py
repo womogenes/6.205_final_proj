@@ -12,7 +12,7 @@ from tqdm import tqdm
 import random
 import ctypes
 
-from enums import AluFunc
+from proc_types import AluFunc
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -33,43 +33,43 @@ async def test_module(dut):
 
             dut.func.value = AluFunc.ADD.value
             await Timer(10, "ns")
-            assert dut.res.value == (A + B) & mask, ("ADD broken", A, B)
+            assert dut.out.value == (A + B) & mask, ("ADD broken", A, B)
 
             dut.func.value = AluFunc.SUB.value
             await Timer(10, "ns")
-            assert dut.res.value == (A - B) & mask, ("SUB broken", A, B)
+            assert dut.out.value == (A - B) & mask, ("SUB broken", A, B)
 
             dut.func.value = AluFunc.AND.value
             await Timer(10, "ns")
-            assert dut.res.value == (A & B) & mask, ("AND broken", A, B)
+            assert dut.out.value == (A & B) & mask, ("AND broken", A, B)
 
             dut.func.value = AluFunc.OR.value
             await Timer(10, "ns")
-            assert dut.res.value == (A | B) & mask, ("OR broken", A, B)
+            assert dut.out.value == (A | B) & mask, ("OR broken", A, B)
 
             dut.func.value = AluFunc.XOR.value
             await Timer(10, "ns")
-            assert dut.res.value == (A ^ B) & mask, ("XOR broken", A, B)
+            assert dut.out.value == (A ^ B) & mask, ("XOR broken", A, B)
 
             dut.func.value = AluFunc.SLT.value
             await Timer(10, "ns")
-            assert dut.res.value == (A_signed < B_signed) & mask, ("SLT broken", A, B)
+            assert dut.out.value == (A_signed < B_signed) & mask, ("SLT broken", A, B)
 
             dut.func.value = AluFunc.SLTU.value
             await Timer(10, "ns")
-            assert dut.res.value == (A < B) & mask, ("SLTU broken", A, B)
+            assert dut.out.value == (A < B) & mask, ("SLTU broken", A, B)
 
             dut.func.value = AluFunc.SLL.value
             await Timer(10, "ns")
-            assert dut.res.value == (A << B) & mask, ("SLL broken", A, B)
+            assert dut.out.value == (A << B) & mask, ("SLL broken", A, B)
 
             dut.func.value = AluFunc.SRL.value
             await Timer(10, "ns")
-            assert dut.res.value == (A >> B) & mask, ("SLR broken", A, B)
+            assert dut.out.value == (A >> B) & mask, ("SLR broken", A, B)
 
             dut.func.value = AluFunc.SRA.value
             await Timer(10, "ns")
-            assert dut.res.value == (A_signed >> B) & mask, ("SLR broken", A, B)
+            assert dut.out.value == (A_signed >> B) & mask, ("SLR broken", A, B)
 
 
 def runner():

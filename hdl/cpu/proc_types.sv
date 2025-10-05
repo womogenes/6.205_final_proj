@@ -7,15 +7,25 @@ typedef enum logic [2:0] { EQ, NEQ, LT, LTU, GE, GEU } BrFunc;
 // Branch function enumeration
 typedef struct packed {
   IType itype;
-  AluFunc alufunc;    // comes from alu.sv
-  BrFunc brfunc;      // branch operation
-  MemFunc memfunc;    // memory operation
+  AluFunc alu_func;    // comes from alu.sv
+  BrFunc br_func;      // branch operation
+  MemFunc mem_func;    // memory operation
   logic [4:0] dst;    // register to write to
   logic dst_valid;    // register dst write enable?
   logic [4:0] src1;   // register source index 1
   logic [4:0] src2;   // register source index 2
   logic [31:0] imm;   // immediate values
 } DecodedInst;
+
+typedef struct packed {
+  IType itype;
+  MemFunc mem_func;
+  logic [4:0] dst;
+  logic dst_valid;
+  logic [31:0] data;
+  logic [31:0] addr;
+  logic [31:0] next_pc;
+} ExecInst;
 
 // Opcodes
 parameter logic [6:0] op_OPIMM    = 7'b0010011;
