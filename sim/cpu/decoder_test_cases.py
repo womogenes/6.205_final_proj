@@ -1,262 +1,10 @@
-from proc_types import AluFunc, BrFunc, ExecuteInst, IType, MemFunc, DecodedInst
+# DISCLAIMER: most of this file was LLM-generated
+
+from proc_types import AluFunc, BrFunc, ExecInst, IType, MemFunc, DecodedInst
 import random
 
 TEST_CASES = []
-
-# TEST_CASES = [
-#     (   # lui x1, (1<<12)
-#         0b0000_0000_0000_0000_0000_0001_00001_0110111,
-#         DecodedInst(
-#             itype=IType.LUI, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=1, dst_valid=1, src1=-1, src2=-1, imm=(1 << 12),
-#         ),
-#     ),
-#     (   # jal x2, 4
-#         0b0000_0000_0100_0000_0000_00010_1101111,
-#         DecodedInst(
-#             itype=IType.JAL, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=-1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # jalr x2, x2, 4
-#         0b0000_0000_0100_00010_000_00010_1100111,
-#         DecodedInst(
-#             itype=IType.JALR, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=2, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # BEQ
-#         0b0000000_00010_00010_000_0100_01100011,
-#         DecodedInst(
-#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.EQ, mem_func=MemFunc.Null,
-#             dst=-1, dst_valid=0, src1=2, src2=2, imm=4,
-#         )
-#     ),
-#     (   # BNE
-#         0b0000_0000_0010_0001_0001_0100_01100011,
-#         DecodedInst(
-#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.NEQ, mem_func=MemFunc.Null,
-#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-#         )
-#     ),
-#     (   # BLT
-#         0b0000_0000_0010_0001_0100_0100_01100011,
-#         DecodedInst(
-#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.LT, mem_func=MemFunc.Null,
-#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-#         )
-#     ),
-#     (   # BGE
-#         0b0000_0000_0010_0001_0101_0100_01100011,
-#         DecodedInst(
-#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.GE, mem_func=MemFunc.Null,
-#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-#         )
-#     ),
-#     (   # BLTU
-#         0b0000_0000_0010_0001_0110_0100_01100011,
-#         DecodedInst(
-#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.LTU, mem_func=MemFunc.Null,
-#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-#         )
-#     ),
-#     (   # BGEU
-#         0b0000_0000_0010_0001_0111_0100_01100011,
-#         DecodedInst(
-#             itype=IType.BRANCH, alu_func=AluFunc.Null, br_func=BrFunc.GEU, mem_func=MemFunc.Null,
-#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-#         )
-#     ),
-#     (   # LB
-#         0b0000_0000_0100_00001_000_00010_0000011,
-#         DecodedInst(
-#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LB,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # LH
-#         0b0000_0000_0100_00001_001_00010_0000011,
-#         DecodedInst(
-#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LH,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # LW
-#         0b0000_0000_0100_00001_010_00010_0000011,
-#         DecodedInst(
-#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LW,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # LBU
-#         0b0000_0000_0100_00001_100_00010_0000011,
-#         DecodedInst(
-#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LBU,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # LHU
-#         0b0000_0000_0100_00001_101_00010_0000011,
-#         DecodedInst(
-#             itype=IType.LOAD, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.LHU,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # SB
-#         0b0000_0000_0010_00001_000_00100_0100011,
-#         DecodedInst(
-#             itype=IType.STORE, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.SB,
-#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-#         )
-#     ),
-#     (   # SH
-#         0b0000_0000_0010_00001_001_00100_0100011,
-#         DecodedInst(
-#             itype=IType.STORE, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.SH,
-#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-#         )
-#     ),
-#     (   # SW
-#         0b0000_0000_0010_00001_010_00100_0100011,
-#         DecodedInst(
-#             itype=IType.STORE, alu_func=AluFunc.Null, br_func=BrFunc.Null, mem_func=MemFunc.SW,
-#             dst=-1, dst_valid=0, src1=1, src2=2, imm=4,
-#         )
-#     ),
-#     (   # ADDI
-#         0b0000_0000_0100_00001_000_00010_0010011,
-#         DecodedInst(
-#             itype=IType.OPIMM, alu_func=AluFunc.ADD, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # SLTI
-#         0b0000_0000_0100_00001_010_00010_0010011,
-#         DecodedInst(
-#             itype=IType.OPIMM, alu_func=AluFunc.SLT, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # SLTIU
-#         0b0000_0000_0100_00001_011_00010_0010011,
-#         DecodedInst(
-#             itype=IType.OPIMM, alu_func=AluFunc.SLTU, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # XORI
-#         0b0000_0000_0100_00001_100_00010_0010011,
-#         DecodedInst(
-#             itype=IType.OPIMM, alu_func=AluFunc.XOR, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # ORI
-#         0b0000_0000_0100_00001_110_00010_0010011,
-#         DecodedInst(
-#             itype=IType.OPIMM, alu_func=AluFunc.OR, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # ANDI
-#         0b0000_0000_0100_00001_111_00010_0010011,
-#         DecodedInst(
-#             itype=IType.OPIMM, alu_func=AluFunc.AND, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # SLLI
-#         0b0000_0000_0100_00001_001_00010_0010011,
-#         DecodedInst(
-#             itype=IType.OPIMM, alu_func=AluFunc.SLL, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # SRLI
-#         0b0000_0000_0100_00001_101_00010_0010011,
-#         DecodedInst(
-#             itype=IType.OPIMM, alu_func=AluFunc.SRL, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # SRAI
-#         0b0100_0000_0100_00001_101_00010_0010011,
-#         DecodedInst(
-#             itype=IType.OPIMM, alu_func=AluFunc.SRA, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=2, dst_valid=1, src1=1, src2=-1, imm=4,
-#         )
-#     ),
-#     (   # ADD
-#         0b0000_0000_0010_00001_000_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.ADD, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-#     (   # SUB
-#         0b0100_0000_0010_00001_000_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.SUB, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-#     (   # SLL
-#         0b0000_0000_0010_00001_001_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.SLL, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-#     (   # SLT
-#         0b0000_0000_0010_00001_010_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.SLT, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-#     (   # SLTU
-#         0b0000_0000_0010_00001_011_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.SLTU, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-#     (   # XOR
-#         0b0000_0000_0010_00001_100_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.XOR, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-#     (   # SRL
-#         0b0000_0000_0010_00001_101_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.SRL, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-#     (   # SRA
-#         0b0100_0000_0010_00001_101_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.SRA, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-#     (   # OR
-#         0b0000_0000_0010_00001_110_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.OR, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-#     (   # AND
-#         0b0000_0000_0010_00001_111_00011_0110011,
-#         DecodedInst(
-#             itype=IType.OP, alu_func=AluFunc.AND, br_func=BrFunc.Null, mem_func=MemFunc.Null,
-#             dst=3, dst_valid=1, src1=1, src2=2, imm=0,
-#         )
-#     ),
-# ]
+EXEC_TEST_CASES = []
 
 # RISC-V Instruction Encoders
 def encode_r_type(opcode, funct3, funct7, rd, rs1, rs2):
@@ -493,3 +241,361 @@ def generate_random_test_cases(N):
 # Generate and add random test cases
 RANDOM_TEST_CASES = generate_random_test_cases(N=1000)
 TEST_CASES.extend(RANDOM_TEST_CASES)
+
+def to_signed_32(val):
+    """Convert to signed 32-bit integer"""
+    val = val & 0xFFFFFFFF
+    if val & 0x80000000:
+        return val - 0x100000000
+    return val
+
+def generate_exec_test_cases(N):
+    """Generate test cases for execute stage: (inst, r_val1, r_val2, pc, expected_ExecInst)"""
+    exec_cases = []
+
+    # R-type instructions (OP)
+    r_type_specs = [
+        (0b0110011, 0b000, 0b0000000, IType.OP, AluFunc.ADD),   # ADD
+        (0b0110011, 0b000, 0b0100000, IType.OP, AluFunc.SUB),   # SUB
+        (0b0110011, 0b001, 0b0000000, IType.OP, AluFunc.SLL),   # SLL
+        (0b0110011, 0b010, 0b0000000, IType.OP, AluFunc.SLT),   # SLT
+        (0b0110011, 0b011, 0b0000000, IType.OP, AluFunc.SLTU),  # SLTU
+        (0b0110011, 0b100, 0b0000000, IType.OP, AluFunc.XOR),   # XOR
+        (0b0110011, 0b101, 0b0000000, IType.OP, AluFunc.SRL),   # SRL
+        (0b0110011, 0b101, 0b0100000, IType.OP, AluFunc.SRA),   # SRA
+        (0b0110011, 0b110, 0b0000000, IType.OP, AluFunc.OR),    # OR
+        (0b0110011, 0b111, 0b0000000, IType.OP, AluFunc.AND),   # AND
+    ]
+
+    for opcode, funct3, funct7, itype, alu_func in r_type_specs:
+        for _ in range(N):
+            rd = random.randint(1, 31)
+            rs1 = random.randint(0, 31)
+            rs2 = random.randint(0, 31)
+            r_val1 = random.randint(0, 0xFFFFFFFF)
+            r_val2 = random.randint(0, 0xFFFFFFFF)
+            pc = random.randrange(0, 0x10000, 4)
+
+            encoded = encode_r_type(opcode, funct3, funct7, rd, rs1, rs2)
+
+            # Compute expected ALU output
+            if alu_func == AluFunc.ADD:
+                data = (r_val1 + r_val2) & 0xFFFFFFFF
+            elif alu_func == AluFunc.SUB:
+                data = (r_val1 - r_val2) & 0xFFFFFFFF
+            elif alu_func == AluFunc.SLL:
+                data = (r_val1 << (r_val2 & 0x1F)) & 0xFFFFFFFF
+            elif alu_func == AluFunc.SLT:
+                data = 1 if to_signed_32(r_val1) < to_signed_32(r_val2) else 0
+            elif alu_func == AluFunc.SLTU:
+                data = 1 if r_val1 < r_val2 else 0
+            elif alu_func == AluFunc.XOR:
+                data = r_val1 ^ r_val2
+            elif alu_func == AluFunc.SRL:
+                data = r_val1 >> (r_val2 & 0x1F)
+            elif alu_func == AluFunc.SRA:
+                data = to_signed_32(r_val1) >> (r_val2 & 0x1F)
+                data = data & 0xFFFFFFFF
+            elif alu_func == AluFunc.OR:
+                data = r_val1 | r_val2
+            elif alu_func == AluFunc.AND:
+                data = r_val1 & r_val2
+
+            expected = ExecInst(
+                itype=itype,
+                mem_func=MemFunc.Null,
+                dst=rd,
+                dst_valid=1,
+                data=data,
+                addr=r_val1,  # r_val1 + 0 for OP instructions
+                next_pc=(pc + 4) & 0xFFFFFFFF
+            )
+            exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    # I-type ALU instructions (OPIMM)
+    i_type_alu_specs = [
+        (0b0010011, 0b000, IType.OPIMM, AluFunc.ADD),   # ADDI
+        (0b0010011, 0b010, IType.OPIMM, AluFunc.SLT),   # SLTI
+        (0b0010011, 0b011, IType.OPIMM, AluFunc.SLTU),  # SLTIU
+        (0b0010011, 0b100, IType.OPIMM, AluFunc.XOR),   # XORI
+        (0b0010011, 0b110, IType.OPIMM, AluFunc.OR),    # ORI
+        (0b0010011, 0b111, IType.OPIMM, AluFunc.AND),   # ANDI
+    ]
+
+    for opcode, funct3, itype, alu_func in i_type_alu_specs:
+        for _ in range(N):
+            rd = random.randint(1, 31)
+            rs1 = random.randint(0, 31)
+            imm = random.randint(-2048, 2047)
+            r_val1 = random.randint(0, 0xFFFFFFFF)
+            r_val2 = random.randint(0, 0xFFFFFFFF)
+            pc = random.randrange(0, 0x10000, 4)
+
+            encoded = encode_i_type(opcode, funct3, rd, rs1, imm & 0xFFF)
+            imm_signed = sign_extend_12(imm & 0xFFF)
+
+            # Compute expected ALU output
+            if alu_func == AluFunc.ADD:
+                data = (r_val1 + imm_signed) & 0xFFFFFFFF
+            elif alu_func == AluFunc.SLT:
+                data = 1 if to_signed_32(r_val1) < to_signed_32(imm_signed) else 0
+            elif alu_func == AluFunc.SLTU:
+                data = 1 if r_val1 < (imm_signed & 0xFFFFFFFF) else 0
+            elif alu_func == AluFunc.XOR:
+                data = r_val1 ^ (imm_signed & 0xFFFFFFFF)
+            elif alu_func == AluFunc.OR:
+                data = r_val1 | (imm_signed & 0xFFFFFFFF)
+            elif alu_func == AluFunc.AND:
+                data = r_val1 & (imm_signed & 0xFFFFFFFF)
+
+            expected = ExecInst(
+                itype=itype,
+                mem_func=MemFunc.Null,
+                dst=rd,
+                dst_valid=1,
+                data=data,
+                addr=(r_val1 + imm_signed) & 0xFFFFFFFF,
+                next_pc=(pc + 4) & 0xFFFFFFFF
+            )
+            exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    # Shift I-type instructions
+    shift_specs = [
+        (0b0010011, 0b001, 0b0000000, IType.OPIMM, AluFunc.SLL),  # SLLI
+        (0b0010011, 0b101, 0b0000000, IType.OPIMM, AluFunc.SRL),  # SRLI
+        (0b0010011, 0b101, 0b0100000, IType.OPIMM, AluFunc.SRA),  # SRAI
+    ]
+
+    for opcode, funct3, funct7, itype, alu_func in shift_specs:
+        for _ in range(N):
+            rd = random.randint(1, 31)
+            rs1 = random.randint(0, 31)
+            shamt = random.randint(0, 31)
+            r_val1 = random.randint(0, 0xFFFFFFFF)
+            r_val2 = random.randint(0, 0xFFFFFFFF)
+            pc = random.randrange(0, 0x10000, 4)
+
+            encoded = encode_i_type(opcode, funct3, rd, rs1, (funct7 << 5) | shamt)
+            imm = shamt + (funct7 << 5)
+
+            if alu_func == AluFunc.SLL:
+                data = (r_val1 << shamt) & 0xFFFFFFFF
+            elif alu_func == AluFunc.SRL:
+                data = r_val1 >> shamt
+            elif alu_func == AluFunc.SRA:
+                data = to_signed_32(r_val1) >> shamt
+                data = data & 0xFFFFFFFF
+
+            expected = ExecInst(
+                itype=itype,
+                mem_func=MemFunc.Null,
+                dst=rd,
+                dst_valid=1,
+                data=data,
+                addr=(r_val1 + imm) & 0xFFFFFFFF,
+                next_pc=(pc + 4) & 0xFFFFFFFF
+            )
+            exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    # Load instructions
+    load_specs = [
+        (0b0000011, 0b000, IType.LOAD, MemFunc.LB),   # LB
+        (0b0000011, 0b001, IType.LOAD, MemFunc.LH),   # LH
+        (0b0000011, 0b010, IType.LOAD, MemFunc.LW),   # LW
+        (0b0000011, 0b100, IType.LOAD, MemFunc.LBU),  # LBU
+        (0b0000011, 0b101, IType.LOAD, MemFunc.LHU),  # LHU
+    ]
+
+    for opcode, funct3, itype, mem_func in load_specs:
+        for _ in range(N):
+            rd = random.randint(1, 31)
+            rs1 = random.randint(0, 31)
+            imm = random.randint(-2048, 2047)
+            r_val1 = random.randint(0, 0xFFFFFFFF)
+            r_val2 = random.randint(0, 0xFFFFFFFF)
+            pc = random.randrange(0, 0x10000, 4)
+
+            encoded = encode_i_type(opcode, funct3, rd, rs1, imm & 0xFFF)
+            imm_signed = sign_extend_12(imm & 0xFFF)
+
+            expected = ExecInst(
+                itype=itype,
+                mem_func=mem_func,
+                dst=rd,
+                dst_valid=1,
+                data=0,  # Data will be filled by memory stage
+                addr=(r_val1 + imm_signed) & 0xFFFFFFFF,
+                next_pc=(pc + 4) & 0xFFFFFFFF
+            )
+            exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    # Store instructions
+    store_specs = [
+        (0b0100011, 0b000, IType.STORE, MemFunc.SB),  # SB
+        (0b0100011, 0b001, IType.STORE, MemFunc.SH),  # SH
+        (0b0100011, 0b010, IType.STORE, MemFunc.SW),  # SW
+    ]
+
+    for opcode, funct3, itype, mem_func in store_specs:
+        for _ in range(N):
+            rs1 = random.randint(0, 31)
+            rs2 = random.randint(0, 31)
+            imm = random.randint(-2048, 2047)
+            r_val1 = random.randint(0, 0xFFFFFFFF)
+            r_val2 = random.randint(0, 0xFFFFFFFF)
+            pc = random.randrange(0, 0x10000, 4)
+
+            encoded = encode_s_type(opcode, funct3, rs1, rs2, imm & 0xFFF)
+            imm_signed = sign_extend_12(imm & 0xFFF)
+
+            expected = ExecInst(
+                itype=itype,
+                mem_func=mem_func,
+                dst=0,
+                dst_valid=0,
+                data=r_val2,
+                addr=(r_val1 + imm_signed) & 0xFFFFFFFF,
+                next_pc=(pc + 4) & 0xFFFFFFFF
+            )
+            exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    # Branch instructions
+    branch_specs = [
+        (0b1100011, 0b000, IType.BRANCH, BrFunc.EQ),   # BEQ
+        (0b1100011, 0b001, IType.BRANCH, BrFunc.NEQ),  # BNE
+        (0b1100011, 0b100, IType.BRANCH, BrFunc.LT),   # BLT
+        (0b1100011, 0b101, IType.BRANCH, BrFunc.GE),   # BGE
+        (0b1100011, 0b110, IType.BRANCH, BrFunc.LTU),  # BLTU
+        (0b1100011, 0b111, IType.BRANCH, BrFunc.GEU),  # BGEU
+    ]
+
+    for opcode, funct3, itype, br_func in branch_specs:
+        for _ in range(N):
+            rs1 = random.randint(0, 31)
+            rs2 = random.randint(0, 31)
+            imm = random.randrange(-4096, 4096, 2)
+            r_val1 = random.randint(0, 0xFFFFFFFF)
+            r_val2 = random.randint(0, 0xFFFFFFFF)
+            pc = random.randrange(0, 0x10000, 4)
+
+            encoded = encode_b_type(opcode, funct3, rs1, rs2, imm & 0x1FFE)
+            imm_signed = sign_extend_13(imm & 0x1FFE)
+
+            # Compute branch condition
+            if br_func == BrFunc.EQ:
+                taken = (r_val1 == r_val2)
+            elif br_func == BrFunc.NEQ:
+                taken = (r_val1 != r_val2)
+            elif br_func == BrFunc.LT:
+                taken = to_signed_32(r_val1) < to_signed_32(r_val2)
+            elif br_func == BrFunc.GE:
+                taken = to_signed_32(r_val1) >= to_signed_32(r_val2)
+            elif br_func == BrFunc.LTU:
+                taken = r_val1 < r_val2
+            elif br_func == BrFunc.GEU:
+                taken = r_val1 >= r_val2
+
+            next_pc = (pc + imm_signed) & 0xFFFFFFFF if taken else (pc + 4) & 0xFFFFFFFF
+
+            expected = ExecInst(
+                itype=itype,
+                mem_func=MemFunc.Null,
+                dst=0,
+                dst_valid=0,
+                data=0,
+                addr=(r_val1 + imm_signed) & 0xFFFFFFFF,
+                next_pc=next_pc
+            )
+            exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    # LUI instructions
+    for _ in range(N):
+        rd = random.randint(1, 31)
+        imm = random.randint(0, 0xFFFFF)
+        r_val1 = random.randint(0, 0xFFFFFFFF)
+        r_val2 = random.randint(0, 0xFFFFFFFF)
+        pc = random.randrange(0, 0x10000, 4)
+
+        encoded = encode_u_type(0b0110111, rd, imm)
+
+        expected = ExecInst(
+            itype=IType.LUI,
+            mem_func=MemFunc.Null,
+            dst=rd,
+            dst_valid=1,
+            data=(imm << 12) & 0xFFFFFFFF,
+            addr=(r_val1 + ((imm << 12) & 0xFFFFFFFF)) & 0xFFFFFFFF,
+            next_pc=(pc + 4) & 0xFFFFFFFF
+        )
+        exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    # AUIPC instructions
+    for _ in range(N):
+        rd = random.randint(1, 31)
+        imm = random.randint(0, 0xFFFFF)
+        r_val1 = random.randint(0, 0xFFFFFFFF)
+        r_val2 = random.randint(0, 0xFFFFFFFF)
+        pc = random.randrange(0, 0x10000, 4)
+
+        encoded = encode_u_type(0b0010111, rd, imm)
+
+        expected = ExecInst(
+            itype=IType.AUIPC,
+            mem_func=MemFunc.Null,
+            dst=rd,
+            dst_valid=1,
+            data=(pc + (imm << 12)) & 0xFFFFFFFF,
+            addr=(r_val1 + ((imm << 12) & 0xFFFFFFFF)) & 0xFFFFFFFF,
+            next_pc=(pc + 4) & 0xFFFFFFFF
+        )
+        exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    # JAL instructions
+    for _ in range(N):
+        rd = random.randint(1, 31)
+        imm = random.randrange(-1048576, 1048576, 2)
+        r_val1 = random.randint(0, 0xFFFFFFFF)
+        r_val2 = random.randint(0, 0xFFFFFFFF)
+        pc = random.randrange(0, 0x10000, 4)
+
+        encoded = encode_j_type(0b1101111, rd, imm & 0x1FFFFE)
+        imm_signed = sign_extend_21(imm & 0x1FFFFE)
+
+        expected = ExecInst(
+            itype=IType.JAL,
+            mem_func=MemFunc.Null,
+            dst=rd,
+            dst_valid=1,
+            data=(pc + 4) & 0xFFFFFFFF,
+            addr=(r_val1 + imm_signed) & 0xFFFFFFFF,
+            next_pc=(pc + imm_signed) & 0xFFFFFFFF
+        )
+        exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    # JALR instructions
+    for _ in range(N):
+        rd = random.randint(1, 31)
+        rs1 = random.randint(0, 31)
+        imm = random.randint(-2048, 2047)
+        r_val1 = random.randint(0, 0xFFFFFFFF)
+        r_val2 = random.randint(0, 0xFFFFFFFF)
+        pc = random.randrange(0, 0x10000, 4)
+
+        encoded = encode_i_type(0b1100111, 0b000, rd, rs1, imm & 0xFFF)
+        imm_signed = sign_extend_12(imm & 0xFFF)
+
+        expected = ExecInst(
+            itype=IType.JALR,
+            mem_func=MemFunc.Null,
+            dst=rd,
+            dst_valid=1,
+            data=(pc + 4) & 0xFFFFFFFF,
+            addr=(r_val1 + imm_signed) & 0xFFFFFFFF,
+            next_pc=((r_val1 + imm_signed) & ~1) & 0xFFFFFFFF
+        )
+        exec_cases.append((encoded, r_val1, r_val2, pc, expected))
+
+    return exec_cases
+
+# Generate execute test cases
+EXEC_TEST_CASES = generate_exec_test_cases(N=100)

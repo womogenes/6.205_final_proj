@@ -35,3 +35,7 @@ Initialization loop:
 ## CPU
 
 Lives in `hdl/cpu` and implements a minimal RISC-V processor.
+
+### Tests
+
+Tests live in `sim/cpu`. Decoder is `sim/cpu/test_decoder.py` and runs a bunch of instructions/verifies their outputs. Test cases are auto-generated and the code used to auto-generate them was written by an LLM. Execute state tests are in `/sim/cpu/test_execute.py` and operate similiarly.

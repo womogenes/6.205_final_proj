@@ -77,7 +77,7 @@ class DecodedInst():
         return f"DecodedInst(itype={self.itype}, alu_func={self.alu_func}, br_func={self.br_func}, mem_func={self.mem_func}, dst={self.dst}, dst_valid={self.dst_valid}, src1={self.src1}, src2={self.src2}, imm={self.imm})" 
 
 
-class ExecuteInst():
+class ExecInst():
     def __init__(self, einst: str = None, **kwargs):
         if einst:
             # Extract from bitstring
@@ -97,6 +97,6 @@ class ExecuteInst():
             self.data = kwargs.get("data")
             self.addr = kwargs.get("addr")
             self.next_pc = kwargs.get("next_pc")
-    
+
     def __str__(self):
-        return f"ExecuteInst(itype={self.itype}, mem_func={self.mem_func}, dst={self.dst}, dst_valid={self.dst_valid}, data={self.data}, addr={self.addr}, next_pc={self.next_pc})"
+        return f"ExecInst(itype={self.itype}, mem_func={self.mem_func}, dst={self.dst}, dst_valid={self.dst_valid}, data={self.data}, addr={self.addr}, next_pc={self.next_pc})"
