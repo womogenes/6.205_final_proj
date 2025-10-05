@@ -1,8 +1,8 @@
 // Instruction type enumeration
-typedef enum { OP, OPIMM, BRANCH, LUI, JAL, JALR, LOAD, STORE, AUIPC, MUL, Unsupported } IType;
+typedef enum logic [3:0] { OP, OPIMM, BRANCH, LUI, JAL, JALR, LOAD, STORE, AUIPC, MUL, Unsupported } IType;
 
 // Branch type enumeration
-typedef enum { EQ, NEQ, LT, LTU, GE, GEU } BrFunc;
+typedef enum logic [2:0] { EQ, NEQ, LT, LTU, GE, GEU } BrFunc;
 
 // Branch function enumeration
 typedef struct packed {

@@ -9,23 +9,12 @@ from cocotb.runner import get_runner
 
 from tqdm import tqdm
 
-from enum import Enum
 import random
 import ctypes
 
-test_file = os.path.basename(__file__).replace(".py", "")
+from enums import AluFunc
 
-class AluFunc(Enum):
-    ADD = 0
-    SUB = 1
-    AND = 2
-    OR = 3
-    XOR = 4
-    SLT = 5
-    SLTU = 6
-    SLL = 7
-    SRL = 8
-    SRA = 9
+test_file = os.path.basename(__file__).replace(".py", "")
 
 @cocotb.test()
 async def test_module(dut):

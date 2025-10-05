@@ -1,1 +1,1 @@
-typedef enum { LW, LH, LHU, LB, LBU, SW, SH, SB } MemFunc;
+typedef enum logic [2:0] { LW, LH, LHU, LB, LBU, SW, SH, SB } MemFunc;

@@ -1,6 +1,6 @@
 `default_nettype none
 
-typedef enum { ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA } AluFunc;
+typedef enum logic [3:0] { ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA } AluFunc;
 
 // purely combinational ALU
 module alu (

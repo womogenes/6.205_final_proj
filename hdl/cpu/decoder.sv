@@ -19,6 +19,18 @@ module decoder (
   // fully sign-extended immediates
   logic [31:0] immB32, immU32, immI32, immJ32, immS32;
 
+  // always_comb begin
+  //   dinst.itype = 1;
+  //   dinst.alufunc = 1;
+  //   dinst.brfunc = 1;
+  //   dinst.memfunc = 1;
+  //   dinst.dst = 1;
+  //   dinst.dst_valid = 1;
+  //   dinst.src1 = 1;
+  //   dinst.src2 = 1;
+  //   dinst.imm = 1;
+  // end
+
   always_comb begin
     opcode = inst[6:0];
     funct3 = inst[14:12];
