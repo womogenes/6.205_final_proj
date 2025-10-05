@@ -1,7 +1,7 @@
 from enum import Enum
 
 class AluFunc(Enum):
-    Invalid = -1
+    Null = -1
     ADD = 0
     SUB = 1
     AND = 2
@@ -14,7 +14,7 @@ class AluFunc(Enum):
     SRA = 9
 
 class BrFunc(Enum):
-    Invalid = -1
+    Null = -1
     EQ = 0
     NEQ = 1
     LT = 2
@@ -23,7 +23,7 @@ class BrFunc(Enum):
     GEU = 5
 
 class MemFunc(Enum):
-    Invalid = -1
+    Null = -1
     LW = 0
     LH = 1
     LHU = 2
@@ -34,7 +34,7 @@ class MemFunc(Enum):
     SB = 7
 
 class IType(Enum):
-    Invalid = -1
+    Null = -1
     OP = 0
     OPIMM = 1
     BRANCH = 2
