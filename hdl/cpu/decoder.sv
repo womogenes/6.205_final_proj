@@ -209,7 +209,6 @@ module decoder (
             dinst.itype = JALR;
             dinst.dst = dst;
             dinst.src1 = src1;
-            dinst.src2 = src2;
             dinst.imm = immI32;
           end
           default: dinst.itype = Unsupported;
