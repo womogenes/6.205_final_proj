@@ -1,3 +1,6 @@
+// 32-bit processor
+typedef logic [31:0] Word;
+
 // Instruction type enumeration
 typedef enum logic [3:0] { OP, OPIMM, BRANCH, LUI, JAL, JALR, LOAD, STORE, AUIPC, MUL, Unsupported } IType;
 
@@ -22,9 +25,9 @@ typedef struct packed {
   MemFunc mem_func;
   logic [4:0] dst;
   logic dst_valid;
-  logic [31:0] data;
-  logic [31:0] addr;
-  logic [31:0] next_pc;
+  Word data;
+  Word addr;
+  Word next_pc;
 } ExecInst;
 
 // Opcodes

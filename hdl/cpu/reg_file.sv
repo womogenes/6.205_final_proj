@@ -13,12 +13,13 @@ module reg_file(
   // single-port writes
   input wire w_en,                // write enable
   input wire [4:0] w_idx,         // write register index
-  input wire [31:0] w_data,       // write data
+  input Word w_data,       // write data
 
-  output logic [31:0] dout1,      // data out 1
-  output logic [31:0] dout2       // data out 2
+  output Word dout1,      // data out 1
+  output Word dout2       // data out 2
 );
-  logic [31:0] reg_data [31:0];
+  // 32 registers (except 0 is always 0)
+  Word reg_data [31:0];
 
   always_comb begin
     // look for registers
