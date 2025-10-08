@@ -17,7 +17,7 @@ module decoder (
   logic [11:0] immS;
 
   // fully sign-extended immediates
-  logic [31:0] immB32, immU32, immI32, immJ32, immS32;
+  Word immB32, immU32, immI32, immJ32, immS32;
 
   always_comb begin
     opcode = inst[6:0];

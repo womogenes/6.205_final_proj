@@ -4,10 +4,10 @@ typedef enum logic [3:0] { ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA } Al
 
 // purely combinational ALU
 module alu (
-  input wire [31:0] a,
-  input wire [31:0] b,
+  input Word a,
+  input Word b,
   input AluFunc func,
-  output logic [31:0] out
+  output Word out
 );
   always_comb begin
     case (func)

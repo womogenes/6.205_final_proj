@@ -3,8 +3,8 @@
 // Branch ALU -- determine if we should branch based on inputs
 //   and branch type.
 module br_alu (
-  input logic [31:0] a,
-  input logic [31:0] b,
+  input Word a,
+  input Word b,
   input BrFunc br_func,
   output logic out
 );
@@ -24,16 +24,16 @@ endmodule
 // Execute module
 module execute (
   input DecodedInst dinst,
-  input logic [31:0] r_val1,     // value from register rs1
-  input logic [31:0] r_val2,     // value from register rs2
-  input logic [31:0] pc,         // program counter
+  input Word r_val1,     // value from register rs1
+  input Word r_val2,     // value from register rs2
+  input Word pc,         // program counter
 
   output ExecInst einst    // executed instruction
 );
-  logic [31:0] imm;
+  Word imm;
   BrFunc br_func;
   AluFunc alu_func;
-  logic [31:0] alu_val2;
+  Word alu_val2;
 
   // Assign these known values from decode stage
   assign imm = dinst.imm;
@@ -42,18 +42,18 @@ module execute (
   assign alu_val2 = dinst.itype == OPIMM ? imm : r_val2;
 
   // Precompute stuff
-  logic [31:0] pc_plus_4;
-  logic [31:0] pc_plus_imm;
+  Word pc_plus_4;
+  Word pc_plus_imm;
 
   assign pc_plus_4 = pc + 4;
   assign pc_plus_imm = pc + imm;
 
   // Data to pass on, etc.
-  logic [31:0] data;
-  logic [31:0] alu_out;
+  Word data;
+  Word alu_out;
   logic br_alu_out;
-  logic [31:0] r_val1_plus_imm;
-  logic [31:0] next_pc;
+  Word r_val1_plus_imm;
+  Word next_pc;
   
   // Use the ALU
   alu my_alu(.a(r_val1), .b(alu_val2), .func(alu_func), .out(alu_out));

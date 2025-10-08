@@ -17,7 +17,7 @@ typedef struct packed {
   logic dst_valid;    // register dst write enable?
   logic [4:0] src1;   // register source index 1
   logic [4:0] src2;   // register source index 2
-  logic [31:0] imm;   // immediate values
+  Word imm;   // immediate values
 } DecodedInst;
 
 typedef struct packed {
