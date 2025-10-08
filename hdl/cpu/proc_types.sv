@@ -1,5 +1,5 @@
-// 32-bit processor
-typedef logic [31:0] Word;
+// Alu functions
+typedef enum logic [3:0] { ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA } AluFunc;
 
 // Instruction type enumeration
 typedef enum logic [3:0] { OP, OPIMM, BRANCH, LUI, JAL, JALR, LOAD, STORE, AUIPC, MUL, Unsupported } IType;
