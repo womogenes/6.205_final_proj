@@ -39,3 +39,7 @@ Lives in `hdl/cpu` and implements a minimal RISC-V processor.
 ### Tests
 
 Tests live in `sim/cpu`. Decoder is `sim/cpu/test_decoder.py` and runs a bunch of instructions/verifies their outputs. Test cases are auto-generated and the code used to auto-generate them was written by an LLM. Execute state tests are in `/sim/cpu/test_execute.py` and operate similiarly.
+
+### C code
+
+Lives in `sw/` for now. Currently working on documenting the compilation process to go from C to RISC-V machine code runnable by the CPU. Simulator lives in `sim/cpu_picorv/test_cpu_picorv.py`.

@@ -1,0 +1,4 @@
+# Ignore generated object and asm files
+*.o
+*.s
+*.hex
