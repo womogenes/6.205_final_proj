@@ -56,10 +56,10 @@ module execute (
   Word next_pc;
   
   // Use the ALU
-  alu my_alu(.a(r_val1), .b(alu_val2), .func(alu_func), .out(alu_out));
+  alu(.a(r_val1), .b(alu_val2), .func(alu_func), .out(alu_out));
 
   // Do branching logic
-  br_alu my_br_alu(.a(r_val1), .b(r_val2), .br_func(br_func), .out(br_alu_out));
+  br_alu(.a(r_val1), .b(r_val2), .br_func(br_func), .out(br_alu_out));
 
   always_comb begin
     // Data to write to registers or to memory
