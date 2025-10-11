@@ -2,7 +2,7 @@
 
 FB_ADDR = 0x00004000
 
-mem = bytearray(320*180)
+mem = bytearray(FB_ADDR + 320*180)
 
 for i in range(len(mem)):
     if i % 2 == 0:

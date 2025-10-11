@@ -18,4 +18,4 @@ program.bin: program.elf
 # Dump machine code to hex
 # 1/4 means 1 element of 4 bytes, zero-padded, on each line
 program.mem: program.bin
-	hexdump -v -e '1/4 "%08x\n"' program.bin > program.mem
+	hexdump -v -e '1/1 "%02x\n"' program.bin > program.mem

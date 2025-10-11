@@ -63,6 +63,7 @@ async def test_module(dut):
 
         if dut.mem_wstrb.value == 0:
             # Read request
+            await ClockCycles(dut.clk, 10)
             dut.mem_ready.value = 1
             dut.mem_rdata.value = mem.read(mem_addr)
             await ClockCycles(dut.clk, 1)
