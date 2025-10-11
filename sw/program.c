@@ -9,12 +9,9 @@ volatile uint8_t* const fb_ptr = (volatile uint8_t*) 0x10000;
 #define WIDTH 320
 #define HEIGHT 180
 
-int count_neighbors(uint8_t* grid, int x, int y);
+int count_neighbors(int x, int y);
 
 void _start() {
-  // Temporary buffer for double buffering
-  uint8_t temp[WIDTH * HEIGHT];
-  
   // Initialize with a glider pattern in the center
   for (int i = 0; i < WIDTH * HEIGHT; i++) {
     fb_ptr[i] = 0x00;
@@ -28,26 +25,29 @@ void _start() {
   fb_ptr[(cy + 2) * WIDTH + cx + 1] = 0xFF;
   fb_ptr[(cy + 2) * WIDTH + cx + 2] = 0xFF;
   
+  // Run simulation forever
   while (1) {
-    // Compute next generation
+    // Compute next generation and store in bit 0
     for (int y = 0; y < HEIGHT; y++) {
       for (int x = 0; x < WIDTH; x++) {
-        int neighbors = count_neighbors((uint8_t*)fb_ptr, x, y);
+        int neighbors = count_neighbors(x, y);
         int idx = y * WIDTH + x;
+        uint8_t alive = fb_ptr[idx] & 0x01;
+        uint8_t next;
         
-        if (fb_ptr[idx]) {
-          // Cell is alive
-          temp[idx] = (neighbors == 2 || neighbors == 3) ? 0xFF : 0x00;
+        if (alive) {
+          next = (neighbors == 2 || neighbors == 3) ? 0x01 : 0x00;
         } else {
-          // Cell is dead
-          temp[idx] = (neighbors == 3) ? 0xFF : 0x00;
+          next = (neighbors == 3) ? 0x01 : 0x00;
         }
+        
+        fb_ptr[idx] = (fb_ptr[idx] & 0xFE) | next;
       }
     }
     
-    // Copy temp back to framebuffer
+    // Shift next generation to display (0x00 or 0xFF)
     for (int i = 0; i < WIDTH * HEIGHT; i++) {
-      fb_ptr[i] = temp[i];
+      fb_ptr[i] = (fb_ptr[i] & 0x01) ? 0xFF : 0x00;
     }
   }
 
@@ -55,7 +55,7 @@ void _start() {
 }
 
 // Count living neighbors with wraparound
-int count_neighbors(uint8_t* grid, int x, int y) {
+int count_neighbors(int x, int y) {
   int count = 0;
   for (int dy = -1; dy <= 1; dy++) {
     for (int dx = -1; dx <= 1; dx++) {
@@ -70,7 +70,7 @@ int count_neighbors(uint8_t* grid, int x, int y) {
       if (ny < 0) ny = HEIGHT - 1;
       if (ny >= HEIGHT) ny = 0;
       
-      if (grid[ny * WIDTH + nx]) count++;
+      if (fb_ptr[ny * WIDTH + nx] & 0x01) count++;
     }
   }
   return count;
