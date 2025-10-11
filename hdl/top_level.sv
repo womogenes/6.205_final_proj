@@ -44,11 +44,12 @@ module top_level (
     .clk_pixel(clk_pixel),
     .h_count_hdmi(h_count),
     .v_count_hdmi(v_count),
-    .pixel(fb_pixel)
+    .pixel(fb_pixel),
+    .trap(led[15])
   );
   // ====================
 
-  assign led = fb_pixel; // to verify the switch values
+  assign led[7:0] = fb_pixel; // to verify the switch values
  
   logic clk_pixel, clk_5x; // clock lines
   logic locked; // locked signal (we'll leave unused but still hook it up)

@@ -6,10 +6,16 @@ typedef int int32_t;
 
 volatile uint8_t* const fb_ptr = (volatile uint8_t*) 0x10000;
 
+#define WIDTH 320
+#define HEIGHT 180
+
 void _start() {
-  // Fill every other cell with 0xFF
-  for (int i = 0; i < 320 * 180; i++) {
-    *(fb_ptr + i) = (i % 2) ? 0xFF : 0x00;
+  // Temporary buffer for double buffering
+  uint8_t temp[WIDTH * HEIGHT];
+  
+  // Initialize with a glider pattern in the center
+  for (int i = 0; i < WIDTH * HEIGHT; i++) {
+    fb_ptr[i] = 0b10110100;
   }
 
   __asm__ volatile ("ecall");
