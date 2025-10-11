@@ -4,15 +4,14 @@ typedef unsigned short uint16_t;
 typedef unsigned char uint8_t;
 typedef int int32_t;
 
-volatile uint8_t* const fb_ptr = (volatile uint8_t*) 0x41000;
+volatile uint8_t* const fb_ptr = (volatile uint8_t*) 0x10000;
 
 void _start() {
   // Fill every other cell with 0xFF
-  for (int i = 0; i < 320; i++) {
+  for (int i = 0; i < 320 * 180; i++) {
     *(fb_ptr + i) = (i % 2) ? 0xFF : 0x00;
   }
 
-  while (1) { };
   __asm__ volatile ("ecall");
 }
 

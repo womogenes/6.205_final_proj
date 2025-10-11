@@ -18,8 +18,8 @@ module cpu #(
   output logic [7:0] pixel,
   output logic trap
 );
-  localparam integer FB_ADDR = 'h41000;
-  localparam integer MEM_SIZE = 2048 * 1024;
+  localparam integer FB_ADDR = 'h10000;
+  localparam integer MEM_SIZE = 2048 * 64;  // 17-bit address space
   localparam integer ADDR_WIDTH = $clog2(MEM_SIZE);
 
   // Fixed at 320x180
@@ -157,7 +157,7 @@ module cpu #(
   picorv32 #(
     .REGS_INIT_ZERO(1),
     // 21-bit address space
-    .STACKADDR(32'h1ffffc),
+    .STACKADDR(32'h1fffc),
     .CATCH_MISALIGN(0)
   ) cpu (
     .clk(clk),
@@ -184,7 +184,7 @@ module cpu #(
     .RAM_WIDTH(8),
     .RAM_DEPTH(MEM_SIZE), // arbitrary memory width for now (21 bit address space)
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
-    .INIT_FILE("program.mem")
+    .INIT_FILE(INIT_FILE)
   ) main_mem (
     // CPU read/write
     .addra(addra),

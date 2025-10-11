@@ -21,6 +21,13 @@ module top_level (
   // shut up those rgb LEDs (active high):
   assign rgb1 = 0;
   assign rgb0 = 0;
+
+  // buffered clock signal (we need this apparently)
+  wire clk_100mhz_buffered;
+  IBUF clkin1_ibufg (
+    .I(clk_100mhz),
+    .O(clk_100mhz_buffered)
+  );
  
   // have btn[0] control system reset
   logic sys_rst;
@@ -32,7 +39,7 @@ module top_level (
   cpu#(
     .INIT_FILE(`FPATH(prog.mem))
   ) my_cpu (
-    .clk(clk_100mhz),
+    .clk(clk_100mhz_buffered),
     .rst(sys_rst),
     .clk_pixel(clk_pixel),
     .h_count_hdmi(h_count),
@@ -50,7 +57,7 @@ module top_level (
   hdmi_clk_wiz_720p mhdmicw (
     .reset(0),
     .locked(locked),
-    .clk_ref(clk_100mhz),
+    .clk_ref(clk_100mhz_buffered),
     .clk_pixel(clk_pixel),
     .clk_tmds(clk_5x)
   );
