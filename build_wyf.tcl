@@ -33,6 +33,7 @@ read_verilog -sv $sources_sv
 set sources_v [ concat \
     [ glob -nocomplain ./hdl/cpu_picorv/*.v ] \
     [ glob -nocomplain ./hdl/hdmi/*.v ] \
+    [ glob -nocomplain ./hdl/mem/*.v ] \
 ]
 if {[llength $sources_v] > 0 } {
     read_verilog $sources_v

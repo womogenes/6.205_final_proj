@@ -8,5 +8,6 @@ obj*/
 **/_history/
 *.bit
 *.bin
+*.mem
 
 .claude/

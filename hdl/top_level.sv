@@ -1,4 +1,10 @@
 `default_nettype none //  prevents system from inferring an undeclared logic (good practice)
+
+`ifdef SYNTHESIS
+  `define FPATH(X) `"X`"
+`else /* ! SYNTHESIS */
+  `define FPATH(X) `"../data/X`"
+`endif  /* ! SYNTHESIS */
  
 module top_level (
   input wire clk_100mhz, // crystal reference clock
@@ -11,7 +17,6 @@ module top_level (
   output logic [2:0] hdmi_tx_n, // hdmi output signals (negatives) (blue, green, red)
   output logic hdmi_clk_p, hdmi_clk_n // differential hdmi clock
 );
-  assign led = sw; // to verify the switch values
 
   // shut up those rgb LEDs (active high):
   assign rgb1 = 0;
@@ -20,7 +25,23 @@ module top_level (
   // have btn[0] control system reset
   logic sys_rst;
   assign sys_rst = btn[0]; // reset is btn[0]
-  logic game_rst;
+
+  logic [7:0] fb_pixel;
+
+  // ==== PROCESSOR =====
+  cpu#(
+    .INIT_FILE(`FPATH(prog.mem))
+  ) my_cpu (
+    .clk(clk_100mhz),
+    .rst(sys_rst),
+    .clk_pixel(clk_pixel),
+    .h_count_hdmi(h_count),
+    .v_count_hdmi(v_count),
+    .pixel(fb_pixel)
+  );
+  // ====================
+
+  assign led = fb_pixel; // to verify the switch values
  
   logic clk_pixel, clk_5x; // clock lines
   logic locked; // locked signal (we'll leave unused but still hook it up)
@@ -31,7 +52,8 @@ module top_level (
     .locked(locked),
     .clk_ref(clk_100mhz),
     .clk_pixel(clk_pixel),
-    .clk_tmds(clk_5x));
+    .clk_tmds(clk_5x)
+  );
  
   logic [10:0] h_count; // h_count of system!
   logic [9:0] v_count; // v_count of system!
@@ -52,15 +74,21 @@ module top_level (
     .h_sync(h_sync),
     .active_draw(active_draw),
     .new_frame(new_frame),
-    .frame_count(frame_count));
+    .frame_count(frame_count)
+  );
  
   logic [7:0] red, green, blue; // red green and blue pixel values for output
  
   // comment out in checkoff 1 once you know you have your video pipeline working:
   // these three colors should be the 2025 6.205 color on full screen .
-  assign red = 8'hD4;
-  assign green = 8'h6A;
-  assign blue = 8'h4C;
+  // assign red = 8'hD4;
+  // assign green = 8'h6A;
+  // assign blue = 8'h4C;
+
+  // Extrapolate colors
+  assign red = {fb_pixel[7:6], 5'b0};
+  assign green = {fb_pixel[5:3], 4'b0};
+  assign blue = {fb_pixel[2:0], 4'b0};
  
   logic [9:0] tmds_10b [0:2]; // output of each TMDS encoder!
   logic tmds_signal [2:0]; // output of each TMDS serializer!
@@ -77,7 +105,8 @@ module top_level (
     .video_data(blue),
     .control({ v_sync, h_sync }),  //  control signals
     .video_enable(active_draw),
-    .tmds(tmds_10b[0]));
+    .tmds(tmds_10b[0])
+  );
 
   tmds_encoder tmds_green(
     .clk(clk_pixel),
