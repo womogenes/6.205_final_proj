@@ -31,7 +31,8 @@ async def test_module(dut):
 
     dut.rst.value = 0
     # Wait for reset to clear through memory pipeline
-    await ClockCycles(dut.clk_pixel, 500)
+    for _ in tqdm(range(1000)):
+        await ClockCycles(dut.clk_pixel, 10)
 
     # Read stuff from valid addresses (program is at address 0)
     base_addr = 0x0

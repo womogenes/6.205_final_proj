@@ -15,7 +15,8 @@ module cpu #(
   input wire [9:0] v_count_hdmi,
 
   // Outputs
-  output logic [7:0] pixel
+  output logic [7:0] pixel,
+  output logic trap
 );
   localparam integer FB_ADDR = 'h41000;
   localparam integer MEM_SIZE = 2048 * 1024;
@@ -24,7 +25,7 @@ module cpu #(
   // Fixed at 320x180
   logic [ADDR_WIDTH-1:0] pixel_addr;
   always_comb begin
-    pixel_addr = h_count_hdmi; //((v_count_hdmi >> 2) * 320 + (h_count_hdmi >> 2)) + FB_ADDR;
+    pixel_addr = ((v_count_hdmi >> 2) * 320 + (h_count_hdmi >> 2)) + FB_ADDR;
   end
 
   // Memory state machine
@@ -70,30 +71,36 @@ module cpu #(
           // Read
           4'b0000: begin
             case (cpu_mem_cycle)
-              0: addra <= cpu_mem_addr;
+              0: begin
+                cpu_mem_rdata <= 0;
+                addra <= cpu_mem_addr;
+              end
               1: addra <= cpu_mem_addr + 1;
               2: begin
                 addra <= cpu_mem_addr + 2;
-                cpu_mem_rdata[7:0] <= douta;
               end
               3: begin
                 addra <= cpu_mem_addr + 3;
+                cpu_mem_rdata[7:0] <= douta;
+              end
+              4: begin
                 cpu_mem_rdata[15:8] <= douta;
               end
-              4: cpu_mem_rdata[23:16] <= douta;
               5: begin
+                cpu_mem_rdata[23:16] <= douta;
+              end
+              6: begin
                 cpu_mem_rdata[31:24] <= douta;
                 cpu_mem_ready <= 1'b1;
               end
-              6: begin
-                // Reset memory
+              7: begin
                 cpu_mem_ready <= 1'b0;
               end
               default: cpu_mem_ready <= 1'b0;     // should never get hit
             endcase
 
             // Go to next read cycle
-            cpu_mem_cycle <= (cpu_mem_cycle == 6) ? 0 : cpu_mem_cycle + 1;
+            cpu_mem_cycle <= (cpu_mem_cycle == 7) ? 0 : cpu_mem_cycle + 1;
           end
           
           // Write
@@ -103,6 +110,7 @@ module cpu #(
                 addra <= cpu_mem_addr;
                 dina <= cpu_mem_wdata[7:0];
                 wea <= cpu_mem_wstrb[0];
+                cpu_mem_ready <= 1'b0;
               end
               1: begin
                 addra <= cpu_mem_addr + 1;
@@ -119,18 +127,23 @@ module cpu #(
                 dina <= cpu_mem_wdata[31:24];
                 wea <= cpu_mem_wstrb[3];
               end
-              4: begin end
-              5: begin
+              4: begin
+                wea <= 1'b0;
+              end
+              5: begin end
+              6: begin
                 cpu_mem_ready <= 1'b1;
               end
-              6: begin
+              7: begin
                 cpu_mem_ready <= 1'b0;
               end
-              default: cpu_mem_ready <= 1'b0;     // should never get hit
+              default: begin
+                cpu_mem_ready <= 1'b0;     // should never get hit
+              end
             endcase
 
             // Go to next read cycle
-            cpu_mem_cycle <= (cpu_mem_cycle == 6) ? 0 : cpu_mem_cycle + 1;
+            cpu_mem_cycle <= (cpu_mem_cycle == 7) ? 0 : cpu_mem_cycle + 1;
           end
         endcase
 
@@ -144,7 +157,8 @@ module cpu #(
   picorv32 #(
     .REGS_INIT_ZERO(1),
     // 21-bit address space
-    .STACKADDR(32'h1fffff)
+    .STACKADDR(32'h1ffffc),
+    .CATCH_MISALIGN(0)
   ) cpu (
     .clk(clk),
     .resetn(~rst),
@@ -159,7 +173,10 @@ module cpu #(
 
     // Inputs
     .mem_ready(cpu_mem_ready),
-    .mem_rdata(cpu_mem_rdata)
+    .mem_rdata(cpu_mem_rdata),
+
+    // Trap?
+    .trap(trap)
   );
 
   // Memory
