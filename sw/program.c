@@ -6,15 +6,14 @@ typedef int int32_t;
 
 volatile uint32_t* const fb_ptr = (volatile uint32_t*) 0x40000000;
 
-int _start() {
+void _start() {
   int x = 0x200;
   int y = 0x200;
   int z = x + y;
 
   *fb_ptr = z;
-  
-  while (1) {}
-  return 1;
+
+  __asm__ volatile ("ecall");
 }
 
 // Compile with:

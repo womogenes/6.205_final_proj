@@ -77,6 +77,9 @@ async def test_module(dut):
 
         await ClockCycles(dut.clk, 1)
 
+    addr = 0x40000000
+    print(f"Found at addr {addr:08x}: {mem.read(addr)}")
+
 
 def runner():
     """Module tester."""
