@@ -22,11 +22,18 @@ if {[llength $files] != 0} {
 }
 
 # read in all system verilog files:
-set sources_sv [ glob ./hdl/*.sv ]
+set sources_sv [ concat \
+    [ glob ./hdl/hdmi/*.sv ] \
+    [ glob ./hdl/cpu_picorv/*.sv ] \
+    [ glob ./hdl/top_level.sv ] \
+]
 read_verilog -sv $sources_sv
 
 # read in all (if any) verilog files:
-set sources_v [ glob -nocomplain ./hdl/*.v ]
+set sources_v [ concat \
+    [ glob -nocomplain ./hdl/cpu_picorv/*.v ] \
+    [ glob -nocomplain ./hdl/hdmi/*.v ] \
+]
 if {[llength $sources_v] > 0 } {
     read_verilog $sources_v
 }

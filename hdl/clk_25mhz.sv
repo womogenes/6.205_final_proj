@@ -3,7 +3,7 @@
 module clk_divider (
   input wire clk_100mhz,
   input wire rst,
-  output logic clk_25mhz  // single-cycle valid output on 25 MHz
+  output logic clk_25mhz,  // single-cycle valid output on 25 MHz
   output logic clk_195khz // single-cycle valid output at ~195 kHz
 )
   logic [8:0] counter;

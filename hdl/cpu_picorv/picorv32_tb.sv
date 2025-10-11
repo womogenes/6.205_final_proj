@@ -8,10 +8,10 @@ module picorv32_tb (
   output logic mem_valid,
   output logic mem_instr,   // high if instruction fetch
   input wire mem_ready,
-  output [31:0] mem_addr,
-  output [31:0] mem_wdata,
-  output [ 3:0] mem_wstrb,  // memory write strobe (wstrb) for LH, LB, etc
-  input  [31:0] mem_rdata   // read data from memory module
+  output logic [31:0] mem_addr,
+  output logic [31:0] mem_wdata,
+  output logic [ 3:0] mem_wstrb,  // memory write strobe (wstrb) for LH, LB, etc
+  input wire  [31:0] mem_rdata   // read data from memory module
 );
   // Do stuff
   picorv32 #(
