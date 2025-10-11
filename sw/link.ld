@@ -8,11 +8,23 @@ SECTIONS
   /* Executable code */
   .text : {
     *(.text)
+    *(.text.*)
+  }
+
+  /* Read-only data */
+  .rodata : {
+    *(.rodata)
+    *(.rodata.*)
+    *(.srodata)
+    *(.srodata.*)
   }
 
   /* Initialized global and static variables */
   .data : {
     *(.data)
+    *(.data.*)
+    *(.sdata)
+    *(.sdata.*)
   }
 
   /* Uninitialized global and static variables */
