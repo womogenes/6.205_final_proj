@@ -15,17 +15,67 @@ import ctypes
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
+class Memory():
+    def __init__(self, bin_path: str):
+        """
+        Create memory of 32-bit ints from compiled binary
+        """
+        with open(bin_path, "rb") as fin:
+            self.mem = bytearray(1 << 32)
+            data = fin.read()
+            print(f"Created memory of {len(data)} bytes")
+            self.mem[0:len(data)] = data
+
+    def read(self, addr: int):
+        value = int.from_bytes(self.mem[addr:addr+4], byteorder="little", signed=False)
+        return value
+    
+    def write(self, addr: int, data: int, wstrb: int):
+        print(f"Writing to addr: {addr:08x}, data: {data:08x}, mask: {wstrb:#x}")
+        for i in range(4):
+            # Look at mask and write if good
+            if wstrb & (1 << i):
+                byte_value = (data >> (i * 8)) & 0xFF
+                self.mem[addr + i] = byte_value
+
 @cocotb.test()
 async def test_module(dut):
+    # Create memory
+    mem = Memory(Path(__file__).parent.parent.parent / "sw/program.bin")
+
+    # Boot CPU
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
     await Timer(1, "ps")
 
-    dut.rst = 1
-    dut.mem_ready = 0
+    dut.rst.value = 1
+    dut.mem_ready.value = 0
     await ClockCycles(dut.clk, 2)
 
-    dut.rst = 0
-    await ClockCycles(dut.clk, 10)
+    dut.rst.value = 0
+    # Pump cycles and do memory as needed
+    for _ in tqdm(range(1000)):
+        if dut.mem_valid.value == 0:
+            dut.mem_ready.value = 0
+            await ClockCycles(dut.clk, 1)
+            continue
+
+        mem_addr = dut.mem_addr.value.integer
+
+        if dut.mem_wstrb.value == 0:
+            # Read request
+            dut.mem_ready.value = 1
+            dut.mem_rdata.value = mem.read(mem_addr)
+            await ClockCycles(dut.clk, 1)
+            dut.mem_ready.value = 0
+
+        else:
+            mem.write(mem_addr, dut.mem_wdata.value.integer, dut.mem_wstrb.value.integer)
+            dut.mem_ready.value = 1
+            dut.mem_rdata.value = 0
+            await ClockCycles(dut.clk, 1)
+            dut.mem_ready.value = 0
+
+        await ClockCycles(dut.clk, 1)
 
 
 def runner():

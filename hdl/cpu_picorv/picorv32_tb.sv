@@ -14,7 +14,10 @@ module picorv32_tb (
   input  [31:0] mem_rdata   // read data from memory module
 );
   // Do stuff
-  picorv32 cpu(
+  picorv32 #(
+    .REGS_INIT_ZERO(1),
+    .STACKADDR(32'h ffff_ffff)
+  ) cpu (
     .clk(clk),
     .resetn(~rst),
 
