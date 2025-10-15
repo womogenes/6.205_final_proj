@@ -8,6 +8,7 @@ from cocotb.triggers import Timer, ClockCycles, RisingEdge, FallingEdge, ReadOnl
 from cocotb.runner import get_runner
 
 from tqdm import tqdm
+import shutil
 
 from enum import Enum
 import random
@@ -62,10 +63,14 @@ def runner():
     ]
     build_test_args = ["-Wall"]
 
+
     # values for parameters defined earlier in the code.
-    print("HELLO WORLD", os.path.abspath("../../sw/program.mem"))
+
+    # copy init mem to program
+    os.makedirs("sim_build", exist_ok=True)
+    shutil.copy(proj_path / "data/prog.mem", "sim_build/prog.mem")
     parameters = {
-        "INIT_FILE": "program.mem"
+        "INIT_FILE": "\"prog.mem\""
     }
 
     sys.path.append(str(proj_path / "sim"))

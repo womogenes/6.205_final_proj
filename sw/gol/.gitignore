@@ -4,3 +4,5 @@
 *.hex
 *.elf
 *.mem
+
+sim_build/
