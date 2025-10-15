@@ -1,9 +1,13 @@
-module spi_con_continuous
-   #(parameter DATA_WIDTH = 8,
-     parameter DATA_CLK_PERIOD = 100
-    )
-  ( input wire   clk, //system clock (100 MHz)
+`default_nettype none
+
+module spi_con_continuous #(
+  parameter DATA_WIDTH = 8,
+  parameter START_DCLK_PERIOD = 1000,
+  parameter READ_DCLK_PERIOD = 4
+    ) ( 
+    input wire   clk, //system clock (100 MHz)
     input wire   rst, //reset in signal
+    input wire   dclk_mode_in, // input for dclk period
     input wire   [DATA_WIDTH-1:0] data_in, //data to send
     input wire   trigger, //start a transaction
     output logic [DATA_WIDTH-1:0] data_out, //data received!
@@ -21,9 +25,10 @@ module spi_con_continuous
     ACTIVE
   } sd_spi_state;
 
-  parameter integer ACTUAL_DCLK_PERIOD = $floor(DATA_CLK_PERIOD / 2) * 2;
-  parameter integer ACTUAL_DCLK_HALF_PERIOD = $floor(ACTUAL_DCLK_PERIOD / 2);
-  logic [$clog2(ACTUAL_DCLK_HALF_PERIOD) - 1: 0] dclk_counter;
+  parameter integer START_DCLK_HALF_PERIOD = $floor(START_DCLK_PERIOD / 2);
+  parameter integer READ_DCLK_HALF_PERIOD = $floor(READ_DCLK_PERIOD / 2);
+  logic dclk_mode; // count fast or slow (0 for start, 1 for read)
+  logic [$clog2(START_DCLK_HALF_PERIOD) - 1: 0] dclk_counter;
   logic [DATA_WIDTH - 1: 0] data_out_buffer;
   logic [DATA_WIDTH - 1: 0] data_in_buffer;
   logic [$clog2(DATA_WIDTH + 1) - 1: 0] dclk_cycles;
@@ -35,12 +40,13 @@ module spi_con_continuous
     cs <= 1'b1;
     state <= IDLE;
     // reset dclk
+    dclk_mode <= 0;
     dclk <= 0;
     dclk_counter <= 0;
     dclk_cycles <= 0;
     // reset output to peripheral
     data_in_buffer <= 0;
-    copi <= 0;
+    copi <= 1;
     // reset output to controller
     data_out_buffer <= 0;
     data_valid <= 0;
@@ -48,21 +54,31 @@ module spi_con_continuous
   end else begin
     case (state)
       IDLE: begin
-        if (trigger) begin
-          // set chip select and state
-          cs <= 1'b0;
-          state <= ACTIVE;
-          // latch data and start transmitting
-          data_in_buffer <= {data_in[DATA_WIDTH - 2 : 0], 1'b0};
-          copi <= data_in[DATA_WIDTH - 1];
-          //start the dclk
-          dclk <= 1'b0;
+        if (dclk_counter == (dclk_mode ? 
+          READ_DCLK_HALF_PERIOD - 1 : START_DCLK_HALF_PERIOD - 1)) begin
+          //flip dclk
           dclk_counter <= 0;
-          dclk_cycles <= 0;
-        end
+          dclk <= ~dclk;
+          if (dclk && trigger) begin
+            // set chip select and state
+            cs <= 1'b0;
+            state <= ACTIVE;
+            // latch data and start transmitting
+            data_in_buffer <= {data_in[DATA_WIDTH - 2 : 0], 1'b0};
+            copi <= data_in[DATA_WIDTH - 1];
+            //start the dclk
+            dclk_mode <= dclk_mode_in;
+            dclk <= 1'b0;
+            dclk_counter <= 0;
+            dclk_cycles <= 0;
+          end
+          end else begin
+            dclk_counter <= dclk_counter + 1;
+          end
       end
       ACTIVE: begin
-        if (dclk_counter == ACTUAL_DCLK_HALF_PERIOD - 1) begin
+        if (dclk_counter == (dclk_mode ? 
+          READ_DCLK_HALF_PERIOD - 1 : START_DCLK_HALF_PERIOD - 1)) begin
         //flip dclk
         dclk_counter <= 0;
         dclk <= ~dclk;
@@ -103,3 +119,5 @@ module spi_con_continuous
   end
 
 endmodule
+
+`default_nettype wire
