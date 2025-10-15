@@ -19,6 +19,7 @@ test_file = os.path.basename(__file__).replace(".py", "")
 @cocotb.test()
 async def test_module(dut):
     # We have our own memory now
+    FB_ADDR = 0x10000
 
     # Boot CPU
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
@@ -30,20 +31,45 @@ async def test_module(dut):
     dut.v_count_hdmi.value = 0
     await ClockCycles(dut.clk, 2)
 
-    dut.rst.value = 0
-    # Wait for reset to clear through memory pipeline
-    for _ in tqdm(range(1_00)):
-        await ClockCycles(dut.clk_pixel, 100)
+    def extract(data: int, strb: int):
+        match strb:
+            case 0b1111:
+                return data
+            case 0b0011:
+                return (data & 0x000000FF)
+            case 0b1100:
+                return (data & 0xFFFF0000) >> 16
+            case 0b1000:
+                return (data & 0xFF000000) >> 24
+            case 0b0100:
+                return (data & 0x00FF0000) >> 16
+            case 0b0010:
+                return (data & 0x0000FF00) >> 8
+            case 0b0001:
+                return (data & 0x000000FF) >> 0
+            case _:
+                return 0
 
-    # Read stuff from valid addresses (program is at address 0)
-    base_addr = 0x0
-    for i in range(10):
-        addr = base_addr + i
-        dut.h_count_hdmi.value = addr
-        dut.v_count_hdmi.value = 0
-        # Wait for memory read latency (2 cycles for HIGH_PERFORMANCE mode)
-        await ClockCycles(dut.clk_pixel, 3)
-        print(f"Address {addr:04x}: pixel = {dut.pixel.value}")
+    dut.rst.value = 0
+    print(f"Running program...")
+    write_history = []
+    while True:
+        await ClockCycles(dut.clk_pixel, 1)
+        wstrb = dut.cpu_mem_wstrb.value
+        wdata = dut.cpu_mem_wdata.value
+        addr = dut.cpu_mem_addr.value
+
+        if addr == FB_ADDR and wstrb.integer > 0:
+            value = extract(wdata.integer, wstrb.integer)
+            print(f"{value=}, {wdata.integer=}, {wstrb.integer=}")
+            write_history.append(value)
+
+        if dut.trap.value:
+            # CPU halted
+            break
+
+    # Check if we wrote to frame buf
+    print(write_history[-1])
 
 
 def runner():
@@ -63,12 +89,18 @@ def runner():
     ]
     build_test_args = ["-Wall"]
 
-
     # values for parameters defined earlier in the code.
+
+    # compile C program
+    sys.path.append(str(proj_path / "sw"))
+    from compile import compile
+
+    bin_path, hex_path = compile(proj_path / "sw/fib/program.c")
+    os.chdir(os.pardir)
 
     # copy init mem to program
     os.makedirs("sim_build", exist_ok=True)
-    shutil.copy(proj_path / "data/prog.mem", "sim_build/prog.mem")
+    shutil.copy(hex_path, "sim_build/prog.mem")
     parameters = {
         "INIT_FILE": "\"prog.mem\""
     }
