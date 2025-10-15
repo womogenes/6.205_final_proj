@@ -61,7 +61,6 @@ async def test_module(dut):
 
         if addr == FB_ADDR and wstrb.integer > 0:
             value = extract(wdata.integer, wstrb.integer)
-            print(f"{value=}, {wdata.integer=}, {wstrb.integer=}")
             write_history.append(value)
 
         if dut.trap.value:
@@ -69,7 +68,10 @@ async def test_module(dut):
             break
 
     # Check if we wrote to frame buf
+    print("=" * 64, "\n" * 5)
+    print(f"PROGRAM OUTPUT:")
     print(write_history[-1])
+    print("\n" * 5, "=" * 64)
 
 
 def runner():
