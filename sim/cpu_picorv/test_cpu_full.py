@@ -52,7 +52,7 @@ async def test_module(dut):
 
     dut.rst.value = 0
     print(f"Running program...")
-    write_history = []
+    write_history = [None]
     cycle = 0
 
     while True:
@@ -65,7 +65,7 @@ async def test_module(dut):
             value = extract(wdata.integer, wstrb.integer)
             write_history.append(value)
 
-        if dut.trap.value or cycle > 1e4:
+        if dut.trap.value:
             # CPU halted
             break
     
