@@ -53,6 +53,8 @@ async def test_module(dut):
     dut.rst.value = 0
     print(f"Running program...")
     write_history = []
+    cycle = 0
+
     while True:
         await ClockCycles(dut.clk_pixel, 1)
         wstrb = dut.cpu_mem_wstrb.value
@@ -63,14 +65,18 @@ async def test_module(dut):
             value = extract(wdata.integer, wstrb.integer)
             write_history.append(value)
 
-        if dut.trap.value:
+        if dut.trap.value or cycle > 1e4:
             # CPU halted
             break
+    
+        cycle += 1
 
     # Check if we wrote to frame buf
     print("=" * 64, "\n" * 5)
     print(f"PROGRAM OUTPUT:")
     print(write_history[-1])
+    print()
+    print(f"Ran in {cycle} cycles")
     print("\n" * 5, "=" * 64)
 
 
@@ -97,8 +103,10 @@ def runner():
     sys.path.append(str(proj_path / "sw"))
     from compile import compile
 
-    bin_path, hex_path = compile(proj_path / "sw/fib/program.c")
-    os.chdir(os.pardir)
+    bin_path, hex_path = compile(
+        prog_path=proj_path / "sw/fib/program.c",
+        flags="-O0"
+    )
 
     # copy init mem to program
     os.makedirs("sim_build", exist_ok=True)
