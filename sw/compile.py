@@ -76,3 +76,4 @@ if __name__ == "__main__":
         print(f"Usage: compile.py <program>")
 
     prog_path = Path(sys.argv[1])
+    compile(prog_path)

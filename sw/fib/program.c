@@ -4,7 +4,7 @@ typedef unsigned short uint16_t;
 typedef unsigned char uint8_t;
 typedef int int32_t;
 
-volatile uint32_t* const fb_ptr = (volatile uint32_t*) 0x10000;
+volatile uint32_t* const fb_ptr = (volatile uint32_t*) 0xC00;
 
 void _start() {
   int x = 1;

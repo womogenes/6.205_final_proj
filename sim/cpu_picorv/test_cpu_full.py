@@ -19,7 +19,7 @@ test_file = os.path.basename(__file__).replace(".py", "")
 @cocotb.test()
 async def test_module(dut):
     # We have our own memory now
-    FB_ADDR = 0x10000
+    FB_ADDR = 0xC00
 
     # Boot CPU
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
@@ -104,7 +104,7 @@ def runner():
     from compile import compile
 
     bin_path, hex_path = compile(
-        prog_path=proj_path / "sw/fib/program.c",
+        prog_path=proj_path / "sw/gol/program.c",
         flags="-O0"
     )
 

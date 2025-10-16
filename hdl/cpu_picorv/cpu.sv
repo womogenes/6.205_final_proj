@@ -56,8 +56,6 @@ module cpu #(
 
   always_ff @(posedge clk) begin
     if (rst) begin
-      cpu_mem_ready <= 1'b0;
-      cpu_mem_rdata <= 32'b0;
       cpu_mem_cycle <= 0;
       wea <= 1'b0;
       addra <= 0;
@@ -120,9 +118,6 @@ module cpu #(
             cpu_mem_cycle <= (cpu_mem_cycle == 4) ? 0 : cpu_mem_cycle + 1;
           end
         endcase
-
-      end else begin
-        cpu_mem_ready <= 1'b0;
       end
     end
   end
