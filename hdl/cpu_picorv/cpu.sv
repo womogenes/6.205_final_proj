@@ -18,8 +18,8 @@ module cpu #(
   output logic [7:0] pixel,
   output logic trap
 );
-  localparam integer FB_ADDR = 'h10000;
-  localparam integer MEM_SIZE = 2048 * 64;  // 17-bit address space
+  localparam integer FB_ADDR = 'hC00;
+  localparam integer MEM_SIZE = (1<<12);  // 12-bit address space
   localparam integer ADDR_WIDTH = $clog2(MEM_SIZE);
 
   // Fixed at 320x180
@@ -34,6 +34,7 @@ module cpu #(
   logic [31:0] cpu_mem_addr;
   logic [31:0] cpu_mem_wdata;
   logic [3:0] cpu_mem_wstrb;        // store mask
+  logic [31:0] mask;                // 31-bit upsampled mask
 
   // Memory outputs (CPU mem inputs)
   logic cpu_mem_ready;
@@ -42,9 +43,16 @@ module cpu #(
 
   // Memory (for our own use)
   logic [ADDR_WIDTH-1:0] addra;
-  logic [7:0] douta;
-  logic [7:0] dina;
+  logic [31:0] douta;
+  logic [31:0] dina;
   logic wea;                        // write enable (port a)
+
+  always_comb begin
+    cpu_mem_ready = (cpu_mem_wstrb == 4'b0000) ?
+      (cpu_mem_cycle == 3) :
+      (cpu_mem_cycle == 4);
+    cpu_mem_rdata = douta;
+  end
 
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -57,93 +65,59 @@ module cpu #(
     end else begin
       if (cpu_mem_valid) begin
         /* States:
-          0: request byte 0
-          1: request byte 1
-          2: request byte 2, get byte 0
-          3: request byte 3, get byte 1
-          4: get byte 2
-          5: get byte 3, prep data return
-          6: reset
+          0: prep request word
+          1: wait (requesting word)
+          2: wait
+          3: receive word
         */
 
-        // TODO: make this more streamlined
         case (cpu_mem_wstrb)
           // Read
           4'b0000: begin
             case (cpu_mem_cycle)
               0: begin
-                cpu_mem_rdata <= 0;
-                addra <= cpu_mem_addr;
+                addra <= cpu_mem_addr >> 2; // word address
+                wea <= 1'b0;
               end
-              1: addra <= cpu_mem_addr + 1;
-              2: begin
-                addra <= cpu_mem_addr + 2;
-              end
-              3: begin
-                addra <= cpu_mem_addr + 3;
-                cpu_mem_rdata[7:0] <= douta;
-              end
-              4: begin
-                cpu_mem_rdata[15:8] <= douta;
-              end
-              5: begin
-                cpu_mem_rdata[23:16] <= douta;
-              end
-              6: begin
-                cpu_mem_rdata[31:24] <= douta;
-                cpu_mem_ready <= 1'b1;
-              end
-              7: begin
-                cpu_mem_ready <= 1'b0;
-              end
-              default: cpu_mem_ready <= 1'b0;     // should never get hit
             endcase
 
             // Go to next read cycle
-            cpu_mem_cycle <= (cpu_mem_cycle == 7) ? 0 : cpu_mem_cycle + 1;
+            cpu_mem_cycle <= (cpu_mem_cycle == 3) ? 0 : cpu_mem_cycle + 1;
           end
           
           // Write
+          /* States:
+            0: prep request word
+            1: wait (requesting word)
+            2: wait
+            3: receive word, compute next word and request write
+            4: done (reset wea to 0)
+          */
           default: begin
             case (cpu_mem_cycle)
               0: begin
-                addra <= cpu_mem_addr;
-                dina <= cpu_mem_wdata[7:0];
-                wea <= cpu_mem_wstrb[0];
-                cpu_mem_ready <= 1'b0;
+                addra <= cpu_mem_addr >> 2;
+                wea <= 1'b0;
               end
-              1: begin
-                addra <= cpu_mem_addr + 1;
-                dina <= cpu_mem_wdata[15:8];
-                wea <= cpu_mem_wstrb[1];
-              end
-              2: begin
-                addra <= cpu_mem_addr + 2;
-                dina <= cpu_mem_wdata[23:16];
-                wea <= cpu_mem_wstrb[2];
-              end
+              1: begin end
+              2: begin end
               3: begin
-                addra <= cpu_mem_addr + 3;
-                dina <= cpu_mem_wdata[31:24];
-                wea <= cpu_mem_wstrb[3];
+                mask = {
+                  {8{cpu_mem_wstrb[3]}},
+                  {8{cpu_mem_wstrb[2]}},
+                  {8{cpu_mem_wstrb[1]}},
+                  {8{cpu_mem_wstrb[0]}}
+                };
+                dina <= (douta & (~mask)) | (cpu_mem_wdata & mask);
+                wea <= 1'b1;
               end
               4: begin
                 wea <= 1'b0;
               end
-              5: begin end
-              6: begin
-                cpu_mem_ready <= 1'b1;
-              end
-              7: begin
-                cpu_mem_ready <= 1'b0;
-              end
-              default: begin
-                cpu_mem_ready <= 1'b0;     // should never get hit
-              end
             endcase
 
             // Go to next read cycle
-            cpu_mem_cycle <= (cpu_mem_cycle == 7) ? 0 : cpu_mem_cycle + 1;
+            cpu_mem_cycle <= (cpu_mem_cycle == 4) ? 0 : cpu_mem_cycle + 1;
           end
         endcase
 
@@ -181,7 +155,7 @@ module cpu #(
 
   // Memory
   xilinx_true_dual_port_read_first_2_clock_ram #(
-    .RAM_WIDTH(8),
+    .RAM_WIDTH(32),
     .RAM_DEPTH(MEM_SIZE), // arbitrary memory width for now (21 bit address space)
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
     .INIT_FILE(INIT_FILE)
@@ -204,7 +178,7 @@ module cpu #(
     .enb(1'b1),
     .rstb(rst),
     .regceb(1'b1),
-    .doutb(pixel)
+    .doutb(pixel[7:0])
   );
   // ====================
 

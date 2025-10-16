@@ -20,7 +20,11 @@ import subprocess
 
 from pathlib import Path
 
-def compile(prog_path: str, link_path: str = None):
+def compile(
+        prog_path: str,
+        link_path: str = None,
+        flags = "-O3"
+    ):
     """
     Compile C program with given linker file to RISC-V-core-executable binary
     """
@@ -41,17 +45,17 @@ def compile(prog_path: str, link_path: str = None):
 
     if str(prog_path).endswith(".c"):
         print(f"Compiling {stem}.c to {stem}.s...")
-        subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 -O3 -S {stem}.c -o {stem}.s"], shell=True)
+        subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 {flags} -S {stem}.c -o {stem}.s"], shell=True)
 
     print(f"Assembling {stem}.s to {stem}.o...")
-    subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 -O3 -c {stem}.s -o {stem}.o"], shell=True)
+    subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 {flags} -c {stem}.s -o {stem}.o"], shell=True)
 
     print(f"Making {stem}.elf from {stem}.s...")
     subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 -T link.ld {stem}.o -o {stem}.elf"], shell=True)
 
     print(f"Exporting to binaries {stem}.bin and {stem}.mem...")
     subprocess.run([f"riscv64-elf-objcopy -O binary {stem}.elf {stem}.bin"], shell=True)
-    subprocess.run([f"""hexdump -v -e '1/1 "%02x\n"' {stem}.bin > {stem}.mem"""], shell=True)
+    subprocess.run([f"""hexdump -v -e '1/4 "%08x\n"' {stem}.bin > {stem}.mem"""], shell=True)
 
     print(f"Cleaning up...")
     subprocess.run([f"rm *.o *.elf"], shell=True)
