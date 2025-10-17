@@ -47,13 +47,13 @@ def compile(
 
     if str(prog_path).endswith(".c"):
         print(f"Compiling {stem}.c to {stem}.s...")
-        subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 {flags} -S {stem}.c -o {stem}.s"], shell=True)
+        subprocess.run([f"riscv64-elf-gcc -ffreestanding -march=rv32i -mabi=ilp32 {flags} -S {stem}.c -o {stem}.s"], shell=True)
 
     print(f"Assembling {stem}.s to {stem}.o...")
-    subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 {flags} -c {stem}.s -o {stem}.o"], shell=True)
+    subprocess.run([f"riscv64-elf-gcc -ffreestanding -march=rv32i -mabi=ilp32 {flags} -c {stem}.s -o {stem}.o"], shell=True)
 
-    print(f"Making {stem}.elf from {stem}.s...")
-    subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 -T {link_path} {stem}.o -o {stem}.elf"], shell=True)
+    print(f"Linking {stem}.elf from {stem}.s...")
+    subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 -T {link_path} {stem}.o -lc -lgcc -o {stem}.elf"], shell=True)
 
     print(f"Exporting to binaries {stem}.bin and {stem}.mem...")
     subprocess.run([f"riscv64-elf-objcopy -O binary {stem}.elf {stem}.bin"], shell=True)

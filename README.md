@@ -44,7 +44,7 @@ Tests live in `sim/cpu`. Decoder is `sim/cpu/test_decoder.py` and runs a bunch o
 
 Lives in `sw/` for now. Currently working on documenting the compilation process to go from C to RISC-V machine code runnable by the CPU. Simulator lives in `sim/cpu_picorv/test_cpu_picorv.py`.
 
-There's a Makefile in `sw/Makefile` that:
+There's a Python compiling script in `sw/compiler.py` that does the following:
 
 1. Compiles `program.c` to `program.s` (assembly)
 2. Assembles `program.s` to `program.o` (object file)
@@ -52,6 +52,15 @@ There's a Makefile in `sw/Makefile` that:
 4. Dumps `program.bin` into `program.hex` (hex dump)
 
 You can run `make <program.s|program.o|program.o|program.hex>` to generate any file from all the steps above (unless you modify something in the middle, because `make` starts from the most recently changed file).
+
+Note: will need to install the RISC-V C toolchain. On Arch, you can do the following:
+
+```sh
+sudo pacman -S riscv64-elf-gcc
+sudo pacman -S riscv64-elf-newlib
+```
+
+Maybe other things are needed too. Need to test.
 
 ## UART receiving
 
