@@ -52,3 +52,7 @@ There's a Makefile in `sw/Makefile` that:
 4. Dumps `program.bin` into `program.hex` (hex dump)
 
 You can run `make <program.s|program.o|program.o|program.hex>` to generate any file from all the steps above (unless you modify something in the middle, because `make` starts from the most recently changed file).
+
+## UART receiving
+
+In `top_level.sv`, there is a UART receiver for sending bytes to the board from computer. Connect board via micro-USB, then run `ctrl/test_ports.py` to detect which port the board is on.

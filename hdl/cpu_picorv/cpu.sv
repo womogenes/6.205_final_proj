@@ -9,37 +9,27 @@ module cpu #(
   input wire clk,
   input wire rst,
 
-  // Output control
-  input wire clk_pixel,
-  input wire [10:0] h_count_hdmi,
-  input wire [9:0] v_count_hdmi,
+  // Output (second port on memory)
+  input wire clk_mmio,
+  input wire [31:0] mmio_raddr,                  // word address
+  output logic [31:0] mmio_data,
 
-  // Outputs
-  output logic [7:0] pixel,
-  output logic trap
+  // CPU internal state readout
+  output logic trap,
+  output logic cpu_mem_valid,
+  output logic cpu_mem_instr,
+  output logic [31:0] cpu_mem_addr,
+  output logic [31:0] cpu_mem_wdata,
+  output logic [31:0] cpu_mem_wstrb,
+
+  output logic cpu_mem_ready,
+  output logic [31:0] cpu_mem_rdata
 );
-  localparam integer FB_ADDR = 'hC00;
-  localparam integer MEM_SIZE = (1<<12);  // 12-bit address space
+  localparam integer MEM_SIZE = (1<<16);  // 16-bit address space
   localparam integer ADDR_WIDTH = $clog2(MEM_SIZE);
 
-  // Fixed at 320x180
-  logic [ADDR_WIDTH-1:0] pixel_addr;
-  always_comb begin
-    pixel_addr = ((v_count_hdmi >> 2) * 320 + (h_count_hdmi >> 2)) + FB_ADDR;
-  end
-
-  // Memory state machine
-  logic cpu_mem_valid;
-  logic cpu_mem_instr;
-  logic [31:0] cpu_mem_addr;
-  logic [31:0] cpu_mem_wdata;
-  logic [3:0] cpu_mem_wstrb;        // store mask
-  logic [31:0] mask;                // 31-bit upsampled mask
-
   // Memory outputs (CPU mem inputs)
-  logic cpu_mem_ready;
   logic [2:0] cpu_mem_cycle;        // keep track of which byte we're reading/writing
-  logic [31:0] cpu_mem_rdata;
 
   // Memory (for our own use)
   logic [ADDR_WIDTH-1:0] addra;
@@ -55,6 +45,8 @@ module cpu #(
   end
 
   always_ff @(posedge clk) begin
+    logic [31:0] mask;                // 32-bit upsampled mask
+  
     if (rst) begin
       cpu_mem_cycle <= 0;
       wea <= 1'b0;
@@ -166,14 +158,14 @@ module cpu #(
     .douta(douta),
     
     // HDMI read (frame buffer)
-    .addrb(pixel_addr),
+    .addrb(mmio_raddr),
     .dinb('b0),
-    .clkb(clk_pixel),
+    .clkb(clk_mmio),
     .web(1'b0),
     .enb(1'b1),
     .rstb(rst),
     .regceb(1'b1),
-    .doutb(pixel[7:0])
+    .doutb(mmio_data)
   );
   // ====================
 

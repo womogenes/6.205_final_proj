@@ -1,11 +1,7 @@
 `default_nettype none //  prevents system from inferring an undeclared logic (good practice)
 
-`ifdef SYNTHESIS
-  `define FPATH(X) `"X`"
-`else /* ! SYNTHESIS */
-  `define FPATH(X) `"../data/X`"
-`endif  /* ! SYNTHESIS */
- 
+`define FPATH(X) `"X`"
+
 module top_level (
   input wire clk_100mhz, // crystal reference clock
   input wire [15:0] sw, // all 16 input slide switches
@@ -15,9 +11,9 @@ module top_level (
   output logic [2:0] rgb1, // rgb led
   output logic [2:0] hdmi_tx_p, // hdmi output signals (positives) (blue, green, red)
   output logic [2:0] hdmi_tx_n, // hdmi output signals (negatives) (blue, green, red)
-  output logic hdmi_clk_p, hdmi_clk_n // differential hdmi clock
+  output logic hdmi_clk_p, hdmi_clk_n, // differential hdmi clock
+  input wire uart_rxd // UART computer->FPGA
 );
-
   // shut up those rgb LEDs (active high):
   assign rgb1 = 0;
   assign rgb0 = 0;
@@ -33,23 +29,40 @@ module top_level (
   logic sys_rst;
   assign sys_rst = btn[0]; // reset is btn[0]
 
-  logic [7:0] fb_pixel;
-
   // ==== PROCESSOR =====
-  cpu#(
+  logic cpu_mem_valid;
+  logic cpu_mem_instr;
+  logic [31:0] cpu_mem_addr;
+  logic [31:0] cpu_mem_wdata;
+  logic [31:0] cpu_mem_wstrb;
+
+  // Framebuffer address
+  localparam integer FB_WORD_BASE = 'hC00;
+
+  logic cpu_mem_ready;
+  logic [31:0] cpu_mem_rdata;
+  logic [31:0] mmio_raddr;
+  logic [31:0] mmio_data;
+
+  cpu #(
     .INIT_FILE(`FPATH(prog.mem))
   ) my_cpu (
     .clk(clk_100mhz_buffered),
     .rst(sys_rst),
-    .clk_pixel(clk_pixel),
-    .h_count_hdmi(h_count),
-    .v_count_hdmi(v_count),
-    .pixel(fb_pixel),
-    .trap(led[15])
+    .clk_mmio(clk_pixel),
+    .mmio_raddr(mmio_raddr),
+    .mmio_data(mmio_data),
+    .trap(led[15]),
+
+    .cpu_mem_valid(cpu_mem_valid),
+    .cpu_mem_instr(cpu_mem_instr),
+    .cpu_mem_addr(cpu_mem_addr),
+    .cpu_mem_wdata(cpu_mem_wdata),
+    .cpu_mem_wstrb(cpu_mem_wstrb),
+    .cpu_mem_ready(cpu_mem_ready),
+    .cpu_mem_rdata(cpu_mem_rdata)
   );
   // ====================
-
-  assign led[7:0] = fb_pixel; // to verify the switch values
  
   logic clk_pixel, clk_5x; // clock lines
   logic locked; // locked signal (we'll leave unused but still hook it up)
@@ -87,11 +100,48 @@ module top_level (
  
   logic [7:0] red, green, blue; // red green and blue pixel values for output
  
-  // comment out in checkoff 1 once you know you have your video pipeline working:
-  // these three colors should be the 2025 6.205 color on full screen .
-  // assign red = 8'hD4;
-  // assign green = 8'h6A;
-  // assign blue = 8'h4C;
+  // Get color using mmio_raddr and mmio_data
+  logic [7:0] fb_pixel;
+  logic [31:0] pixel_offset;
+  
+  always_comb begin
+    pixel_offset = ((v_count >> 2) * 320 + (h_count >> 2));
+    mmio_raddr = (pixel_offset + FB_WORD_BASE) >> 2;
+
+    case (pixel_offset & 2'b11)
+      2'b00: fb_pixel = mmio_data[7:0];
+      2'b01: fb_pixel = mmio_data[15:8];
+      2'b10: fb_pixel = mmio_data[23:16];
+      2'b11: fb_pixel = mmio_data[31:24];
+    endcase
+  end
+
+  // Receive stuff from computer
+
+  // Prevent metastability
+  logic uart_rx_buf0, uart_rx_buf1;
+  always_ff @(posedge clk_100mhz_buffered) begin
+    uart_rx_buf0 <= uart_rxd;
+    uart_rx_buf1 <= uart_rx_buf0;
+  end
+
+  logic [7:0] uart_rx_byte;
+
+  uart_receive #(100_000_000, 115_200) uart_receiver (
+    .clk(clk_100mhz_buffered),
+    .rst(sys_rst),
+    .din(uart_rx_buf1),
+    .dout_valid(),
+    .dout()
+  );
+
+  always_ff @(posedge clk_100mhz_buffered) begin
+    if (uart_receiver.dout_valid) begin
+      uart_rx_byte <= uart_receiver.dout;
+    end
+  end
+
+  assign led[7:0] = uart_rx_byte;
 
   // Extrapolate colors
   assign red = {fb_pixel[7:6], 5'b0};
@@ -133,7 +183,6 @@ module top_level (
     .tmds(tmds_10b[2]));
  
   // three tmds_serializers (blue, green, red):
-  // MISSING: two more serializers for the green and blue tmds signals.
   tmds_serializer blue_ser(
     .clk_pixel(clk_pixel),
     .clk_5x(clk_5x),

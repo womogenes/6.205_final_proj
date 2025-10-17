@@ -32,6 +32,7 @@ read_verilog -sv $sources_sv
 # read in all (if any) verilog files:
 set sources_v [ concat \
     [ glob -nocomplain ./hdl/cpu_picorv/*.v ] \
+    [ glob -nocomplain ./hdl/uart/*.sv ] \
     [ glob -nocomplain ./hdl/hdmi/*.v ] \
     [ glob -nocomplain ./hdl/mem/*.v ] \
 ]

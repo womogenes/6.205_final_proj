@@ -36,7 +36,7 @@ async def test_module(dut):
             case 0b1111:
                 return data
             case 0b0011:
-                return (data & 0x000000FF)
+                return (data & 0x0000FFFF)
             case 0b1100:
                 return (data & 0xFFFF0000) >> 16
             case 0b1000:
@@ -65,19 +65,20 @@ async def test_module(dut):
             value = extract(wdata.integer, wstrb.integer)
             write_history.append(value)
 
-        if dut.trap.value:
+        if dut.trap.value or cycle >= 1e4:
             # CPU halted
             break
     
         cycle += 1
 
     # Check if we wrote to frame buf
-    print("=" * 64, "\n" * 5)
+    print("=" * 64, "\n" * 1)
     print(f"PROGRAM OUTPUT:")
     print(write_history[-1])
+    print(hex(write_history[-1]))
     print()
     print(f"Ran in {cycle} cycles")
-    print("\n" * 5, "=" * 64)
+    print("\n" * 1, "=" * 64)
 
 
 def runner():
@@ -104,7 +105,7 @@ def runner():
     from compile import compile
 
     bin_path, hex_path = compile(
-        prog_path=proj_path / "sw/gol/program.c",
+        prog_path=proj_path / "sw/test/program.s",
         flags="-O0"
     )
 
