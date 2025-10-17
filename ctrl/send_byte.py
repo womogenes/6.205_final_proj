@@ -11,42 +11,51 @@ import time
 SERIAL_PORTNAME = "/dev/ttyUSB1"  # CHANGE ME to match your system's serial port name!
 BAUD = 115200  # Make sure this matches your UART receiver
 
-def send_wav():
+def send_frame():
     ser = serial.Serial(SERIAL_PORTNAME, BAUD)
 
     def write_word(word: int):
         ser.write(word.to_bytes(4, "little"))
 
-    prog_path = "../sw/gol/program.bin"
-
     ser.write(bytes([0xAA]))
-
-    # Clear part of the frame buffer
 
     print(f"Sending address")
     write_word(0xC00)
 
     print(f"Sending length")
-    write_word(320*90)
+    write_word(320*180)
 
     print(f"Sending bytestream...")
-    for _ in tqdm(range(320*90), ncols=80):
-        ser.write(bytes([0xFF]))
+    for y in range(180):
+        for x in range(320):
+            d = (y-90)**2 + (x-160)**2
+            if d < 90**2:
+                ser.write((int(d / 90**2 * 0xFF) & 0xFF).to_bytes(1, "little"))
+            else:
+                ser.write(bytes([0b11_111_111]))
 
-    # for i in range(256):
-    #     ser.write((i).to_bytes(1, "little"))
-    #     time.sleep(0.01)
+def send_program():
+    ser = serial.Serial(SERIAL_PORTNAME, BAUD)
+    ser.write(bytes([0xAA]))
 
-    # for offset in tqdm(range(0, (1<<16)//4)):
-    #     write_word(offset * 4, 0xFF_00_FF_00)
+    prog_path = "../sw/test_pattern/program.bin"
 
-    # with open(prog_path, "rb") as fin:
-    #     data = fin.read()
-    #     words = unpack(f'<{len(data)//4}I', data)
+    with open(prog_path, "rb") as fin:
+        data = fin.read()
 
-    #     for idx, word in enumerate(words):
-    #         write_word(idx, word)
+        # Address 0
+        ser.write((0).to_bytes(4, "little"))
+
+        # Message length
+        n_bytes = len(data)
+        print(f"Writing {n_bytes} bytes...")
+        ser.write(n_bytes.to_bytes(4, "little"))
+
+        for b in tqdm(data, ncols=80):
+            ser.write(bytes([b]))
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":
-    send_wav()
+    # send_frame()
+    send_program()
