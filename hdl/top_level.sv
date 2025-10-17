@@ -41,17 +41,24 @@ module top_level (
 
   logic cpu_mem_ready;
   logic [31:0] cpu_mem_rdata;
-  logic [31:0] mmio_raddr;
-  logic [31:0] mmio_data;
+  logic [31:0] mmio_addr;
+  logic [31:0] mmio_rdata;
+
+  // MMIO writes (TODO)
+  logic mmio_wen;
+  logic [31:0] mmio_wdata;
 
   cpu #(
     .INIT_FILE(`FPATH(prog.mem))
   ) my_cpu (
     .clk(clk_100mhz_buffered),
     .rst(sys_rst),
+
     .clk_mmio(clk_pixel),
-    .mmio_raddr(mmio_raddr),
-    .mmio_data(mmio_data),
+    .mmio_addr(mmio_addr),
+    .mmio_rdata(mmio_rdata),
+    .mmio_wen(mmio_wen),
+    .mmio_wdata(mmio_wdata),
     .trap(led[15]),
 
     .cpu_mem_valid(cpu_mem_valid),
@@ -100,23 +107,22 @@ module top_level (
  
   logic [7:0] red, green, blue; // red green and blue pixel values for output
  
-  // Get color using mmio_raddr and mmio_data
+  // Get color using mmio_addr and mmio_rdata
   logic [7:0] fb_pixel;
   logic [31:0] pixel_offset;
-  
+
   always_comb begin
+    // Read framebuffer for display
     pixel_offset = ((v_count >> 2) * 320 + (h_count >> 2));
-    mmio_raddr = (pixel_offset + FB_WORD_BASE) >> 2;
+    mmio_addr = (pixel_offset + FB_WORD_BASE) >> 2;
 
     case (pixel_offset & 2'b11)
-      2'b00: fb_pixel = mmio_data[7:0];
-      2'b01: fb_pixel = mmio_data[15:8];
-      2'b10: fb_pixel = mmio_data[23:16];
-      2'b11: fb_pixel = mmio_data[31:24];
+      2'b00: fb_pixel = mmio_rdata[7:0];
+      2'b01: fb_pixel = mmio_rdata[15:8];
+      2'b10: fb_pixel = mmio_rdata[23:16];
+      2'b11: fb_pixel = mmio_rdata[31:24];
     endcase
   end
-
-  // Receive stuff from computer
 
   // Prevent metastability
   logic uart_rx_buf0, uart_rx_buf1;
@@ -125,20 +131,19 @@ module top_level (
     uart_rx_buf1 <= uart_rx_buf0;
   end
 
+  logic uart_rx_valid;
   logic [7:0] uart_rx_byte;
 
   uart_receive #(100_000_000, 115_200) uart_receiver (
     .clk(clk_100mhz_buffered),
     .rst(sys_rst),
     .din(uart_rx_buf1),
-    .dout_valid(),
+    .dout_valid(uart_rx_valid),
     .dout()
   );
 
   always_ff @(posedge clk_100mhz_buffered) begin
-    if (uart_receiver.dout_valid) begin
-      uart_rx_byte <= uart_receiver.dout;
-    end
+    if (uart_rx_valid) uart_rx_byte <= uart_receiver.dout;
   end
 
   assign led[7:0] = uart_rx_byte;

@@ -23,12 +23,10 @@ async def test_module(dut):
 
     # Boot CPU
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
-    cocotb.start_soon(Clock(dut.clk_pixel, 10, units="ns").start())
+    cocotb.start_soon(Clock(dut.clk_mmio, 10, units="ns").start())
     await Timer(1, "ps")
 
     dut.rst.value = 1
-    dut.h_count_hdmi.value = 0
-    dut.v_count_hdmi.value = 0
     await ClockCycles(dut.clk, 2)
 
     def extract(data: int, strb: int):
@@ -55,8 +53,17 @@ async def test_module(dut):
     write_history = [None]
     cycle = 0
 
+    await ClockCycles(dut.clk, 50)
+    dut.rst.value = 1
+    dut.reprog_addr.value = 0xC00
+    dut.reprog_wen.value = 1
+    dut.reprog_data.value = 0xdeadbeef
+    await ClockCycles(dut.clk, 10)
+    dut.rst.value = 0
+    await ClockCycles(dut.clk, 50)
+
     while True:
-        await ClockCycles(dut.clk_pixel, 1)
+        await ClockCycles(dut.clk, 1)
         wstrb = dut.cpu_mem_wstrb.value
         wdata = dut.cpu_mem_wdata.value
         addr = dut.cpu_mem_addr.value
@@ -75,7 +82,7 @@ async def test_module(dut):
     print("=" * 64, "\n" * 1)
     print(f"PROGRAM OUTPUT:")
     print(write_history[-1])
-    print(hex(write_history[-1]))
+    print(hex(write_history[-1] or 0))
     print()
     print(f"Ran in {cycle} cycles")
     print("\n" * 1, "=" * 64)

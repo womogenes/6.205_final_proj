@@ -11,8 +11,10 @@ module cpu #(
 
   // Output (second port on memory)
   input wire clk_mmio,
-  input wire [31:0] mmio_raddr,                  // word address
-  output logic [31:0] mmio_data,
+  input wire [31:0] mmio_addr,                  // word address
+  output logic [31:0] mmio_rdata,
+  input wire mmio_wen,
+  input wire [31:0] mmio_wdata,
 
   // CPU internal state readout
   output logic trap,
@@ -156,16 +158,16 @@ module cpu #(
     .regcea(1'b1),
     .rsta(rst),
     .douta(douta),
-    
+
     // HDMI read (frame buffer)
-    .addrb(mmio_raddr),
-    .dinb('b0),
+    .addrb(mmio_addr),
+    .dinb(1'b0),
     .clkb(clk_mmio),
     .web(1'b0),
     .enb(1'b1),
     .rstb(rst),
     .regceb(1'b1),
-    .doutb(mmio_data)
+    .doutb(mmio_rdata)
   );
   // ====================
 
