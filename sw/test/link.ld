@@ -5,10 +5,11 @@ SECTIONS
   /* Start address for code */
   . = 0x00000000;
 
-  /* Executable code */
+  /* Executable code - ensure _start is first */
   .text : {
-    *(.text)
-    *(.text.*)
+    KEEP(*(.text._start))
+    KEEP(*(.text.startup))
+    *(.text .text.*)
   }
 
   /* Read-only data */
