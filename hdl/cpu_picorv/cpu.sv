@@ -9,6 +9,12 @@ module cpu #(
   input wire clk,
   input wire rst,
 
+  // Reprogramming interface
+  input wire flash_active,
+  input wire flash_wen,
+  input wire [31:0] flash_addr,
+  input wire [31:0] flash_data,
+
   // Output (second port on memory)
   input wire clk_mmio,
   input wire [31:0] mmio_addr,                  // word address
@@ -40,9 +46,12 @@ module cpu #(
   logic wea;                        // write enable (port a)
 
   always_comb begin
-    cpu_mem_ready = (cpu_mem_wstrb == 4'b0000) ?
-      (cpu_mem_cycle == 3) :
-      (cpu_mem_cycle == 4);
+    cpu_mem_ready = ~flash_active && (
+      // If CPU wants to read/write, ready on 3rd or 4th cycle
+      (cpu_mem_wstrb == 4'b0000) ?
+        (cpu_mem_cycle == 3) :
+        (cpu_mem_cycle == 4)
+    );
     cpu_mem_rdata = douta;
   end
 
@@ -150,10 +159,10 @@ module cpu #(
     .INIT_FILE(INIT_FILE)
   ) main_mem (
     // CPU read/write
-    .addra(addra),
+    .addra(flash_active ? flash_addr : addra),
     .clka(clk),
-    .wea(wea),
-    .dina(dina),
+    .wea(flash_active ? flash_wen : wea),
+    .dina(flash_active ?  flash_data : dina),
     .ena(1'b1),
     .regcea(1'b1),
     .rsta(rst),

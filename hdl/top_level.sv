@@ -63,6 +63,13 @@ module top_level (
     .clk(clk_100mhz_buffered),
     .rst(sys_rst),
 
+    // Flashing interface
+    .flash_active(flash_active),
+    .flash_addr(flash_addr),
+    .flash_data(flash_data),
+    .flash_wen(flash_wen),
+
+    // Frame-buffer reading
     .clk_mmio(clk_pixel),
     .mmio_addr(mmio_addr),
     .mmio_rdata(mmio_rdata),
@@ -170,9 +177,30 @@ module top_level (
   seven_segment_controller(
     .clk(clk_100mhz_buffered),
     .rst(sys_rst),
-    .val(cpu_mem_rdata),
+    .val(flash_active ? flash_addr : cpu_mem_rdata),
     .cat(ss0_c),
     .an({ ss0_an, ss1_an })
+  );
+  assign ss1_c = ss0_c;
+  assign led[14] = flash_active;
+  // ==================================
+
+
+  // ========= UART PROGRAMMER ========
+  logic flash_active;
+  logic [31:0] flash_addr;
+  logic [31:0] flash_data;
+  logic flash_wen;
+  
+  uart_memflash(
+    .clk(clk_100mhz_buffered),
+    .rst(sys_rst),
+    .uart_rx_valid(uart_rx_valid),
+    .uart_rx_byte(uart_rx_byte),
+    .flash_active(flash_active),
+    .flash_addr(flash_addr),
+    .flash_data(flash_data),
+    .flash_wen(flash_wen)
   );
   assign ss1_c = ss0_c;
   // ==================================

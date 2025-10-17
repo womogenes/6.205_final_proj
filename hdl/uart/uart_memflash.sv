@@ -7,7 +7,7 @@ module uart_memflash (
   input wire uart_rx_valid,
   input wire [7:0] uart_rx_byte,
 
-  output logic flash_active,        // TODO: reconsider if this is necessary
+  output logic flash_active,
   output logic [31:0] flash_addr,
   output logic [31:0] flash_data,
   output logic flash_wen
@@ -38,6 +38,7 @@ module uart_memflash (
   
   always_ff @(posedge clk) begin
     if (rst) begin
+      flash_active <= 1'b0;
       flash_wen <= 1'b0;
       state <= IDLE;
       flash_addr <= 0;
@@ -53,8 +54,9 @@ module uart_memflash (
         IDLE: begin
           if (uart_rx_valid && uart_rx_byte == 'hAA) begin
             state <= ADDRESS;
+            flash_active <= 1'b1;
 
-            // TODO: do we need all this?
+            // TODO: do we need all this duplicate resetting logic?
             flash_wen <= 1'b0;
             flash_addr <= 0;
 
@@ -94,7 +96,7 @@ module uart_memflash (
 
           // Record the bytes
           if (uart_rx_valid) begin
-            // Put in byte
+            // Shift in byte
             flash_data <= { uart_rx_byte, flash_data[31:8] };
 
             // Enable writing if we just finished a word
@@ -111,6 +113,7 @@ module uart_memflash (
             byte_idx <= byte_idx + 1;
             if (byte_idx + 1 >= addr_base + msg_len) begin
               state <= IDLE;
+              flash_active <= 1'b0;
             end
           end
         end
