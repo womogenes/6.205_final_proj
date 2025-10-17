@@ -21,22 +21,24 @@ import subprocess
 from pathlib import Path
 
 def compile(
-        prog_path: str,
+        prog_path: Path,
         link_path: str = None,
         flags = "-O0"
     ):
     """
     Compile C program with given linker file to RISC-V-core-executable binary
     """
+    prog_path = Path(prog_path).absolute()
+
     if link_path is None:
         # Assume in same directory
-        link_path = prog_path.parent / "link.ld"
+        link_path = prog_path.parent.parent / "link.ld"
 
     # Check that program and linker exist
     if not prog_path.exists():
         raise FileNotFoundError(f"Program '{prog_path}' does not exist")
     if not link_path.exists():
-        raise FileNotFoundError(f"Linker file link.ld not found in {prog_path.parent}")
+        raise FileNotFoundError(f"Linker file link.ld not found in {prog_path.parent.parent}")
 
     # Stem (e.g. `program` in `program.c`)
     stem = prog_path.stem
@@ -51,7 +53,7 @@ def compile(
     subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 {flags} -c {stem}.s -o {stem}.o"], shell=True)
 
     print(f"Making {stem}.elf from {stem}.s...")
-    subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 -T link.ld {stem}.o -o {stem}.elf"], shell=True)
+    subprocess.run([f"riscv64-elf-gcc -nostdlib -march=rv32i -mabi=ilp32 -T {link_path} {stem}.o -o {stem}.elf"], shell=True)
 
     print(f"Exporting to binaries {stem}.bin and {stem}.mem...")
     subprocess.run([f"riscv64-elf-objcopy -O binary {stem}.elf {stem}.bin"], shell=True)

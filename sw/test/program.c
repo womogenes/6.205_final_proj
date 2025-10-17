@@ -6,11 +6,10 @@ volatile uint8_t* const fb_ptr = (volatile uint8_t*) 0xC00;
 #define WIDTH 320
 #define HEIGHT 180
 
-// Render text?
+void _start() __attribute__((section(".text.startup")));
+
 void print_char(int x, int y, char c);
 void print_str(int x, int y, char* s);
-
-void _start() __attribute__((section(".text.startup")));
 
 void _start() {
   for (int i = 0; i < WIDTH * HEIGHT; i++) {

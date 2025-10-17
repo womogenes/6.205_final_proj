@@ -9,6 +9,8 @@ volatile uint8_t* const fb_ptr = (volatile uint8_t*) 0xC00;
 #define WIDTH 320
 #define HEIGHT 180
 
+void _start() __attribute__((section(".text.startup")));
+
 int count_neighbors(int x, int y);
 
 void _start() {
@@ -83,5 +85,3 @@ int count_neighbors(int x, int y) {
   }
   return count;
 }
-
-// Compile with: `make program.mem`. See Makefile for details.

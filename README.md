@@ -56,3 +56,18 @@ You can run `make <program.s|program.o|program.o|program.hex>` to generate any f
 ## UART receiving
 
 In `top_level.sv`, there is a UART receiver for sending bytes to the board from computer. Connect board via micro-USB, then run `ctrl/test_ports.py` to detect which port the board is on.
+
+To upload a program:
+
+- Send `0xAA` over UART to mark the start of a transaction. The board will go into `flash_active` mode.
+- Send 4 bytes indicating the start address of the write transaction
+- Send 4 bytes indicating the length, in bytes, of the message
+- Send the bytes in order
+
+For the sake of fast iteration, you may run
+
+```sh
+python ../compile.py program.c && python ../../ctrl/send_program.py program.bin
+```
+
+From within a `sw/<program>/` directory to compile and flash it all in one go. Pressing reset on the board after flashing is advised.
