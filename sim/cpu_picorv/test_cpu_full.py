@@ -53,15 +53,6 @@ async def test_module(dut):
     write_history = [None]
     cycle = 0
 
-    await ClockCycles(dut.clk, 50)
-    dut.rst.value = 1
-    dut.reprog_addr.value = 0xC00
-    dut.reprog_wen.value = 1
-    dut.reprog_data.value = 0xdeadbeef
-    await ClockCycles(dut.clk, 10)
-    dut.rst.value = 0
-    await ClockCycles(dut.clk, 50)
-
     while True:
         await ClockCycles(dut.clk, 1)
         wstrb = dut.cpu_mem_wstrb.value
@@ -112,8 +103,8 @@ def runner():
     from compile import compile
 
     bin_path, hex_path = compile(
-        prog_path=proj_path / "sw/test/program.s",
-        flags="-O0"
+        prog_path=proj_path / "sw" / "test_pattern" / "program.s",
+        flags="-O3"
     )
 
     # copy init mem to program

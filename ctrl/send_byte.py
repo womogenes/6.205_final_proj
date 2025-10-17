@@ -5,6 +5,7 @@ import sys
 from tqdm import tqdm
 
 from struct import unpack
+import time
 
 # Communication Parameters
 SERIAL_PORTNAME = "/dev/ttyUSB1"  # CHANGE ME to match your system's serial port name!
@@ -20,10 +21,14 @@ def send_wav():
 
     prog_path = "../sw/gol/program.bin"
 
-    write_word(0xC00, 0)
+    # write_word(0xC00, 0)
 
-    for offset in tqdm(range(0, (1<<16)//4)):
-        write_word(offset * 4, 0xFF_00_FF_00)
+    for i in range(256):
+        ser.write((i).to_bytes(1, "little"))
+        time.sleep(0.01)
+
+    # for offset in tqdm(range(0, (1<<16)//4)):
+    #     write_word(offset * 4, 0xFF_00_FF_00)
 
     # with open(prog_path, "rb") as fin:
     #     data = fin.read()

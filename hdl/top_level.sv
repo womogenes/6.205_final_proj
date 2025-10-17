@@ -5,10 +5,19 @@
 module top_level (
   input wire clk_100mhz, // crystal reference clock
   input wire [15:0] sw, // all 16 input slide switches
+
   input wire [3:0] btn, // all four momentary button switches
   output logic [15:0] led, // 16 green output LEDs (located right above switches)
   output logic [2:0] rgb0, // rgb led
   output logic [2:0] rgb1, // rgb led
+
+  // seven-segment outputs
+  output logic [3:0] ss0_an,
+  output logic [3:0] ss1_an,
+  output logic [6:0] ss0_c,
+  output logic [6:0] ss1_c,
+
+  // HDMI, UART peripherals etc
   output logic [2:0] hdmi_tx_p, // hdmi output signals (positives) (blue, green, red)
   output logic [2:0] hdmi_tx_n, // hdmi output signals (negatives) (blue, green, red)
   output logic hdmi_clk_p, hdmi_clk_n, // differential hdmi clock
@@ -124,6 +133,7 @@ module top_level (
     endcase
   end
 
+  // ============ UART ==================
   // Prevent metastability
   logic uart_rx_buf0, uart_rx_buf1;
   always_ff @(posedge clk_100mhz_buffered) begin
@@ -147,6 +157,19 @@ module top_level (
   end
 
   assign led[7:0] = uart_rx_byte;
+  // ==================================
+
+
+  // ==== SEVEN SEGMENT DISPLAY =======
+  seven_segment_controller(
+    .clk(clk_100mhz_buffered),
+    .rst(sys_rst),
+    .val(cpu_mem_instr),
+    .cat(ss0_c),
+    .an({ ss0_an, ss1_an })
+  );
+  assign ss1_c = ss0_c;
+  // ==================================
 
   // Extrapolate colors
   assign red = {fb_pixel[7:6], 5'b0};
