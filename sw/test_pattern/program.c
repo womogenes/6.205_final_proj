@@ -20,4 +20,12 @@ void _start() {
   while (1) {}
 }
 
+// void draw_square(int x, int y, int w, int h) {
+//   for (int r = y; r < y + h; r++) {
+//     for (int c = x; c < x + w; c++) {
+
+//     }
+//   }
+// }
+
 // python compile.py test_pattern/program.c && cp test_pattern/program.mem ../data/prog.mem

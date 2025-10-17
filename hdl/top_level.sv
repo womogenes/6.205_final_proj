@@ -94,6 +94,12 @@ module top_level (
  
   logic [10:0] h_count; // h_count of system!
   logic [9:0] v_count; // v_count of system!
+
+  logic [10:0] h_count_piped;
+  logic [9:0] v_count_piped;
+
+  // pipeline#(.WIDTH(11), .DEPTH(2))
+
   logic h_sync; // horizontal sync signal
   logic v_sync; // vertical sync signal
   logic active_draw; // ative draw! 1 when in drawing region.0 in blanking/sync
@@ -164,12 +170,13 @@ module top_level (
   seven_segment_controller(
     .clk(clk_100mhz_buffered),
     .rst(sys_rst),
-    .val(cpu_mem_instr),
+    .val(cpu_mem_rdata),
     .cat(ss0_c),
     .an({ ss0_an, ss1_an })
   );
   assign ss1_c = ss0_c;
   // ==================================
+
 
   // Extrapolate colors
   assign red = {fb_pixel[7:6], 5'b0};
