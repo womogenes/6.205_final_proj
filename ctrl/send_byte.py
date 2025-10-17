@@ -38,7 +38,7 @@ def send_program():
     ser = serial.Serial(SERIAL_PORTNAME, BAUD)
     ser.write(bytes([0xAA]))
 
-    prog_path = "../sw/test_pattern/program.bin"
+    prog_path = "../sw/test/program.bin"
 
     with open(prog_path, "rb") as fin:
         data = fin.read()
@@ -53,7 +53,6 @@ def send_program():
 
         for b in tqdm(data, ncols=80):
             ser.write(bytes([b]))
-            time.sleep(0.1)
 
 
 if __name__ == "__main__":
