@@ -23,7 +23,7 @@ from pathlib import Path
 def compile(
         prog_path: str,
         link_path: str = None,
-        flags = "-O3"
+        flags = "-O0"
     ):
     """
     Compile C program with given linker file to RISC-V-core-executable binary
@@ -73,7 +73,9 @@ if __name__ == "__main__":
     # Usage: compile.py <program.py>
 
     if len(sys.argv) < 2:
-        print(f"Usage: compile.py <program>")
+        print(f"Usage: compile.py <program> <flags>")
 
     prog_path = Path(sys.argv[1])
-    compile(prog_path)
+
+    flags = sys.argv[2] if len(sys.argv) >= 3 else "-O0"
+    compile(prog_path, flags=flags)

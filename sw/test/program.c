@@ -15,8 +15,10 @@ void _start() {
     fb_ptr[i] = 0xFF;
   }
 
-  // print_char(10, 90, '1');
-  print_str(10, 90, "hello world!");
+  // Test with just a few characters
+  // print_char(10, 90, 'h');
+  // print_char(10, 90, 'i');
+  print_str(10, 10, "hello world!");
 
   // __asm__ volatile ("ecall");
   while (1) {}
