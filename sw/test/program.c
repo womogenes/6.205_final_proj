@@ -27,9 +27,12 @@ char* itoa10(int n) {
   return p;
 }
 
+#define BG_COLOR 0xFF
+#define FG_COLOR 0x00
+
 void _start() {
   for (int i = 0; i < WIDTH * HEIGHT; i++) {
-    fb_ptr[i] = 0xFF;
+    fb_ptr[i] = BG_COLOR;
   }
 
   // print_str(10, 10, "hey now 0123");
@@ -61,7 +64,7 @@ void print_char(int x, int y, char c) {
     for (int j = 0; j < 3; j++) {
       int pixel_addr = (y + i) * 320 + (x + j);
       int glyph_addr = i * 3 + j;
-      fb_ptr[pixel_addr] = (glyph & (1 << glyph_addr)) ? 0x00 : 0xFF;
+      fb_ptr[pixel_addr] = (glyph & (1 << glyph_addr)) ? FG_COLOR : BG_COLOR;
     }
   }
 }
