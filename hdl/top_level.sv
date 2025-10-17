@@ -102,11 +102,6 @@ module top_level (
   logic [10:0] h_count; // h_count of system!
   logic [9:0] v_count; // v_count of system!
 
-  logic [10:0] h_count_piped;
-  logic [9:0] v_count_piped;
-
-  // pipeline#(.WIDTH(11), .DEPTH(2))
-
   logic h_sync; // horizontal sync signal
   logic v_sync; // vertical sync signal
   logic active_draw; // ative draw! 1 when in drawing region.0 in blanking/sync
@@ -132,13 +127,24 @@ module top_level (
   // Get color using mmio_addr and mmio_rdata
   logic [7:0] fb_pixel;
   logic [31:0] pixel_offset;
+  logic [31:0] pixel_offset_piped;
 
   always_comb begin
     // Read framebuffer for display
     pixel_offset = ((v_count >> 2) * 320 + (h_count >> 2));
     mmio_addr = (pixel_offset + FB_WORD_BASE) >> 2;
+  end
 
-    case (pixel_offset & 2'b11)
+  // Pipeline pixel offset by 2 cycles to match BRAM 2-cycle read latency
+  pipeline #(.WIDTH(32), .DEPTH(2)) pixel_offset_pipeline (
+    .clk(clk_pixel),
+    .in(pixel_offset),
+    .out(pixel_offset_piped)
+  );
+
+  // Extract byte using pipelined offset
+  always_comb begin
+    case (pixel_offset_piped & 2'b11)
       2'b00: fb_pixel = mmio_rdata[7:0];
       2'b01: fb_pixel = mmio_rdata[15:8];
       2'b10: fb_pixel = mmio_rdata[23:16];
