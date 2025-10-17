@@ -162,12 +162,8 @@ module top_level (
     .rst(sys_rst),
     .din(uart_rx_buf1),
     .dout_valid(uart_rx_valid),
-    .dout()
+    .dout(uart_rx_byte)
   );
-
-  always_ff @(posedge clk_100mhz_buffered) begin
-    if (uart_rx_valid) uart_rx_byte <= uart_receiver.dout;
-  end
 
   assign led[7:0] = uart_rx_byte;
   // ==================================
@@ -182,7 +178,6 @@ module top_level (
     .an({ ss0_an, ss1_an })
   );
   assign ss1_c = ss0_c;
-  assign led[14] = flash_active;
   // ==================================
 
 
@@ -202,7 +197,8 @@ module top_level (
     .flash_data(flash_data),
     .flash_wen(flash_wen)
   );
-  assign ss1_c = ss0_c;
+  assign led[14] = flash_active;
+  assign led[13] = uart_rx_valid;
   // ==================================
 
 

@@ -111,7 +111,7 @@ module uart_memflash (
 
             // Increment counter and end if at end
             byte_idx <= byte_idx + 1;
-            if (byte_idx + 1 >= addr_base + msg_len) begin
+            if (byte_idx + 1 >= msg_len) begin
               state <= IDLE;
               flash_active <= 1'b0;
             end
