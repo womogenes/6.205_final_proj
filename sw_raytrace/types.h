@@ -41,6 +41,13 @@ Vec3 mul_vec3v(Vec3 a, Vec3 b) {
 
 // ===== RAY TRACER TYPES =====
 typedef struct {
+  Vec3 origin;
+  Vec3 forward;
+  Vec3 right;
+  Vec3 up;
+} Camera;
+
+typedef struct {
   Vec3 ray_origin;
   Vec3 ray_dir;
   int pixel_h;
@@ -54,13 +61,37 @@ typedef struct {
 } RayTracerResult;
 
 typedef struct {
-  Vec3 origin;
-  Vec3 forward;
-  Vec3 right;
-  Vec3 up;
-} Camera;
+  int hit;
+  Vec3 hit_pos;
+  Vec3 hit_norm;
+  float dist;
+} SphereIntersectorResult;
+
+typedef struct {
+  int any_hit;    // whether we hit an object
+  Vec3 hit_pos;
+  Vec3 hit_norm;
+  Material hit_mat;
+} RayIntersectorResult;
 
 // ===== RAY CASTER TYPES =====
 // (same as ray tracer inputs)
+
+// ===== SCENE BUFFER TYPES =====
+typedef struct {
+  Color color;
+  Color emit_light;
+  float smooth;
+  float specular;
+} Material;
+
+typedef struct {
+  int is_trig;
+  Material mat;
+  Vec3 trig[3];
+  Vec3 trig_norm;
+  Vec3 sphere_center;
+  float sphere_rad;
+} Object;
 
 #endif
