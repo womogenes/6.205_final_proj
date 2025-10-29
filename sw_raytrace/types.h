@@ -38,8 +38,14 @@ Vec3 mul_vec3v(Vec3 a, Vec3 b) {
   };
 }
 
-
 // ===== RAY TRACER TYPES =====
+typedef struct {
+  Color color;
+  Color emit_light;
+  float smooth;
+  float specular;
+} Material;
+
 typedef struct {
   Vec3 origin;
   Vec3 forward;
@@ -78,12 +84,6 @@ typedef struct {
 // (same as ray tracer inputs)
 
 // ===== SCENE BUFFER TYPES =====
-typedef struct {
-  Color color;
-  Color emit_light;
-  float smooth;
-  float specular;
-} Material;
 
 typedef struct {
   int is_trig;

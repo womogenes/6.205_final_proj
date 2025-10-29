@@ -24,7 +24,7 @@ Vec3 prng_sphere() {
     .y = GAUSSIAN_LOOKUP[lfsr32() >> 22],
     .z = GAUSSIAN_LOOKUP[lfsr32() >> 22],
   };
-  return normalize(rand_vec);
+  return norm_vec3(rand_vec);
 }
 
 #endif

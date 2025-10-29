@@ -2,10 +2,7 @@
 #include "prng.h"
 
 #include "scene_buffer.c"
-
-void sphere_intersector(Vec3 ray_dir, Vec3 ray_origin, Object sphere, SphereIntersectorResult* result) {
-  // Intersect a ray with a sphere!
-}
+#include "sphere_intersector.c"
 
 void ray_intersector(Vec3 ray_dir, Vec3 ray_origin, RayIntersectorResult* result) {
   // Intersect ray with everything in scene buffer
@@ -19,7 +16,9 @@ void ray_intersector(Vec3 ray_dir, Vec3 ray_origin, RayIntersectorResult* result
 
   for (int obj_idx = 0; obj_idx < SCENE_BUFFER_LEN; obj_idx++) {
     Object obj = SCENE_BUFFER[obj_idx];
-    sphere_intersector(ray_dir, ray_origin, obj, &sphere_result);
+
+    // Assume is sphere for now
+    sphere_intersector(ray_dir, ray_origin, &obj, &sphere_result);
 
     if (sphere_result.hit && (!any_hit || sphere_result.dist < hit_dist)) {
       // Update curent best hit point
@@ -27,8 +26,13 @@ void ray_intersector(Vec3 ray_dir, Vec3 ray_origin, RayIntersectorResult* result
       hit_norm = sphere_result.hit_norm;
       hit_dist = sphere_result.dist;
       hit_mat = obj.mat;
+      any_hit = 1;
     }
   }
+
+  result->any_hit = any_hit;
+  result->hit_pos = hit_pos;
+  result->hit_norm = hit_norm;
 }
 
 void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
@@ -36,13 +40,24 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
   Vec3 ray_dir = params->ray_dir;
 
   // Trace the ray
+  RayIntersectorResult intersect_result;
+  ray_intersector(ray_dir, ray_origin, &intersect_result);
 
-  // By default, if the ray didn't hit anything, render grey
-  result->pixel_color = (Color){
-    .r = 32,
-    .g = 32,
-    .b = 32,
-  };
+  if (intersect_result.any_hit) {
+    result -> pixel_color = (Color) {
+      .r = 255,
+      .g = 255,
+      .b = 255,
+    };
+    
+  } else {
+    // By default, if the ray didn't hit anything, render grey
+    result->pixel_color = (Color){
+      .r = 32,
+      .g = 32,
+      .b = 32,
+    };
+  }
 
   result->pixel_h = params->pixel_h;
   result->pixel_v = params->pixel_v;

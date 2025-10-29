@@ -21,9 +21,21 @@ static inline uint32_t mul16(uint32_t a, uint32_t b) {
   return (res_hi << 16) + res_mid + (res_lo >> 16);
 }
 
-Vec3 normalize(Vec3 v) {
+Vec3 sub_vec3(Vec3 a, Vec3 b) {
+  return (Vec3){
+    .x = a.x - b.x,
+    .y = a.y - b.y,
+    .z = a.z = b.z,
+  };
+}
+
+Vec3 norm_vec3(Vec3 v) {
   float mag_sq = v.x * v.x + v.y * v.y + v.z * v.z;
   return mul_vec3f(v, 1 / sqrtf(mag_sq));
+}
+
+float dot_vec3(Vec3 a, Vec3 b) {
+  return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
 #endif
