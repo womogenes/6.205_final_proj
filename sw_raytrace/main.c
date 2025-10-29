@@ -22,6 +22,8 @@ int main() {
   RayTracerParams params;
   RayTracerResult result;
 
+  float N_FRAMES = 30;
+
   for (int frame_idx = 0; frame_idx < 30; frame_idx++) {
     printf("rendering frame %d\n", frame_idx);
 
@@ -30,9 +32,13 @@ int main() {
         ray_caster(&cam, pixel_h, pixel_v, &params);
         ray_tracer(&params, &result);
 
-        framebuf[pixel_v][pixel_h][0] = framebuf[pixel_v][pixel_h][0] * 0.9 + 0.1 * result.pixel_color.r;
-        framebuf[pixel_v][pixel_h][1] = framebuf[pixel_v][pixel_h][1] * 0.9 + 0.1 * result.pixel_color.g;
-        framebuf[pixel_v][pixel_h][2] = framebuf[pixel_v][pixel_h][2] * 0.9 + 0.1 * result.pixel_color.b;
+        uint8_t* pix_r = &(framebuf[pixel_v][pixel_h][0]);
+        uint8_t* pix_g = &(framebuf[pixel_v][pixel_h][1]);
+        uint8_t* pix_b = &(framebuf[pixel_v][pixel_h][2]);
+
+        *pix_r = 0.875 * (*pix_r) + 0.125 * result.pixel_color.r;
+        *pix_g = 0.875 * (*pix_g) + 0.125 * result.pixel_color.g;
+        *pix_b = 0.875 * (*pix_b) + 0.125 * result.pixel_color.b;
       }
     }
   }

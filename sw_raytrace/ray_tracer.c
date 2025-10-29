@@ -24,35 +24,30 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
   RayIntersectorResult hit_result;
   RayReflectorResult ref_result;
 
+  int any_hit = 0;
+
   for (int bounce_idx = 0; bounce_idx < 10; bounce_idx++) {
     ray_intersector(ray_dir, ray_pos, &hit_result);
     ray_pos = hit_result.hit_pos;
+    any_hit |= hit_result.any_hit;
 
     if (!hit_result.any_hit) break;
     ray_reflector(&ray_pos, &ray_dir, &hit_result.hit_norm, &ray_color, &income_light, &hit_result.hit_mat);
   }
 
-  if (1) {
+  if (any_hit) {
     result->pixel_color = (Color) {
       .r = min(income_light.r, 1) * 255,
       .g = min(income_light.g, 1) * 255,
       .b = min(income_light.b, 1) * 255,
     };
-    // result->pixel_color = (Color) {
-    //   .r = 128,
-    //   .g = 128,
-    //   .b = 128,
-    // };
 
   } else {
     // By default, if the ray didn't hit anything, render grey
     result->pixel_color = (Color){
-      .r = 32,
-      .g = 32,
-      .b = 32,
-      // .r = (uint8_t)((1 + ray_dir.x) * 128),
-      // .g = (uint8_t)((1 + ray_dir.y) * 128),
-      // .b = (uint8_t)((1 + ray_dir.z) * 128),
+      .r = 128,
+      .g = 128,
+      .b = 128,
     };
   }
 
