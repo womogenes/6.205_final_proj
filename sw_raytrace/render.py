@@ -12,3 +12,5 @@ with open("image.bin", "rb") as f:
 img = Image.frombytes("RGB", (WIDTH, HEIGHT), data)
 img.save("output.png")
 print("Wrote output.png")
+
+subprocess.run(["rm", "image.bin", "a.out"], check=True)

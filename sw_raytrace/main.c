@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "utils.h"
+
 #define WIDTH  320
 #define HEIGHT 180
 
@@ -18,6 +20,11 @@ int main() {
       }
     }
   }
+
+  int32_t a = 0xFFFFFFFF;
+  int32_t b = 0xFFFFFFFF;
+  int32_t res = __mul16(a, b);
+  printf("prod = 0x%x\n", res);
 
   FILE* f = fopen("image.bin", "wb");
   fwrite(framebuf, 3, WIDTH * HEIGHT, f);
