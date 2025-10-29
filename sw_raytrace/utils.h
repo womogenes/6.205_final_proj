@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-static inline uint32_t __mul16(uint32_t a, uint32_t b) {
+static inline uint32_t mul16(uint32_t a, uint32_t b) {
   // Multiply two 16.16 fixed-point integers
   // Intentionally drop last bit
   
