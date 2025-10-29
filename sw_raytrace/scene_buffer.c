@@ -13,7 +13,7 @@ const Object SCENE_BUFFER[] = {
     },
     .trig = 0x0,
     .trig_norm = 0x0,
-    .sphere_center = {0, 0, -4},
+    .sphere_center = {1, 0, -4},
     .sphere_rad = 1,
   }
 };

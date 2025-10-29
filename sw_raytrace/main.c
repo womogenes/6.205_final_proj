@@ -14,7 +14,7 @@ uint8_t framebuf[HEIGHT][WIDTH][3];
 int main() {
   Camera cam = (Camera){
     .origin  = {0, 0, 0},
-    .forward = {0, 0, -1},
+    .forward = {0, 0, -WIDTH / 2},
     .right = {WIDTH / 2, 0, 0},
     .up = {0, HEIGHT / 2, 0},
   };

@@ -25,7 +25,7 @@ Vec3 sub_vec3(Vec3 a, Vec3 b) {
   return (Vec3){
     .x = a.x - b.x,
     .y = a.y - b.y,
-    .z = a.z = b.z,
+    .z = a.z - b.z,
   };
 }
 
