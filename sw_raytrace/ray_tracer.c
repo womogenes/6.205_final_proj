@@ -22,9 +22,7 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
     ray_reflector(&ray_pos, &ray_dir, &hit_result.hit_norm, &ray_color, &income_light, &hit_result.hit_mat);
   }
 
-  printf("h: %d, v: %d, any_hit: %d\n", params->pixel_h, params->pixel_v, hit_result.any_hit);
-
-  if (hit_result.any_hit) {
+  if (1) {
     result->pixel_color = (Color) {
       .r = income_light.r * 255,
       .g = income_light.g * 255,

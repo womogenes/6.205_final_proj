@@ -22,14 +22,18 @@ int main() {
   RayTracerParams params;
   RayTracerResult result;
 
-  for (int pixel_v = 0; pixel_v < HEIGHT; pixel_v++) {
-    for (int pixel_h = 0; pixel_h < WIDTH; pixel_h++) {
-      ray_caster(&cam, pixel_h, pixel_v, &params);
-      ray_tracer(&params, &result);
+  for (int frame_idx = 0; frame_idx < 30; frame_idx++) {
+    printf("rendering frame %d\n", frame_idx);
 
-      framebuf[pixel_v][pixel_h][0] = result.pixel_color.r;
-      framebuf[pixel_v][pixel_h][1] = result.pixel_color.g;
-      framebuf[pixel_v][pixel_h][2] = result.pixel_color.b;
+    for (int pixel_v = 0; pixel_v < HEIGHT; pixel_v++) {
+      for (int pixel_h = 0; pixel_h < WIDTH; pixel_h++) {
+        ray_caster(&cam, pixel_h, pixel_v, &params);
+        ray_tracer(&params, &result);
+
+        framebuf[pixel_v][pixel_h][0] = framebuf[pixel_v][pixel_h][0] * 0.9 + 0.1 * result.pixel_color.r;
+        framebuf[pixel_v][pixel_h][1] = framebuf[pixel_v][pixel_h][1] * 0.9 + 0.1 * result.pixel_color.g;
+        framebuf[pixel_v][pixel_h][2] = framebuf[pixel_v][pixel_h][2] * 0.9 + 0.1 * result.pixel_color.b;
+      }
     }
   }
 

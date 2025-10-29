@@ -9,7 +9,7 @@
 #include "types.h"
 #include "utils.h"
 
-uint32_t rand0 = 0xAAAAAAAA;
+uint32_t rand0 = 0xAAAAAAA0;
 
 uint32_t lfsr32() {
   uint32_t* q = &rand0;
