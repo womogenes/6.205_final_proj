@@ -22,8 +22,6 @@ int main() {
   RayTracerParams params;
   RayTracerResult result;
 
-  float N_FRAMES = 30;
-
   for (int frame_idx = 0; frame_idx < 30; frame_idx++) {
     printf("rendering frame %d\n", frame_idx);
 

@@ -49,6 +49,13 @@ Vec3 mul_vec3f(Vec3 a, float s) {
     .z = a.z * s,
   };
 }
+Color mul_vec3cf(Color a, float s) {
+  return (Color){
+    .r = a.r * s,
+    .g = a.g * s,
+    .b = a.b * s,
+  };
+}
 Vec3 mul_vec3v(Vec3 a, Vec3 b) {
   return (Vec3){
     .x = a.x * b.x,

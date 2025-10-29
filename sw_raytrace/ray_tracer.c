@@ -31,12 +31,18 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
     ray_pos = hit_result.hit_pos;
     any_hit |= hit_result.any_hit;
 
-    if (!hit_result.any_hit) break;
+    if (!hit_result.any_hit) {
+      // Ray flew off into the distance, add ambient light
+      Color ambient = (Color){0.25, 0.25, 0.25};
+      income_light = add_vec3c(income_light, mul_vec3c(ambient, ray_color));
+      break;
+    }
+
     ray_reflector(&ray_pos, &ray_dir, &hit_result.hit_norm, &ray_color, &income_light, &hit_result.hit_mat);
   }
 
   if (any_hit) {
-    result->pixel_color = (Color) {
+    result->pixel_color = (Color){
       .r = min(income_light.r, 1) * 255,
       .g = min(income_light.g, 1) * 255,
       .b = min(income_light.b, 1) * 255,
@@ -45,9 +51,9 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
   } else {
     // By default, if the ray didn't hit anything, render grey
     result->pixel_color = (Color){
-      .r = 128,
-      .g = 128,
-      .b = 128,
+      .r = 32,
+      .b = 32,
+      .g = 32,
     };
   }
 
