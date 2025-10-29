@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "types.h"
 #include "prng.h"
 
@@ -9,6 +11,14 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
   Vec3 ray_dir = params->ray_dir;
   Color ray_color = (Color){ 1, 1, 1 };
   Color income_light = (Color){ 0, 0, 0 };
+
+  // Seed the LFSR
+  int pixel_h = params->pixel_h;
+  int pixel_v = params->pixel_v;
+
+  rand0 += (pixel_h * 1009) ^ (pixel_v * 2003);
+  rand1 += (pixel_h * 2003) ^ (pixel_v * 4001);
+  rand2 += (pixel_h * 4001) ^ (pixel_v * 1009);
 
   // Trace the ray
   RayIntersectorResult hit_result;
@@ -24,9 +34,9 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
 
   if (1) {
     result->pixel_color = (Color) {
-      .r = income_light.r * 255,
-      .g = income_light.g * 255,
-      .b = income_light.b * 255,
+      .r = min(income_light.r, 1) * 255,
+      .g = min(income_light.g, 1) * 255,
+      .b = min(income_light.b, 1) * 255,
     };
     // result->pixel_color = (Color) {
     //   .r = 128,

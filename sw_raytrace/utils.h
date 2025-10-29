@@ -21,6 +21,11 @@ static inline uint32_t mul16(uint32_t a, uint32_t b) {
   return (res_hi << 16) + res_mid + (res_lo >> 16);
 }
 
+// ===== BASIC MATH =====
+float min(float a, float b) {
+  return a < b ? a : b;
+}
+
 // ===== VECTOR OPERATIONS =====
 Vec3 add_vec3(Vec3 a, Vec3 b) {
   return (Vec3){

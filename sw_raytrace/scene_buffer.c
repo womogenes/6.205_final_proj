@@ -13,12 +13,12 @@ const Object SCENE_BUFFER[] = {
     },
     .trig = 0x0,
     .trig_norm = 0x0,
-    .sphere_center = {-2, 0, -4},
+    .sphere_center = {-1, 0, -4},
     .sphere_rad = 1,
   },
   (Object){
     .is_trig = 0,
-    .mat = (Material){
+  .mat = (Material){
       .color = {0.5, 1.0, 0.5},
       .emit_color = {1, 1, 1},
       .smooth = 1.0f,
@@ -26,7 +26,7 @@ const Object SCENE_BUFFER[] = {
     },
     .trig = 0x0,
     .trig_norm = 0x0,
-    .sphere_center = {2, 0, -4},
+    .sphere_center = {1, 0, -4},
     .sphere_rad = 1,
   }
 };
