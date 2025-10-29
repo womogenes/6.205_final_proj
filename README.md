@@ -42,9 +42,9 @@ Tests live in `sim/cpu`. Decoder is `sim/cpu/test_decoder.py` and runs a bunch o
 
 ### C code
 
-Lives in `sw/` for now. Currently working on documenting the compilation process to go from C to RISC-V machine code runnable by the CPU. Simulator lives in `sim/cpu_picorv/test_cpu_picorv.py`.
+Lives in `sw_cputest/` for now. Currently working on documenting the compilation process to go from C to RISC-V machine code runnable by the CPU. Simulator lives in `sim/cpu_picorv/test_cpu_picorv.py`.
 
-There's a Python compiling script in `sw/compiler.py` that does the following:
+There's a Python compiling script in `sw_cputest/compiler.py` that does the following:
 
 1. Compiles `program.c` to `program.s` (assembly)
 2. Assembles `program.s` to `program.o` (object file)
@@ -79,4 +79,8 @@ For the sake of fast iteration, you may run
 python ../compile.py program.c && python ../../ctrl/send_program.py program.bin
 ```
 
-From within a `sw/<program>/` directory to compile and flash it all in one go. Pressing reset on the board after flashing is advised.
+From within a `sw_cputest/<program>/` directory to compile and flash it all in one go. Pressing reset on the board after flashing is advised.
+
+## Software baseline
+
+C program that does ray tracing in software to confirm our conceptual understanding lives in `sw_raytrace`.

@@ -41,7 +41,7 @@ class Memory():
 @cocotb.test()
 async def test_module(dut):
     # Create memory
-    mem = Memory(Path(__file__).parent.parent.parent / "sw/program.bin")
+    mem = Memory(Path(__file__).parent.parent.parent / "sw_cputest/program.bin")
 
     # Boot CPU
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())

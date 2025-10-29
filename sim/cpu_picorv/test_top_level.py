@@ -61,8 +61,8 @@ def runner():
     from compile import compile
 
     bin_path, hex_path = compile(
-        # prog_path=proj_path / "sw/test/program.s",
-        prog_path=proj_path / "sw/gol/program.c",
+        # prog_path=proj_path / "sw_cputest/test/program.s",
+        prog_path=proj_path / "sw_cputest/gol/program.c",
         flags="-O0"
         # flags="-O3"
     )
