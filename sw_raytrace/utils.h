@@ -29,6 +29,13 @@ Vec3 add_vec3(Vec3 a, Vec3 b) {
     .z = a.z + b.z,
   };
 }
+Color add_vec3c(Color a, Color b) {
+  return (Color){
+    .r = a.r + b.r,
+    .g = a.g + b.g,
+    .b = a.b + b.b,
+  };
+}
 
 Vec3 mul_vec3f(Vec3 a, float s) {
   return (Vec3){
@@ -37,12 +44,18 @@ Vec3 mul_vec3f(Vec3 a, float s) {
     .z = a.z * s,
   };
 }
-
 Vec3 mul_vec3v(Vec3 a, Vec3 b) {
   return (Vec3){
     .x = a.x * b.x,
     .y = a.y * b.y,
     .z = a.z * b.z,
+  };
+}
+Color mul_vec3c(Color a, Color b) {
+  return (Color){
+    .r = a.r * b.r,
+    .g = a.g * b.g,
+    .b = a.b * b.b,
   };
 }
 

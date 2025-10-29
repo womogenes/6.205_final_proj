@@ -19,7 +19,8 @@ typedef struct { float m[4][4]; } Mat4;
 // ===== RAY TRACER TYPES =====
 typedef struct {
   Color color;
-  Color emit_light;
+  Color spec_color;   // specular color
+  Color emit_color;   // emission color
   float smooth;
   float specular;
 } Material;
@@ -57,6 +58,20 @@ typedef struct {
   Vec3 hit_norm;
   Material hit_mat;
 } RayIntersectorResult;
+
+typedef struct {
+  Vec3 ray_pos;
+  Vec3 ray_dir;
+  Vec3 normal;
+
+  Color ray_color;
+  Color income_light;
+  Material mat;
+} RayreflectorParams;
+
+typedef struct {
+  
+} RayReflectorResult;
 
 // ===== RAY CASTER TYPES =====
 // (same as ray tracer inputs)

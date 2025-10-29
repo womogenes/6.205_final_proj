@@ -31,4 +31,5 @@ void ray_intersector(Vec3 ray_dir, Vec3 ray_origin, RayIntersectorResult* result
   result->any_hit = any_hit;
   result->hit_pos = hit_pos;
   result->hit_norm = hit_norm;
+  result->hit_mat = hit_mat;
 }
