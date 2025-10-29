@@ -27,7 +27,7 @@ module top_level (
 
   localparam integer WIDTH_A = 64;
   localparam integer WIDTH_B = 64;
-  localparam integer BITS_DROPPED = 0;
+  localparam integer BITS_DROPPED = 64;
   localparam integer OUTPUT_WIDTH = WIDTH_A + WIDTH_B - BITS_DROPPED;
 
   logic [15:0] sw_rev;
@@ -69,12 +69,12 @@ module top_level (
     .WIDTH_A(WIDTH_A),
     .WIDTH_B(WIDTH_B),
     .BITS_DROPPED(BITS_DROPPED)
-  ) lazy16 (
+  ) lazy (
     .rst(sys_rst),
     .clk(clk_100mhz),
 
-    .din_a(sw),
-    .din_b(sw_rev),
+    .din_a(a),
+    .din_b(b),
     .din_valid(btn[2]),
 
     .dout(dout_lazy),
@@ -85,12 +85,12 @@ module top_level (
     .WIDTH_A(WIDTH_A),
     .WIDTH_B(WIDTH_B),
     .BITS_DROPPED(BITS_DROPPED)
-  ) hard16 (
+  ) hard (
     .rst(sys_rst),
     .clk(clk_100mhz),
 
-    .din_a(sw),
-    .din_b(sw_rev),
+    .din_a(a),
+    .din_b(b),
     .din_valid(btn[2]),
 
     .dout(dout_hard),
