@@ -16,31 +16,6 @@ typedef struct { float x; float y; float z; } Vec3;
 typedef struct { float r; float g; float b; } Color;
 typedef struct { float m[4][4]; } Mat4;
 
-// ===== DEFINE VECTOR OPERATIONS =====
-Vec3 add_vec3(Vec3 a, Vec3 b) {
-  return (Vec3){
-    .x = a.x + b.x,
-    .y = a.y + b.y,
-    .z = a.z + b.z,
-  };
-}
-
-Vec3 mul_vec3f(Vec3 a, float s) {
-  return (Vec3){
-    .x = a.x * s,
-    .y = a.y * s,
-    .z = a.z * s,
-  };
-}
-
-Vec3 mul_vec3v(Vec3 a, Vec3 b) {
-  return (Vec3){
-    .x = a.x * b.x,
-    .y = a.y * b.y,
-    .z = a.z * b.z,
-  };
-}
-
 // ===== RAY TRACER TYPES =====
 typedef struct {
   Color color;

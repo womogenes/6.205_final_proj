@@ -21,6 +21,31 @@ static inline uint32_t mul16(uint32_t a, uint32_t b) {
   return (res_hi << 16) + res_mid + (res_lo >> 16);
 }
 
+// ===== VECTOR OPERATIONS =====
+Vec3 add_vec3(Vec3 a, Vec3 b) {
+  return (Vec3){
+    .x = a.x + b.x,
+    .y = a.y + b.y,
+    .z = a.z + b.z,
+  };
+}
+
+Vec3 mul_vec3f(Vec3 a, float s) {
+  return (Vec3){
+    .x = a.x * s,
+    .y = a.y * s,
+    .z = a.z * s,
+  };
+}
+
+Vec3 mul_vec3v(Vec3 a, Vec3 b) {
+  return (Vec3){
+    .x = a.x * b.x,
+    .y = a.y * b.y,
+    .z = a.z * b.z,
+  };
+}
+
 Vec3 sub_vec3(Vec3 a, Vec3 b) {
   return (Vec3){
     .x = a.x - b.x,

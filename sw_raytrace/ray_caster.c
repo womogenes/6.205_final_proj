@@ -1,6 +1,7 @@
 // Take camera representation and pixel coords, return ray
 
 #include "types.h"
+#include "utils.h"
 
 void ray_caster(Camera* cam, int pixel_h, int pixel_v, RayTracerParams* out) {
   float u = ((pixel_h + 0.5f) / WIDTH) * 2.0f - 1.0f;  // [-1, 1]
