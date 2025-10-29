@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <stdint.h>
+#include <math.h>
 
 static inline uint32_t mul16(uint32_t a, uint32_t b) {
   // Multiply two 16.16 fixed-point integers
@@ -18,6 +19,11 @@ static inline uint32_t mul16(uint32_t a, uint32_t b) {
   uint32_t res_lo = a_lo * b_lo;
 
   return (res_hi << 16) + res_mid + (res_lo >> 16);
+}
+
+Vec3 normalize(Vec3 v) {
+  float mag_sq = v.x * v.x + v.y * v.y + v.z * v.z;
+  return mul_vec3f(v, 1 / sqrtf(mag_sq));
 }
 
 #endif

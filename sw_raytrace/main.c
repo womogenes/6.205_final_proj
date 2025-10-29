@@ -6,15 +6,30 @@
 #include "types.h"
 #include "utils.h"
 
-#define WIDTH  320
-#define HEIGHT 180
+#include "ray_caster.c"
+#include "ray_tracer.c"
 
 uint8_t framebuf[HEIGHT][WIDTH][3];
 
 int main() {
+  Camera cam = (Camera){
+    .origin  = {0, 0, 0},
+    .forward = {0, 0, -1},
+    .right = {WIDTH / 2, 0, 0},
+    .up = {0, HEIGHT / 2, 0},
+  };
+  
+  RayTracerParams params;
+  RayTracerResult result;
+
   for (int pixel_v = 0; pixel_v < HEIGHT; pixel_v++) {
     for (int pixel_h = 0; pixel_h < WIDTH; pixel_h++) {
-      // RayTracerParams params = 
+      ray_caster(&cam, pixel_h, pixel_v, &params);
+      ray_tracer(&params, &result);
+
+      framebuf[pixel_v][pixel_h][0] = result.pixel_color.r;
+      framebuf[pixel_v][pixel_h][1] = result.pixel_color.g;
+      framebuf[pixel_v][pixel_h][2] = result.pixel_color.b;
     }
   }
 

@@ -1,9 +1,9 @@
 import subprocess
 from PIL import Image
 
-WIDTH, HEIGHT = 320, 180
+WIDTH, HEIGHT = 32, 18
 
-subprocess.run(["gcc", "main.c", "-o", "a.out"], check=True)
+subprocess.run(["gcc", "main.c", "-o", "a.out", "-lm"], check=True)
 subprocess.run(["./a.out"], check=True)
 
 with open("image.bin", "rb") as f:
