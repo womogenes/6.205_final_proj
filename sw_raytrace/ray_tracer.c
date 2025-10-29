@@ -7,8 +7,8 @@
 void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
   Vec3 ray_pos = params->ray_origin;
   Vec3 ray_dir = params->ray_dir;
-  Color ray_color = (Color){ 0, 0, 0 };
-  Color income_light = (Color){ 1, 1, 1 };
+  Color ray_color = (Color){ 1, 1, 1 };
+  Color income_light = (Color){ 0, 0, 0 };
 
   // Trace the ray
   RayIntersectorResult hit_result;
@@ -22,8 +22,14 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
     ray_reflector(&ray_pos, &ray_dir, &hit_result.hit_norm, &ray_color, &income_light, &hit_result.hit_mat);
   }
 
+  printf("h: %d, v: %d, any_hit: %d\n", params->pixel_h, params->pixel_v, hit_result.any_hit);
+
   if (hit_result.any_hit) {
-    result->pixel_color = income_light;
+    result->pixel_color = (Color) {
+      .r = income_light.r * 255,
+      .g = income_light.g * 255,
+      .b = income_light.b * 255,
+    };
     // result->pixel_color = (Color) {
     //   .r = 128,
     //   .g = 128,
