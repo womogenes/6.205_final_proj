@@ -3,11 +3,8 @@
 
 #include <stdint.h>
 
-// #define WIDTH 320
-// #define HEIGHT 180
-
-#define WIDTH 32
-#define HEIGHT 18
+#define WIDTH 320
+#define HEIGHT 180
 
 // ===== SHARED TYPES =====
 typedef uint32_t fixed;
