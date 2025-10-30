@@ -6,6 +6,8 @@
 #include "ray_intersector.c"
 #include "ray_reflector.c"
 
+#define MAX_BOUNCES 2
+
 void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
   Vec3 ray_pos = params->ray_origin;
   Vec3 ray_dir = params->ray_dir;
@@ -26,7 +28,7 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
 
   int any_hit = 0;
 
-  for (int bounce_idx = 0; bounce_idx < 10; bounce_idx++) {
+  for (int bounce_idx = 0; bounce_idx < MAX_BOUNCES; bounce_idx++) {
     ray_intersector(ray_dir, ray_pos, &hit_result);
     ray_pos = hit_result.hit_pos;
     any_hit |= hit_result.any_hit;
