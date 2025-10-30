@@ -73,8 +73,8 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
-        proj_path / "hdl" / "types"/ "types.sv",
-        proj_path / "hdl" / "math"/ "multiplier.sv",
+        proj_path / "hdl" / "types" / "types.sv",
+        proj_path / "hdl" / "math" / "multiplier.sv",
         proj_path / "hdl" / "math" / "vec_ops.sv"
     ]
     build_test_args = ["-Wall"]
