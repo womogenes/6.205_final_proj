@@ -8,36 +8,37 @@ const Object SCENE_BUFFER[] = {
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {1, 0, 0},
+      .color = {1, 0.3, 0.3},
       .emit_color = {0.1, 0.1, 0.1},
       .smooth = 1.0f,
       .specular = 0.0f,
     },
-    .sphere_center = {-2.5, 0, 10},
+    .sphere_center = {-2, 1, 7},
+    .sphere_rad = 2,
+  },
+  (Object){
+    .is_trig = 0,
+    .mat = (Material){
+      .color = {0.3, 1, 0.3},
+      .emit_color = {0.1, 0.1, 0.1},
+      .smooth = 1.0f,
+      .specular = 0.0f,
+    },
+    .sphere_center = {0, 0, 5},
     .sphere_rad = 1,
   },
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {0, 1, 0},
+      .color = {0.3, 0.3, 1},
       .emit_color = {0.1, 0.1, 0.1},
       .smooth = 1.0f,
       .specular = 0.0f,
     },
-    .sphere_center = {0, 0, 10},
-    .sphere_rad = 1,
+    .sphere_center = {1.0, -0.5, 4},
+    .sphere_rad = 0.5,
   },
-  (Object){
-    .is_trig = 0,
-    .mat = (Material){
-      .color = {0, 0, 1},
-      .emit_color = {0.1, 0.1, 0.1},
-      .smooth = 1.0f,
-      .specular = 0.0f,
-    },
-    .sphere_center = {2.5, 0, 10},
-    .sphere_rad = 1,
-  },
+  // Skylight
   (Object){
     .is_trig = 0,
     .mat = (Material){
@@ -46,19 +47,19 @@ const Object SCENE_BUFFER[] = {
       .smooth = 1.0f,
       .specular = 0.0f,
     },
-    .sphere_center = {0, 50, 10},
-    .sphere_rad = 45,
+    .sphere_center = {0, 500, 0},
+    .sphere_rad = 450,
   },
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {1, 1, 1},
+      .color = {0.85, 0.8, 1.0},
       .emit_color = {0.1, 0.1, 0.1},
       .smooth = 1.0f,
       .specular = 0.0f,
     },
-    .sphere_center = {0, 0, 200},
-    .sphere_rad = 190,
+    .sphere_center = {0, -200, 5},
+    .sphere_rad = 199,
   },
 };
 
