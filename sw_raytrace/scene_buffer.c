@@ -2,7 +2,10 @@
 
 #include "types.h"
 
+const float sqrt3 = 1.73;
+
 const Object SCENE_BUFFER[] = {
+
   (Object){
     .is_trig = 0,
     .mat = (Material){
@@ -13,7 +16,7 @@ const Object SCENE_BUFFER[] = {
     },
     .trig = 0x0,
     .trig_norm = 0x0,
-    .sphere_center = {-1.01, 0, -4},
+    .sphere_center = {1/2, sqrt3/2, -4},
     .sphere_rad = 1,
   },
   (Object){
@@ -26,9 +29,9 @@ const Object SCENE_BUFFER[] = {
     },
     .trig = 0x0,
     .trig_norm = 0x0,
-    .sphere_center = {1, 0, -4},
+    .sphere_center = {1/2, -sqrt3/2, -4},
     .sphere_rad = 1,
-  }
+  },
 };
 
 const int SCENE_BUFFER_LEN = sizeof(SCENE_BUFFER) / sizeof(SCENE_BUFFER[0]);

@@ -33,7 +33,7 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
 
     if (!hit_result.any_hit) {
       // Ray flew off into the distance, add ambient light
-      Color ambient = (Color){0.25, 0.25, 0.25};
+      Color ambient = (Color){0.1, 0.1, 0.1};
       income_light = add_vec3c(income_light, mul_vec3c(ambient, ray_color));
       break;
     }

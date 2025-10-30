@@ -9,7 +9,8 @@
 #include "ray_caster.c"
 #include "ray_tracer.c"
 
-uint8_t framebuf[HEIGHT][WIDTH][3];
+uint8_t fb[HEIGHT][WIDTH][3];
+float fb_float[HEIGHT][WIDTH][3];
 
 int main() {
   Camera cam = (Camera){
@@ -22,7 +23,10 @@ int main() {
   RayTracerParams params;
   RayTracerResult result;
 
-  for (int frame_idx = 0; frame_idx < 30; frame_idx++) {
+  // float t = 0.80;
+  const int N_FRAMES = 600;
+
+  for (int frame_idx = 0; frame_idx < N_FRAMES; frame_idx++) {
     printf("rendering frame %d\n", frame_idx);
 
     for (int pixel_v = 0; pixel_v < HEIGHT; pixel_v++) {
@@ -30,13 +34,25 @@ int main() {
         ray_caster(&cam, pixel_h, pixel_v, &params);
         ray_tracer(&params, &result);
 
-        uint8_t* pix_r = &(framebuf[pixel_v][pixel_h][0]);
-        uint8_t* pix_g = &(framebuf[pixel_v][pixel_h][1]);
-        uint8_t* pix_b = &(framebuf[pixel_v][pixel_h][2]);
+        fb_float[pixel_v][pixel_h][0] += result.pixel_color.r;
+        fb_float[pixel_v][pixel_h][1] += result.pixel_color.g;
+        fb_float[pixel_v][pixel_h][2] += result.pixel_color.b;
 
-        *pix_r = 0.875 * (*pix_r) + 0.125 * result.pixel_color.r;
-        *pix_g = 0.875 * (*pix_g) + 0.125 * result.pixel_color.g;
-        *pix_b = 0.875 * (*pix_b) + 0.125 * result.pixel_color.b;
+        // uint8_t* pix_r = &(fb[pixel_v][pixel_h][0]);
+        // uint8_t* pix_g = &(fb[pixel_v][pixel_h][1]);
+        // uint8_t* pix_b = &(fb[pixel_v][pixel_h][2]);
+
+        // *pix_r = t * (*pix_r) + (1 - t) * result.pixel_color.r;
+        // *pix_g = t * (*pix_g) + (1 - t) * result.pixel_color.g;
+        // *pix_b = t * (*pix_b) + (1 - t) * result.pixel_color.b;
+      }
+    }
+
+    for (int pixel_v = 0; pixel_v < HEIGHT; pixel_v++) {
+      for (int pixel_h = 0; pixel_h < WIDTH; pixel_h++) {
+        for (int channel = 0; channel < 3; channel++) {
+          fb[pixel_v][pixel_h][channel] = fb_float[pixel_v][pixel_h][channel] / N_FRAMES;
+        }
       }
     }
   }
@@ -47,6 +63,6 @@ int main() {
   printf("prod = 0x%x\n", res);
 
   FILE* f = fopen("image.bin", "wb");
-  fwrite(framebuf, 3, WIDTH * HEIGHT, f);
+  fwrite(fb, 3, WIDTH * HEIGHT, f);
   fclose(f);
 }
