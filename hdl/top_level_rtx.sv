@@ -2,7 +2,7 @@
 
 `define FPATH(X) `"X`"
 
-module top_level (
+module top_level_rtx (
   input wire clk_100mhz, // crystal reference clock
   input wire [15:0] sw, // all 16 input slide switches
 
@@ -37,8 +37,9 @@ module top_level (
   logic sys_rst;
   assign sys_rst = btn[0]; // reset is btn[0]
  
-  logic clk_pixel, clk_5x; // clock lines
+  logic clk_pixel, clk_5x, clk_rtx; // clock lines
   logic locked; // locked signal (we'll leave unused but still hook it up)
+  assign clk_rtx = clk_100mhz_buffered;
  
   // clock manager...creates 74.25 Hz and 5 times 74.25 MHz for pixel and TMDS
   hdmi_clk_wiz_720p mhdmicw (
@@ -71,41 +72,123 @@ module top_level (
     .new_frame(new_frame),
     .frame_count(frame_count)
   );
- 
+
   logic [7:0] red, green, blue; // red green and blue pixel values for output
+
+  // FAKE RTX ENGINE
+  logic [10:0] pixel_h_rtx;
+  logic [9:0] pixel_v_rtx;
+  logic [7:0] frame_count_rtx;
+  logic [2:0][7:0] rendered_color_rtx;
+  logic [7:0] wait_counter_rtx;
+  logic rendered_color_valid_rtx;
+
+  always_ff @(posedge clk_rtx) begin
+    if (sys_rst) begin
+      pixel_h_rtx <= 0;
+      pixel_v_rtx <= 0;
+      frame_count_rtx <= 0;
+    end else begin
+      
+      wait_counter_rtx <= wait_counter_rtx + 1;
+
+      if (wait_counter_rtx == 0) begin
+        if (pixel_h_rtx == 319) begin
+          pixel_h_rtx <= 0;
+          if (pixel_v_rtx == 179) begin
+            pixel_v_rtx <= 0;
+            frame_count_rtx <= frame_count_rtx + 1;
+          end else begin
+            pixel_v_rtx <= pixel_v_rtx + 1;
+          end
+        end else begin
+          pixel_h_rtx <= pixel_h_rtx + 1;
+        end
+      end
+    end
+  end
+  always_comb begin
+    // red channel moves up and down linearly
+    // if (frame_count_rtx[7] == 1'b0) begin
+    //   rendered_color_rtx[2] = frame_count_rtx[6:0] << 1;
+    // end else begin
+    //   rendered_color_rtx[2] = 8'd255 - (frame_count_rtx[6:0] << 1);
+    // end
+    rendered_color_valid_rtx = wait_counter_rtx == 0;
+    rendered_color_rtx[0] = 8'hff;
+    // rendered_color_rtx[1] = 8'hff;
+    // rendered_color_rtx[2] = 8'hff;
+
+    // green channel is pwm divided by 8 width-wise
+    rendered_color_rtx[1] = frame_count_rtx[2:0] > pixel_h_rtx[7:5] ? 255 : 0;
+
+    // blue channel is pwn divided on a longer period
+    rendered_color_rtx[2] = frame_count_rtx[7:5] > pixel_v_rtx[6:4] ? 255 : 0;
+
+    // rendered_color_rtx[0] = 0;
+    // rendered_color_rtx[1] = 64;
+    // rendered_color_rtx[2] = 128;
+
+  end
 
   // ==== SEVEN SEGMENT DISPLAY =======
   seven_segment_controller(
     .clk(clk_100mhz_buffered),
     .rst(sys_rst),
-    .val(32'hbeef_cafe),
+    .val({frame_count_rtx, rendered_color_rtx}),//{blue, green, red}}),
     .cat(ss0_c),
     .an({ ss0_an, ss1_an })
   );
   assign ss1_c = ss0_c;
-  // ==================================
 
+  frame_buffer #(
+    .SIZE_H(320),
+    .SIZE_V(180),
+    .COLOR_WIDTH(12),
+    .EXP_RATIO(8)
+  ) frame_render (
+    .rst(sys_rst),
 
-  // Extrapolate colors
-  assign red = {fb_pixel[7:6], 5'b0};
-  assign green = {fb_pixel[5:3], 4'b0};
-  assign blue = {fb_pixel[2:0], 4'b0};
+    .clk_rtx(clk_rtx),
+
+    .pixel_h(pixel_h_rtx),
+    .pixel_v(pixel_v_rtx),
+    .new_color(rendered_color_rtx),
+    .new_color_valid(rendered_color_valid_rtx),
+
+    .clk_hdmi(clk_pixel),
+
+    .active_draw_hdmi(active_draw),
+    .h_count_hdmi(h_count >> 2),
+    .v_count_hdmi(v_count >> 2),
+
+    .pixel_out_color({blue, green, red}),
+    .pixel_out_valid(), //nothing for now
+    .pixel_out_h_count(), //nothing for now
+    .pixel_out_v_count() //nothing for now
+  );
+
+  logic v_sync_buffered;
+  logic h_sync_buffered;
+  logic active_draw_buffered;
+  pipeline #(
+    .WIDTH(3),
+    .DEPTH(2)
+  ) vid_control_buffer (
+    .clk(clk_pixel),
+    .in({v_sync, h_sync, active_draw}),
+    .out({v_sync_buffered, h_sync_buffered, active_draw_buffered})
+  );
  
   logic [9:0] tmds_10b [0:2]; // output of each TMDS encoder!
   logic tmds_signal [2:0]; // output of each TMDS serializer!
  
-  // three tmds_encoders (blue, green, red)
-  // MISSING two more tmds encoders (one for green and one for blue)
-  // note green should have no control signal like red
-  // the blue channel DOES carry the two sync signals:
-  //   * control[0] = horizontal sync signal
-  //   * control[1] = vertical sync signal
   tmds_encoder tmds_blue(
     .clk(clk_pixel),
     .rst(sys_rst),
     .video_data(blue),
-    .control({ v_sync, h_sync }),  //  control signals
-    .video_enable(active_draw),
+    .control({ v_sync_buffered, h_sync_buffered }),  //  control signals
+    .video_enable(active_draw_buffered),
     .tmds(tmds_10b[0])
   );
 
@@ -114,7 +197,7 @@ module top_level (
     .rst(sys_rst),
     .video_data(green),
     .control(2'b0),
-    .video_enable(active_draw),
+    .video_enable(active_draw_buffered),
     .tmds(tmds_10b[1]));
  
   tmds_encoder tmds_red(
@@ -122,7 +205,7 @@ module top_level (
     .rst(sys_rst),
     .video_data(red),
     .control(2'b0),
-    .video_enable(active_draw),
+    .video_enable(active_draw_buffered),
     .tmds(tmds_10b[2]));
  
   // three tmds_serializers (blue, green, red):

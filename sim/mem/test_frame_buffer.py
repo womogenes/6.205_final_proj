@@ -25,12 +25,12 @@ async def hdmi_reader(dut):
 
                 if dut.pixel_out_valid.value:
                     # dut._log.info('%s', dut.pixel_out_color.value.binstr)
-                    image_drawn[dut.pixel_out_v_count.value][dut.pixel_out_h_count.value] = \
-                        hex(int(dut.pixel_out_color.value.binstr[:4], 2))[2:]
+                    # image_drawn[dut.pixel_out_v_count.value][dut.pixel_out_h_count.value] = \
+                        dut._log.info("%x", int(dut.pixel_out_color.value.binstr[:8], 2))
                 await RisingEdge(dut.clk_hdmi)
                 await FallingEdge(dut.clk_hdmi)
         for line in image_drawn:
-            dut._log.info("%s" * 20, *tuple(line))
+            # dut._log.info("%s" * 20, *tuple(line))
             pass
 
 async def rtx_renderer(dut):
@@ -45,7 +45,7 @@ async def rtx_renderer(dut):
 
                 await ClockCycles(dut.clk_rtx, 3, False)
                 dut.new_color_valid.value = 1
-                dut.new_color.value = (frames + 8) * (2**20)
+                dut.new_color.value = 255 * (2**16) # (frames + 8) * (2**20)
 
                 await RisingEdge(dut.clk_rtx)
                 await FallingEdge(dut.clk_rtx)
