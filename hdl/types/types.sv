@@ -1,9 +1,9 @@
-parameter FRAC_WIDTH = 16;
-parameter FULL_WIDTH = 32;
+parameter integer FRAC_WIDTH = 16;
+parameter integer FULL_WIDTH = 32;
 
 // ===== NUMBERS + MATH =====
-typedef logic [FULL_WIDTH-1:0] fixed;
-typedef logic [FRAC_WIDTH-1:0] short;
+typedef logic signed [FULL_WIDTH-1:0] fixed;
+typedef logic signed [FRAC_WIDTH:0] short;     // extra bit for two's complement
 
 // ===== COLORS =====
 typedef struct packed {

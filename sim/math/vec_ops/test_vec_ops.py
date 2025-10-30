@@ -1,5 +1,6 @@
 import os
 import sys
+
 from pathlib import Path
 
 import cocotb
@@ -10,10 +11,12 @@ from cocotb.runner import get_runner
 from enum import Enum
 import random
 import ctypes
+import numpy as np
+
+sys.path.append(Path(__file__).resolve().parent.parent._str)
+from utils import make_vec3, convert_vec3
 
 test_file = os.path.basename(__file__).replace(".py", "")
-
-
 
 @cocotb.test()
 async def test_module(dut):
@@ -23,8 +26,25 @@ async def test_module(dut):
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 3, False)
+    await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
+
+    def do_test(a, b):
+        """
+        a and b are length-3 iterables of floats
+        Pass this to the mul_vec3 module
+        """
+        
+
+    dut.din_valid.value = 1
+    dut.din_a.value = make_vec3(-1, 1.5, 2)
+    dut.din_b.value = make_vec3(2, 2, 0)
+    await ClockCycles(dut.clk, 1)
+
+    dut.din_valid.value = 0
+    await ClockCycles(dut.clk, 5)
+
+    dut._log.info(convert_vec3(dut.dout.value))
 
 
 def runner():
@@ -36,6 +56,7 @@ def runner():
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
         proj_path / "hdl" / "types"/ "types.sv",
+        proj_path / "hdl" / "math"/ "multiplier.sv",
         proj_path / "hdl" / "math" / "vec_ops.sv"
     ]
     build_test_args = ["-Wall"]
