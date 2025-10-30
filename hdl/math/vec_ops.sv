@@ -29,7 +29,7 @@ endfunction
 */
 module mul_vec3(
   input wire clk,
-  input wire rst,`
+  input wire rst,
 
   input vec3 din_a,
   input vec3 din_b,
@@ -56,3 +56,4 @@ module mul_vec3(
 endmodule
 
 `default_nettype wire
+

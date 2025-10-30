@@ -5,7 +5,7 @@ import ctypes
 import cocotb
 from cocotb.binary import BinaryValue
 
-# We LOVE 
+# We LOVE global variables
 FULL_WIDTH = 32
 FRAC_WIDTH = 16
 
@@ -24,11 +24,12 @@ def float2fixed(x: float):
     """
     return int(x * (1 << FRAC_WIDTH)) & ((1 << FULL_WIDTH) - 1)
 
-def make_vec3(x: float, y: float, z: float):
+def make_vec3(vec3: tuple[float]):
     """
     Convert (x, y, z) to packed 96*-bit vec3
         * assuming FULL_WIDTH == 32
     """
+    x, y, z = vec3
     return (
         (float2fixed(x) << (FULL_WIDTH * 2)) +
         (float2fixed(y) << (FULL_WIDTH * 1)) +

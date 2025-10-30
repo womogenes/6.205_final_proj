@@ -29,22 +29,40 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    def do_test(a, b):
+    async def do_test(a: tuple[float], b: tuple[float]):
         """
         a and b are length-3 iterables of floats
         Pass this to the mul_vec3 module
         """
-        
+        dut.din_valid.value = 1
+        dut.din_a.value = make_vec3(a)
+        dut.din_b.value = make_vec3(b)
 
-    dut.din_valid.value = 1
-    dut.din_a.value = make_vec3(-1, 1.5, 2)
-    dut.din_b.value = make_vec3(2, 2, 0)
-    await ClockCycles(dut.clk, 1)
+        # 1 cycle to feed input, 1 cycle to calculate
+        await ClockCycles(dut.clk, 1)
+        dut.din_valid.value = 0
+        await ClockCycles(dut.clk, 1)
+
+        prod = convert_vec3(dut.dout.value)
+        return prod
+
+    total_sq_error = 0
+    n_tests = 100
+
+    for _ in range(n_tests):
+        a = (np.random.rand(3) - 0.5) * np.sqrt(1 << 15)
+        b = (np.random.rand(3) - 0.5) * np.sqrt(1 << 15)
+        prod = await do_test(a.tolist(), b.tolist())
+
+        # Compute error
+        total_sq_error += np.square(a * b - prod)
+
+    # Print max error
+    # Expect around 1e-06 for 16.16 fixeds
+    dut._log.info(f"Mean error: {np.mean(total_sq_error) / n_tests}")
 
     dut.din_valid.value = 0
     await ClockCycles(dut.clk, 5)
-
-    dut._log.info(convert_vec3(dut.dout.value))
 
 
 def runner():
