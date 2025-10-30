@@ -1,8 +1,12 @@
 import subprocess
 from PIL import Image
 
-WIDTH, HEIGHT = 320, 180
-# WIDTH, HEIGHT = 1280, 720
+HD = 0
+
+if HD:
+    WIDTH, HEIGHT = 1280, 720
+else:
+    WIDTH, HEIGHT = 320, 180
 
 subprocess.run(["gcc", "main.c", "-o", "a.out", "-lm"], check=True)
 subprocess.run(["./a.out"], check=True)
