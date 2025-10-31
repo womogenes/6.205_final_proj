@@ -19,7 +19,7 @@ const Object SCENE_BUFFER[] = {
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {0.8, 0.2, 0},
+      .color = {1.0, 0.8, 0.5},
       .emit_color = {0.1, 0.1, 0.1},
       .smooth = 1.0f,
       .specular = 0.0f,
@@ -31,7 +31,7 @@ const Object SCENE_BUFFER[] = {
     .is_trig = 0,
     .mat = (Material){
       .color = {0.3, 0.3, 1},
-      .emit_color = {10, 10, 10},
+      .emit_color = {1, 1, 1},
       .smooth = 1.0f,
       .specular = 0.0f,
     },
@@ -54,7 +54,7 @@ const Object SCENE_BUFFER[] = {
     .is_trig = 0,
     .mat = (Material){
       .color = {0.85, 0.8, 1.0},
-      .emit_color = {10, 10, 10},
+      .emit_color = {1, 1, 1},
       .smooth = 1.0f,
       .specular = 0.0f,
     },

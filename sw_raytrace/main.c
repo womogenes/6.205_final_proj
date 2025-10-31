@@ -24,7 +24,7 @@ int main() {
   RayTracerResult result;
 
   // float t = 0.80;
-  const int N_FRAMES = 15;
+  const int N_FRAMES = 60;
 
   for (int frame_idx = 0; frame_idx < N_FRAMES; frame_idx++) {
     printf("rendering frame %d\n", frame_idx);
