@@ -29,8 +29,8 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    x_fixed = float2fixed(1.0)
-    y_fixed = float2fixed(0.9)
+    x_fixed = float2fixed(100.0)
+    y_fixed = float2fixed(1/20)
 
     dut.x.value = x_fixed
     dut.y.value = y_fixed
@@ -38,9 +38,9 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 10)
 
     dut._log.info(f"Next y guess: {fixed2float(dut.y_next.value)}")
-    dut._log.info(f"y_sq: {fixed2float(dut.y_sq.value)}")
-    dut._log.info(f"y_sq_by_x: {fixed2float(dut.y_sq_by_x.value)}")
-    dut._log.info(f"frac: {fixed2float(dut.frac.value)}")
+    # dut._log.info(f"y_sq: {fixed2float(dut.y_sq.value)}")
+    # dut._log.info(f"y_sq_by_x: {fixed2float(dut.y_sq_by_x.value)}")
+    # dut._log.info(f"frac: {fixed2float(dut.frac.value)}")
 
 
 def runner():
@@ -51,7 +51,8 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
-        proj_path / "hdl" / "pipeline.sv",
+        proj_path / "hdl" / "mem" / "xilinx_single_port_ram_read_first.sv",
+        proj_path / "hdl" / "pipeline.sv",  
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "multiplier.sv",
         proj_path / "hdl" / "math" / "inv_sqrt.sv"

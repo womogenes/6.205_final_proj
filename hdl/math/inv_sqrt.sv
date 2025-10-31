@@ -7,6 +7,9 @@
   inputs:
     x: the number to be inverse-square-rooted
     y: current guess
+
+  timing:
+    4 cycles of delay
 */
 module inv_sqrt_stage (
   input wire clk,
@@ -25,12 +28,8 @@ module inv_sqrt_stage (
   fixed x_piped1;   // x, delayed by 1 cycle
   fixed y_piped3;   // y, delayed by 3 cycles
 
-  pipeline #(.WIDTH(FULL_WIDTH), .DEPTH(1)) x_pipe (
-    .clk(clk), .in(x), .out(x_piped1)
-  );
-  pipeline #(.WIDTH(FULL_WIDTH), .DEPTH(3)) y_pipe (
-    .clk(clk), .in(y), .out(y_piped3)
-  );
+  pipeline #(.WIDTH(FULL_WIDTH), .DEPTH(1)) x_pipe (.clk(clk), .in(x), .out(x_piped1));
+  pipeline #(.WIDTH(FULL_WIDTH), .DEPTH(3)) y_pipe (.clk(clk), .in(y), .out(y_piped3));
   
   mul_fixed mul1(.clk(clk), .din_a(y), .din_b(y), .dout(y_sq));
   mul_fixed mul2(.clk(clk), .din_a(y_sq), .din_b(x_piped1), .dout(y_sq_by_x));
@@ -44,7 +43,9 @@ module inv_sqrt_stage (
   mul_fixed mul3(.clk(clk), .rst(rst), .din_a(frac), .din_b(y_piped3), .dout(y_next));
 endmodule
 
-// module inv_sqrt (
-//   input wire clk,
-//   input wire 
-// )
+module inv_sqrt (
+  input wire clk,
+  input wire 
+);
+  // 
+endmodule
