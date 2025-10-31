@@ -29,22 +29,41 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    x = 2.14159
-    y = 3.14159
+    async def do_test(x: float, y: float, is_sub: bool):
+        """
+        Do a single test on x + y using fp_24_add
+        """
+        x_f = make_fp24(x)
+        y_f = make_fp24(y)
 
-    x_f = make_fp24(x)
-    y_f = make_fp24(y)
-
-    dut.a.value = x_f
-    dut.b.value = y_f
-    dut.is_sub.value = 0
-    await ClockCycles(dut.clk, 3)
-
-    s = dut.sum.value
+        dut.a.value = x_f
+        dut.b.value = y_f
+        dut.is_sub.value = is_sub
+        await ClockCycles(dut.clk, 3)
+        
+        return convert_fp24(dut.sum.value)
     
-    dut._log.info(f"{s.integer:#6x}")
-    dut._log.info(f"{convert_fp24(s)}")
-    dut._log.info(f"{x+y=}")
+    # x = -38000
+    # y = 39000
+    # res = await do_test(x, y, 0)
+    # dut._log.info(f"{res=}, {x+y=}")
+    # return
+    
+    n_tests = 1_000
+    total_err = 0
+    for _ in range(n_tests):
+        x = (random.random() - 0.5) * 100
+        y = (random.random() - 0.5) * 100
+        is_sub = random.random() < 0.5
+        
+        exp_ans = x - y if is_sub else x + y
+        dut_ans = await do_test(x, y, is_sub)
+
+        dut._log.info(f"{x=:.3f}\t{y=:.3f}\t{is_sub=}\t{exp_ans=:>10.3f}\t{dut_ans=:>10}\tdiff={exp_ans-dut_ans}")
+
+        total_err += abs(exp_ans - dut_ans)
+
+    dut._log.info(f"Mean error: {total_err / n_tests}")
 
 
 def runner():

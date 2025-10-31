@@ -25,7 +25,7 @@ def make_fp24(x: float):
 
     exp = int(math.floor(math.log2(value)))
     exp_biased = exp + 63
-    assert -63 <= exp_biased <= 64, "FP24 only supports exponents between -63 and 64"
+    assert 0 <= exp_biased <= 127, f"FP24 only supports exponents between -63 and 64, got {x} ({exp=})"
 
     frac = value / (1 << exp)
 

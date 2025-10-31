@@ -1,17 +1,14 @@
 // Addition for 24-bit floating point
 
 function automatic [4:0] clz17(input logic [16:0] x);
-  logic [4:0] res;
+  integer i;
   begin
-    res = 17;
-    for (integer i = 16; i >= 0; i = i - 1) begin : for_loop
-      if (x[i]) begin
-        res = 16 - i;
-        disable for_loop;   // exit early
-      end
+    for (i = 16; i >= 0; i = i - 1) begin
+      if (x[i])
+        return 16 - i; // return immediately
     end
+    return 17; // all zeros
   end
-  return res;
 endfunction
 
 module fp24_add (
@@ -25,7 +22,7 @@ module fp24_add (
 );
   // Extract fields and swap if b > a
   logic swap;
-  assign swap = b[22:16] > a[22:16];
+  assign swap = (b[22:16] > a[22:16]) || (b[22:16] == a[22:16] && b[15:0] > a[15:0]);
 
   logic [6:0] exp_a, exp_b;
   logic sign_a, sign_b;
