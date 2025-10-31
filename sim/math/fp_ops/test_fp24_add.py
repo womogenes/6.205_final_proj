@@ -29,10 +29,22 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    x = 1.6433
-    f = make_fp24(x)
-    dut._log.info(f"{f:#6x}")
-    dut._log.info(f"{convert_fp24(f)}")
+    x = 2.14159
+    y = 3.14159
+
+    x_f = make_fp24(x)
+    y_f = make_fp24(y)
+
+    dut.a.value = x_f
+    dut.b.value = y_f
+    dut.is_sub.value = 0
+    await ClockCycles(dut.clk, 3)
+
+    s = dut.sum.value
+    
+    dut._log.info(f"{s.integer:#6x}")
+    dut._log.info(f"{convert_fp24(s)}")
+    dut._log.info(f"{x+y=}")
 
 
 def runner():
