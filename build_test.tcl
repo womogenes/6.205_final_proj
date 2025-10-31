@@ -23,6 +23,7 @@ if {[llength $files] != 0} {
 
 # read in all system verilog files:
 set sources_sv [ concat \
+    [ glob ./hdl/types/*.sv ] \
     [ glob ./hdl/math/*.sv ] \
     [ glob ./hdl/top_level_test.sv ] \
 ]

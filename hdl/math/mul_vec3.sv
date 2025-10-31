@@ -66,8 +66,8 @@ module mul_vec3f(
   input wire clk,
   input wire rst,
 
-  input vec3 din_a,
-  input fixed din_b,
+  input wire vec3 din_a,
+  input wire fixed din_b,
   input wire din_valid,
 
   output vec3 dout,

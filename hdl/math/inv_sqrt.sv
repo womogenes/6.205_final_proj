@@ -45,7 +45,7 @@ endmodule
 
 module inv_sqrt (
   input wire clk,
-  input wire 
+  input wire rst
 );
   // 
 endmodule

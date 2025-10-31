@@ -52,8 +52,8 @@ async def test_module(dut):
     n_tests = 1_000
     total_err = 0
     for _ in range(n_tests):
-        x = (random.random() - 0.5) * 100
-        y = (random.random() - 0.5) * 100
+        x = (random.random() - 0.5) * 200
+        y = (random.random() - 0.5) * 200
         is_sub = random.random() < 0.5
         
         exp_ans = x - y if is_sub else x + y

@@ -44,8 +44,8 @@ module mul_fixed (
   input wire clk,
   input wire rst,
 
-  input fixed din_a,
-  input fixed din_b,
+  input wire fixed din_a,
+  input wire fixed din_b,
   input wire din_valid,
 
   output fixed dout,
