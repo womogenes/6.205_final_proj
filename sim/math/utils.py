@@ -27,7 +27,7 @@ def make_fp24(x: float):
     exp_biased = exp + 63
     assert 0 <= exp_biased <= 127, f"FP24 only supports exponents between -63 and 64, got {x} ({exp=})"
 
-    frac = value / (1 << exp)
+    frac = value / (2 ** exp)
 
     mant = int((frac - 1.0) * (1 << 16) + 0.5)
     return (sign << 23) | (exp_biased << 16) | mant

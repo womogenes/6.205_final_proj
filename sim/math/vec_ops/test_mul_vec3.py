@@ -59,7 +59,8 @@ async def test_module(dut):
 
     # Print max error
     # Expect around 1e-06 for 16.16 fixeds
-    dut._log.info(f"Mean error: {np.mean(total_sq_error) / n_tests}")
+    dut._log.info(f"Mean sq. error: {np.mean(total_sq_error) / n_tests}")
+    dut._log.info(f"Mean error: {np.sqrt(np.mean(total_sq_error)) / n_tests}")
 
     dut.din_valid.value = 0
     await ClockCycles(dut.clk, 5)
@@ -75,7 +76,7 @@ def runner():
     sources = [
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "multiplier.sv",
-        proj_path / "hdl" / "math" / "vec_ops.sv"
+        proj_path / "hdl" / "math" / "mul_vec3.sv"
     ]
     build_test_args = ["-Wall"]
 

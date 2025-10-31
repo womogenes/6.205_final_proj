@@ -59,7 +59,7 @@ async def test_module(dut):
         exp_ans = x - y if is_sub else x + y
         dut_ans = await do_test(x, y, is_sub)
 
-        dut._log.info(f"{x=:.3f}\t{y=:.3f}\t{is_sub=}\t{exp_ans=:>10.3f}\t{dut_ans=:>10}\tdiff={exp_ans-dut_ans}")
+        dut._log.info(f"{x=:>10.3f} {y=:>10.3f} {is_sub=:>5} {exp_ans=:>10.3f} {dut_ans=:>10.3f} diff={exp_ans-dut_ans}")
 
         total_err += abs(exp_ans - dut_ans)
 
