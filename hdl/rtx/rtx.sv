@@ -12,7 +12,9 @@ module rtx #(
   output logic [9:0] pixel_v,
   output logic ray_done
 );
-  // raytracing logic here
+
+  ray_caster 
+  
 endmodule
 
 `default_nettype wire

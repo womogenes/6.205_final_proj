@@ -146,19 +146,25 @@ module top_level(
     //     .pixel_data(camera_pixel)
     // );
 
-    assign camera_pixel = 16'hFFFF;
+    color8 rtx_pixel;
+    // assign camera_pixel = 16'hFFFF;
 
-    ray_caster (
+    // TODO: hook this up
+    rtx (
         .clk(clk_camera),
         .rst(sys_rst_camera),
-        .new_ray(1'b1),
 
-        .ray_origin(),
-        .ray_dir(),
+        .pixel_color(rtx_pixel),
         .pixel_h(camera_h_count),
         .pixel_v(camera_v_count),
-        .ray_valid(camera_valid)
+        .ray_done(camera_valid)
     );
+
+    assign camera_pixel = {
+        rtx_pixel.r[7:3],
+        rtx_pixel.g[7:2],
+        rtx_pixel.b[7:3]
+    };
 
     // Two ways to store a frame buffer:
     // 1. down-sampled with BRAM; same as week 05
