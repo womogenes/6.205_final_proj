@@ -148,6 +148,18 @@ module top_level(
 
     assign camera_pixel = 16'hFFFF;
 
+    ray_caster (
+        .clk(clk_camera),
+        .rst(sys_rst_camera),
+        .new_ray(1'b1),
+
+        .ray_origin(),
+        .ray_dir(),
+        .pixel_h(camera_h_count),
+        .pixel_v(camera_v_count),
+        .ray_valid(camera_valid)
+    );
+
     // Two ways to store a frame buffer:
     // 1. down-sampled with BRAM; same as week 05
     // 2. Full-quality with SDRAM (DDR3); the new pipeline this week!

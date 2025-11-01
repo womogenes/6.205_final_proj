@@ -8,8 +8,8 @@ module rtx #(
   input wire rst,
 
   output color8 pixel_color,
-  output [10:0] pixel_h,
-  output [9:0] pixel_v,
+  output logic [10:0] pixel_h,
+  output logic [9:0] pixel_v,
   output logic ray_done
 );
   // raytracing logic here

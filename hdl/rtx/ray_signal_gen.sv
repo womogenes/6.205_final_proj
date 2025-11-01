@@ -1,4 +1,5 @@
 `default_nettype none
+
 module ray_signal_gen #(
   parameter SIZE_H = 1280,
   parameter SIZE_V = 720
@@ -9,7 +10,7 @@ module ray_signal_gen #(
   input wire new_ray,
 
   output logic [10:0] pixel_h,
-  output logic [9:0] pixel_v,
+  output logic [9:0] pixel_v
 );
 
   always_ff @(posedge clk) begin
@@ -30,8 +31,7 @@ module ray_signal_gen #(
         end
       end
     end
-  end
-
-    
+  end    
 endmodule
+
 `default_nettype wire

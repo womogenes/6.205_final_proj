@@ -1,4 +1,5 @@
 `default_nettype none
+
 module ray_caster #(
   parameter SIZE_H = 1280,
   parameter SIZE_V = 720,
@@ -19,4 +20,5 @@ module ray_caster #(
 
 
 endmodule
+
 `default_nettype wire
