@@ -3,10 +3,10 @@
 module fp24_mult (
   input wire clk,
   input wire rst,
-  input wire [23:0] a,
-  input wire [23:0] b,
+  input fp24 a,
+  input fp24 b,
 
-  output logic [23:0] prod
+  output fp24 prod
 );
 
   logic [6:0] exp_a, exp_b;
@@ -14,14 +14,14 @@ module fp24_mult (
   logic [15:0] mant_a, mant_b;
   logic [16:0] frac_a, frac_b;
 
-  assign exp_a = a[22:16];
-  assign exp_b = b[22:16];
+  assign exp_a = a.exp;
+  assign exp_b = b.exp;
 
-  assign sign_a = a[23];
-  assign sign_b = b[23];
+  assign sign_a = a.sign;
+  assign sign_b = b.sign;
   
-  assign mant_a = a[15:0];
-  assign mant_b = b[15:0];
+  assign mant_a = a.mant;
+  assign mant_b = b.mant;
 
   // Add leading 1s
   assign frac_a = {1'b1, mant_a};

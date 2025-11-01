@@ -14,29 +14,29 @@ endfunction
 module fp24_add (
   input wire clk,
   input wire rst,
-  input wire [23:0] a,
-  input wire [23:0] b,
+  input fp24 a,
+  input fp24 b,
   input wire is_sub,
 
-  output logic [23:0] sum
+  output fp24 sum
 );
   // Extract fields and swap if b > a
   logic swap;
-  assign swap = (b[22:16] > a[22:16]) || (b[22:16] == a[22:16] && b[15:0] > a[15:0]);
+  assign swap = (b.exp > a.exp) || (b.exp == a.exp && b.mant > a.mant);
 
   logic [6:0] exp_a, exp_b;
   logic sign_a, sign_b;
   logic [15:0] mant_a, mant_b;
   logic [17:0] frac_a, frac_b;
 
-  assign exp_a = swap ? b[22:16] : a[22:16];
-  assign exp_b = swap ? a[22:16] : b[22:16];
+  assign exp_a = swap ? b.exp : a.exp;
+  assign exp_b = swap ? a.exp : b.exp;
 
-  assign sign_a = swap ? (b[23] ^ is_sub) : a[23];
-  assign sign_b = swap ? a[23] : (b[23] ^ is_sub);
+  assign sign_a = swap ? (b.sign ^ is_sub) : a.sign;
+  assign sign_b = swap ? a.sign : (b.sign ^ is_sub);
   
-  assign mant_a = swap ? b[15:0] : a[15:0];
-  assign mant_b = swap ? a[15:0] : b[15:0];
+  assign mant_a = swap ? b.mant : a.mant;
+  assign mant_b = swap ? a.mant : b.mant;
 
   // Add leading 1s
   assign frac_a = {2'b01, mant_a};

@@ -73,7 +73,7 @@ async def test_module(dut):
 
         total_err += abs(math.log2(abs(exp_ans)) - math.log2(abs(dut_ans)))
 
-    # dut._log.info(f"Mean error: {total_err / n_tests}")
+    dut._log.info(f"Mean error: {total_err / n_tests}")
 
 
 def runner():

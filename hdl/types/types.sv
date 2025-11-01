@@ -5,6 +5,12 @@ parameter integer FULL_WIDTH = 32;
 typedef logic signed [FULL_WIDTH-1:0] fixed;
 typedef logic signed [FRAC_WIDTH:0] short;     // extra bit for two's complement
 
+typedef struct packed {
+  logic sign;
+  logic [6:0] exp;
+  logic [15:0] mant;
+} fp24;
+
 // ===== COLORS =====
 typedef struct packed {
   logic [7:0] r;
