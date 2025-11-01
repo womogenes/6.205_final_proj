@@ -35,11 +35,9 @@ module top_level (
   logic [23:0] b;
 
   always_comb begin
-    for (integer i = 0; i < 16; i = i + 1) begin
-      sw_rev[15 - i] = sw[i];
-    end
-    a = {sw_rev, sw, sw_rev, sw};
-    b = {sw, sw_rev, sw, sw_rev};
+    a <= {a[22:0], sw[0]};
+    b <= {b[22:0], sw[1]};
+
   end
 
   logic [$clog2(OUTPUT_WIDTH) - 1:0] counter;
@@ -53,13 +51,12 @@ module top_level (
 
   logic [23:0] dout;
 
-  fp24_add(
+  fp24_mult(
     .clk(clk_100mhz),
     .rst(sys_rst),
     .a(a),
     .b(b),
-    .is_sub(btn[1]),
-    .sum(dout)
+    .prod(dout)
   );
 
   assign led[0] = dout[counter];

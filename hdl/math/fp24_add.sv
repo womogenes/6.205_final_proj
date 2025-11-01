@@ -51,33 +51,27 @@ module fp24_add (
   logic [4:0] shift;
 
   always_comb begin
-    // Handle the zero cases
-    if (exp_a == 0 && frac_a == 0) sum = b;
-    else if (exp_b == 0 && frac_b == 0) sum = a;
+    // Align exponents
+    exp_diff = exp_a - exp_b;
+    frac_b_shift = frac_b >> exp_diff;
 
-    else begin
-      // Align exponents
-      exp_diff = exp_a - exp_b;
-      frac_b_shift = frac_b >> exp_diff;
+    // Add/subtract
+    frac_sum = (sign_a == sign_b) ? (frac_a + frac_b_shift) : (frac_a - frac_b_shift);
 
-      // Add/subtract
-      frac_sum = (sign_a == sign_b) ? (frac_a + frac_b_shift) : (frac_a - frac_b_shift);
+    // Normalize result
+    shift = clz17(frac_sum[16:0]);
 
-      // Normalize result
-      shift = clz17(frac_sum[16:0]);
-
-      if (frac_sum[17]) begin
-        // We overflowed!
-        frac_norm = frac_sum[17:1];
-        exp_norm = exp_a + 1;
-        
-      end else begin
-        // Maybe underflowed, see `shift`
-        frac_norm = frac_sum[16:0] << shift;
-        exp_norm = exp_a - shift;
-      end
-
-      sum = {sign_a, exp_norm, frac_norm[15:0]};
+    if (frac_sum[17]) begin
+      // We overflowed!
+      frac_norm = frac_sum[17:1];
+      exp_norm = exp_a + 1;
+      
+    end else begin
+      // Maybe underflowed, see `shift`
+      frac_norm = frac_sum[16:0] << shift;
+      exp_norm = exp_a - shift;
     end
+
+    sum = {sign_a, exp_norm, frac_norm[15:0]};
   end
 endmodule
