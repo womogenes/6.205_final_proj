@@ -12,8 +12,6 @@ module rtx #(
   output logic [9:0] pixel_v,
   output logic ray_done
 );
-
-  ray_caster 
   
 endmodule
 
