@@ -37,6 +37,9 @@ module fp24_mult (
   assign sign_prod = sign_a ^ sign_b;
 
   always_comb begin
+    overflow = 0;
+    exp_prod = 0;
+    frac_prod = 0;
     // Handle the zero cases
     if ((exp_a == 0 && mant_a == 0) || 
     (exp_b == 0 && mant_b == 0)) begin
@@ -56,7 +59,7 @@ module fp24_mult (
       end else begin
         exp_prod = exp_prod - 63;
       end
-      prod = {sign_prod, exp_prod[6:0], overflow ? frac_prod[32:17] : frac_prod[31:16]};
     end
+    prod = {sign_prod, exp_prod[6:0], overflow ? frac_prod[32:17] : frac_prod[31:16]};
   end
 endmodule
