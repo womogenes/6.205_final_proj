@@ -64,5 +64,5 @@ module top_level (
 
   assign led[0] = dout[counter];
  
-endmodule //  top_level
+endmodule // top_level
 `default_nettype wire
