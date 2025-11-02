@@ -34,9 +34,9 @@ int main() {
         ray_caster(&cam, pixel_h, pixel_v, &params);
         ray_tracer(&params, &result);
 
-        fb_float[pixel_v][pixel_h][0] += result.pixel_color.r;
-        fb_float[pixel_v][pixel_h][1] += result.pixel_color.g;
-        fb_float[pixel_v][pixel_h][2] += result.pixel_color.b;
+        fb_float[pixel_v][pixel_h][0] += (uint8_t)result.pixel_color.r & 0b11111000;
+        fb_float[pixel_v][pixel_h][1] += (uint8_t)result.pixel_color.g & 0b11111100;
+        fb_float[pixel_v][pixel_h][2] += (uint8_t)result.pixel_color.b & 0b11111000;
 
         // uint8_t* pix_r = &(fb[pixel_v][pixel_h][0]);
         // uint8_t* pix_g = &(fb[pixel_v][pixel_h][1]);
