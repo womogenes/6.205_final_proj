@@ -37,10 +37,10 @@ module fp24_inv_sqrt_stage (
 );
   localparam fp24 three = 24'h408000;
 
-  fp24 y_piped3;
+  fp24 y_piped5;
 
   pipeline #(.WIDTH(24), .DEPTH(6)) x_pipe (.clk(clk), .in(x), .out(x_out));
-  pipeline #(.WIDTH(24), .DEPTH(5)) y_pipe (.clk(clk), .in(y), .out(y_piped3));
+  pipeline #(.WIDTH(24), .DEPTH(5)) y_pipe (.clk(clk), .in(y), .out(y_piped5));
   pipeline #(.WIDTH(1), .DEPTH(6)) valid_pipe (.clk(clk), .in(valid_in), .out(valid_out));
 
   fp24 y_sq;              // y * y
@@ -48,21 +48,21 @@ module fp24_inv_sqrt_stage (
   fp24 sub;               // (3 - x * y * y)
   fp24 frac;              // (3 - x * y * y) / 2
   
-  fp24_mul mul_y_sq(.a(y), .b(y));
-  fp24_mul mul_y_sq_by_x(.a(y_sq), .b(x_pipe.pipe[0]));
+  fp24_mul mul_y_sq(.clk(clk), .a(y), .b(y), .prod(y_sq));
+  fp24_mul mul_y_sq_by_x(.clk(clk), .a(y_sq), .b(x_pipe.pipe[0]), .prod(y_sq_by_x));
   
-  fp24_add add_sub(.clk(clk), .a(three), .b(y_sq_by_x), .is_sub(1'b1));
-  fp24_shift #(.SHIFT_AMT(1)) div2_frac(.a(sub));
+  fp24_add add_sub(.clk(clk), .a(three), .b(y_sq_by_x), .is_sub(1'b1), .sum(sub));
+  fp24_shift #(.SHIFT_AMT(1)) div2_frac (.a(sub), .quot(frac));
   
   // Final answer
-  fp24_mul mul_y_next(.a(frac), .b(y_piped3));
+  fp24_mul mul_y_next(.clk(clk), .a(frac), .b(y_piped5), .prod(y_next));
 
   always_ff @(posedge clk) begin
-    y_sq <= mul_y_sq.prod;
-    y_sq_by_x <= mul_y_sq_by_x.prod;
-    sub <= add_sub.sum;
-    frac <= div2_frac.quot;
-    y_next <= mul_y_next.prod;
+    // y_sq <= mul_y_sq.prod;
+    // y_sq_by_x <= mul_y_sq_by_x.prod;
+    // sub <= add_sub.sum;
+    // frac <= div2_frac.quot;
+    // y_next <= mul_y_next.prod;
   end
 endmodule
 

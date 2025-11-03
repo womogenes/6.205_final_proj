@@ -1,4 +1,5 @@
 // Multiplication for 24-bit floating point
+// 1-cycle delay (latched at output)
 
 module fp24_mul (
   input wire clk,
@@ -60,6 +61,9 @@ module fp24_mul (
         exp_prod = exp_prod - 63;
       end
     end
-    prod = {sign_prod, exp_prod[6:0], overflow ? frac_prod[32:17] : frac_prod[31:16]};
+  end
+
+  always_ff @(posedge clk) begin
+    prod <= {sign_prod, exp_prod[6:0], overflow ? frac_prod[32:17] : frac_prod[31:16]};
   end
 endmodule

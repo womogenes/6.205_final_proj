@@ -84,7 +84,10 @@ module fp24_add (
       frac_norm = frac_sum_buf[16:0] << shift;
       exp_norm = exp_a_buf - shift;
     end
+  end
 
-    sum = {sign_a_buf, exp_norm, frac_norm[15:0]};
+  // Stage 2 end: latch
+  always_ff @(posedge clk) begin
+    sum <= {sign_a_buf, exp_norm, frac_norm[15:0]};
   end
 endmodule

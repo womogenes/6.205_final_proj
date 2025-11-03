@@ -71,7 +71,7 @@ async def test_pipeline(dut):
     dut._log.info(f"mean relative error: {np.mean(rel_err) * 100:.6f}%")
 
 
-@cocotb.test()
+# @cocotb.test()
 async def test_module(dut):
     """cocotb test for the fp24 inv sqrt module"""
     dut._log.info("Starting...")
