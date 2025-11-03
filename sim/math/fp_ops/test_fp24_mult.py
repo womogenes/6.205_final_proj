@@ -86,7 +86,7 @@ def runner():
     sources = [
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "multiplier.sv",
-        proj_path / "hdl" / "math" / "fp24_mult.sv"
+        proj_path / "hdl" / "math" / "fp24_mul.sv"
     ]
     build_test_args = ["-Wall"]
 
@@ -94,7 +94,7 @@ def runner():
     parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "fp24_mult"
+    hdl_toplevel = "fp24_mul"
     
     runner = get_runner(sim)
     runner.build(

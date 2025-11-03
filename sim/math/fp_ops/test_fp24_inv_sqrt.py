@@ -148,7 +148,7 @@ def runner():
         proj_path / "hdl" / "pipeline.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mult.sv",
+        proj_path / "hdl" / "math" / "fp24_mul.sv",
         proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv"
 
     ]

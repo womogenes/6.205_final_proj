@@ -62,7 +62,7 @@ module top_level (
   //   .sum(dout)
   // );
 
-  // fp24_mult(
+  // fp24_mul(
   //   .clk(clk_100mhz),
   //   .rst(sys_rst),
   //   .a(a),
