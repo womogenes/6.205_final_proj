@@ -36,7 +36,12 @@ def convert_fp24(f: BinaryValue):
     """
     Convert 24-bit fp24 value to Python float
     """
-    if f == 0:
+    if not f.is_resolvable:
+        # Not a valid float
+        return None
+        
+    # If all but the sign bit is zero, this represents zero
+    if f & 0x7FFFFF == 0:
         return 0
     
     sign = -1 if (f >> 23) & 1 else 1

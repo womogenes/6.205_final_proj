@@ -7,17 +7,16 @@ module pipeline #(
 ) (
   input wire clk,
   input wire [WIDTH-1:0] in,
-  output logic [WIDTH-1:0] out
+  output logic [WIDTH-1:0] out,
+  output logic [DEPTH-1:0][WIDTH-1:0] pipe
 );
-  logic [WIDTH-1:0] pipe [DEPTH-1:0];
-
-  assign out = pipe[0];
+  assign out = pipe[DEPTH-1];
 
   // Pipe things downnn
   always_ff @(posedge clk) begin
-    pipe[DEPTH-1] <= in;
-    for (integer i = 0; i < DEPTH - 1; i = i + 1) begin
-      pipe[i] <= pipe[i + 1];
+    pipe[0] <= in;
+    for (integer i = 1; i < DEPTH; i = i + 1) begin
+      pipe[i] <= pipe[i - 1];
     end
   end
 endmodule

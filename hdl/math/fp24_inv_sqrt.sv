@@ -10,18 +10,36 @@
     y: current guess
 
   timing:
-    4 cycles of delay
+    4 clock cycles
 */
 module fp24_inv_sqrt_stage (
   input wire clk,
   input wire rst,
+
   input fp24 x,
   input fp24 y,
+  input wire valid_in,
 
-  output fp24 y_next
+  // output fp24 y_sq,       // y * y
+  // output fp24 y_sq_by_x,  // x * y * y
+  // output fp24 sub,        // (3 - x * y * y)
+  // output fp24 frac,       // (3 - x * y * y) / 2
+
+  output fp24 x_out,
+  output fp24 y_next,
+  output wire valid_out
 );
   localparam fp24 three = 24'h408000;
   localparam fp24 half = 24'h3e0000;
+
+  fp24 y_piped3;
+  fp24 x_piped1;
+
+  assign x_piped1 = x_pipe.pipe[0];
+
+  pipeline #(.WIDTH(24), .DEPTH(4)) x_pipe (.clk(clk), .in(x), .out(x_out));
+  pipeline #(.WIDTH(24), .DEPTH(3)) y_pipe (.clk(clk), .in(y), .out(y_piped3));
+  pipeline #(.WIDTH(1), .DEPTH(4)) valid_pipe (.clk(clk), .in(valid_in), .out(valid_out));
 
   fp24 y_sq;       // y * y
   fp24 y_sq_by_x;  // x * y * y
@@ -29,14 +47,20 @@ module fp24_inv_sqrt_stage (
   fp24 frac;       // (3 - x * y * y) / 2
   
   fp24_mult mul_y_sq(.a(y), .b(y));
-  fp24_mult mul_y_sq_by_x(.a(y_sq), .b(x));
+  fp24_mult mul_y_sq_by_x(.a(y_sq), .b(x_piped1));
   
-  // fp24_add add1(.a(three), .b(y_sq_by_x), .is_sub(1'b1), .sum(sub));
-  assign sub = fp24_add(three, y_sq_by_x, 1'b1);
-  fp24_mult mult3(.a(sub), .b(half), .prod(frac));
+  fp24_add add_sub(.a(three), .b(y_sq_by_x), .is_sub(1'b1), .sum(sub));
+  fp24_mult mul_frac(.a(sub), .b(half));
   
   // Final answer
-  fp24_mult mult4(.a(frac), .b(y), .prod(y_next));
+  fp24_mult mul_y_next(.a(frac), .b(y_piped3));
+
+  always_ff @(posedge clk) begin
+    y_sq <= mul_y_sq.prod;
+    y_sq_by_x <= mul_y_sq_by_x.prod;
+    frac <= mul_frac.prod;
+    y_next <= mul_y_next.prod;
+  end
 endmodule
 
 /*
@@ -67,14 +91,12 @@ module fp24_inv_sqrt (
   // fp24 half_x;
   // fp24_mult half_x_mult(.a(half), .b(x), .prod(half_x));
 
-  fp24 [NR_STAGES-1:0] x_buffer;
-  fp24 [NR_STAGES-1:0] y_buffer;
-  fp24 init_guess;
-
-  fp24 [NR_STAGES-1:0] y_next_buffer;
-  logic [NR_STAGES-1:0] valid_buffer;
+  fp24 [NR_STAGES:0] x_buffer;
+  fp24 [NR_STAGES:0] y_buffer;
+  logic [NR_STAGES:0] valid_buffer;
 
   // First stage assume combinational
+  fp24 init_guess;
   assign init_guess = MAGIC_NUMBER - (x >> 1); // what the fuck???
   
   generate
@@ -85,34 +107,18 @@ module fp24_inv_sqrt (
         .rst(rst),
         .x((i == 0) ? x : x_buffer[i]),
         .y((i == 0) ? init_guess : y_buffer[i]),
-        .y_next(y_next_buffer[i])
+        .valid_in((i == 0) ? x_valid : valid_buffer[i]),
+
+        .x_out(x_buffer[i + 1]),
+        .y_next(y_buffer[i + 1]),
+        .valid_out(valid_buffer[i + 1])
       );
     end
   endgenerate
 
-  always_ff @(posedge clk) begin
-    if (rst) begin
-      valid_buffer <= 0;
-      
-    end else begin
-      // first stage
-      // (could collapse into ternary)
-      x_buffer[0] <= x;
-      valid_buffer[0] <= x_valid;
-      y_buffer[0] <= init_guess;
-
-      // move x buffer and valid buffer
-      for (integer i = 1; i < NR_STAGES; i = i + 1) begin
-        x_buffer[i] <= x_buffer[i - 1];
-        valid_buffer[i] <= valid_buffer[i - 1];
-        y_buffer[i] <= y_next_buffer[i - 1];
-      end
-    end
-  end
-
   // Outputs are last stage in the pipeline
-  assign inv_sqrt = y_buffer[NR_STAGES-1];
-  assign inv_sqrt_valid = valid_buffer[NR_STAGES-1];
+  assign inv_sqrt = y_buffer[NR_STAGES];
+  assign inv_sqrt_valid = valid_buffer[NR_STAGES];
 endmodule
 
 `default_nettype wire

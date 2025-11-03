@@ -36,10 +36,16 @@ async def test_module(dut):
         """
         x_f = make_fp24(x)
 
+        # Clock in value for 1 cycle
         dut.x.value = x_f
         dut.x_valid.value = 1
-        await ClockCycles(dut.clk, 5)
+        await ClockCycles(dut.clk, 1)
+        dut.x_valid.value = 0
+        
+        await RisingEdge(dut.inv_sqrt_valid)
+
         res = convert_fp24(dut.inv_sqrt.value)
+        await ClockCycles(dut.clk, 1)
         return res
     
     # x = -38000
@@ -87,6 +93,7 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
+        proj_path / "hdl" / "pipeline.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "fp24_add.sv",
         proj_path / "hdl" / "math" / "fp24_mult.sv",
