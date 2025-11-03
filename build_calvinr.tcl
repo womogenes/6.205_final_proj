@@ -23,7 +23,8 @@ if {[llength $files] != 0} {
 
 # read in all system verilog files:
 set sources_sv [ concat \
-    [ glob ./hdl/sd_reader/*.sv ] \
+    [ glob ./hdl/dram/*.sv ] \
+    [ glob ./hdl/dram/*.v ] \
     [ glob ./hdl/mem/*.sv ] \
     [ glob ./hdl/mem/*.v ] \
     [ glob ./hdl/hdmi/*.sv ] \

@@ -114,13 +114,13 @@ module high_definition_frame_buffer(
         .memrequest_complete     (memrequest_complete), 
 
         .write_axis_data        (rtx_memclk_axis_tdata),
-        .write_axis_taddr       (rtx_memclk_axis_taddr),
+        .write_axis_addr       (rtx_memclk_axis_taddr),
         .write_axis_valid       (rtx_memclk_axis_tvalid),
         .write_axis_ready       (rtx_memclk_axis_tready),
 
 
         .read_axis_data         (display_memclk_axis_tdata),
-        .read_axis_taddr        (display_memclk_axis_taddr),
+        .read_axis_tlast        (display_memclk_axis_tlast),
         .read_axis_valid        (display_memclk_axis_tvalid),
         .read_axis_af           (display_memclk_axis_prog_full),
         .read_axis_ready        (display_memclk_axis_tready) //,

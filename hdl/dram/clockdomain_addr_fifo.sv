@@ -52,7 +52,7 @@ module clockdomain_addr_fifo
      .m_axis_tdest(1'b0),
      .m_axis_tid(1'b0),
      .m_axis_tkeep(1'b0),
-     .m_axis_tlast(receiver_axis_tlast),
+     .m_axis_tlast(1'b0),
      .m_axis_tready(receiver_axis_tready),
      .m_axis_tstrb(16'b0),
      .m_axis_tuser(1'b0),
