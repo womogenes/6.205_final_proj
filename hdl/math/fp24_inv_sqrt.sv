@@ -52,7 +52,7 @@ module fp24_inv_sqrt_stage (
   fp24_mul mul_y_sq_by_x(.a(y_sq), .b(x_pipe.pipe[0]));
   
   fp24_add add_sub(.clk(clk), .a(three), .b(y_sq_by_x), .is_sub(1'b1));
-  fp24_div2 div2_frac(.a(sub));
+  fp24_shift #(.SHIFT_AMT(1)) div2_frac(.a(sub));
   
   // Final answer
   fp24_mul mul_y_next(.a(frac), .b(y_piped3));

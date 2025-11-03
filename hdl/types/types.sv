@@ -2,8 +2,9 @@ parameter integer FRAC_WIDTH = 16;
 parameter integer FULL_WIDTH = 32;
 
 // ===== NUMBERS + MATH =====
-typedef logic signed [FULL_WIDTH-1:0] fixed;
-typedef logic signed [FRAC_WIDTH:0] short;     // extra bit for two's complement
+// FIXED-POINT TYPES NOT USED
+// typedef logic signed [FULL_WIDTH-1:0] fixed;
+// typedef logic signed [FRAC_WIDTH:0] short;     // extra bit for two's complement
 
 typedef struct packed {
   logic sign;
@@ -18,21 +19,9 @@ typedef struct packed {
   logic [7:0] b;
 } color8;
 
-typedef struct packed {
-  short r;
-  short g;
-  short b;
-} color;
-
 // ===== VECTOR TYPES =====
 typedef struct packed {
-  fixed x;
-  fixed y;
-  fixed z;
+  fp24 x;
+  fp24 y;
+  fp24 z;
 } vec3;
-
-typedef struct packed {
-  short x;
-  short y;
-  short z;
-} vec3s;

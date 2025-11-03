@@ -71,7 +71,7 @@ async def test_pipeline(dut):
     dut._log.info(f"mean relative error: {np.mean(rel_err) * 100:.6f}%")
 
 
-# @cocotb.test()
+@cocotb.test()
 async def test_module(dut):
     """cocotb test for the fp24 inv sqrt module"""
     dut._log.info("Starting...")
@@ -147,7 +147,7 @@ def runner():
     sources = [
         proj_path / "hdl" / "pipeline.sv",
         proj_path / "hdl" / "types" / "types.sv",
-        proj_path / "hdl" / "math" / "fp24_div2.sv",
+        proj_path / "hdl" / "math" / "fp24_shift.sv",
         proj_path / "hdl" / "math" / "fp24_add.sv",
         proj_path / "hdl" / "math" / "fp24_mul.sv",
         proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv"
