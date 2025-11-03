@@ -57,7 +57,7 @@ endmodule
   Dot product of two vec3s
 
   Timing:
-    2 cycles, depends on fp24_add taking 1 cycle
+    5 cycles (mul, add, add)
 */
 module fp24_vec3_dot (
   input wire clk,
@@ -67,6 +67,16 @@ module fp24_vec3_dot (
   output fp24 dot
 );
   fp24_vec3 prod;
+  fp24 sum_xy, z_piped2;
 
   fp24_vec3_mul mul(.clk(clk), .a(a), .b(b), .prod(prod));
+
+  // Add the elementwise products
+  fp24_add add_xy(.clk(clk), .a(prod.x), .b(prod.y), .sum(sum_xy));
+
+  // Store z-value because pipeline timing
+  pipeline #(.WIDTH(24), .DEPTH(2)) z_pipe (.clk(clk), .in(prod.z), .out(z_piped2));
+
+  // Final add
+  fp24_add add_xyz(.clk(clk), .a(sum_xy), .b(z_piped2), .sum(dot));
 endmodule

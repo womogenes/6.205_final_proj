@@ -16,7 +16,7 @@ module fp24_add (
   input wire rst,
   input fp24 a,
   input fp24 b,
-  input wire is_sub,
+  input wire is_sub = 1'b0,
 
   output fp24 sum
 );
