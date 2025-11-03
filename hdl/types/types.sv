@@ -24,4 +24,4 @@ typedef struct packed {
   fp24 x;
   fp24 y;
   fp24 z;
-} vec3;
+} fp24_vec3;

@@ -6,11 +6,7 @@ import ctypes
 import cocotb
 from cocotb.binary import BinaryValue
 
-# We LOVE global variables
-FULL_WIDTH = 32
-FRAC_WIDTH = 16
-
-assert FRAC_WIDTH <= FULL_WIDTH, "More fractional bits than full bits"
+FP24_WIDTH = 24
 
 # ===== FP24 REPRESENTATIONS =====
 def make_fp24(x: float):
@@ -36,7 +32,7 @@ def convert_fp24(f: BinaryValue):
     """
     Convert 24-bit fp24 value to Python float
     """
-    if not f.is_resolvable:
+    if isinstance(f, BinaryValue) and not f.is_resolvable:
         # Not a valid float
         return None
         
@@ -50,38 +46,26 @@ def convert_fp24(f: BinaryValue):
 
     return sign * (2 ** exp) * mant
 
-
-def fixed2float(fixed: BinaryValue):
+def make_fp24_vec3(vec3: tuple[float]):
     """
-    Convert fixed-point binary string to Python float
-    """
-    assert FULL_WIDTH == 32, "Only 32-bit full widths are supported in testbench"
-    return float(ctypes.c_int32(fixed).value) / (1 << FRAC_WIDTH)
-
-def float2fixed(x: float):
-    """
-    Convert Python float to fixed-point representation
-    """
-    return int(x * (1 << FRAC_WIDTH)) & ((1 << FULL_WIDTH) - 1)
-
-def make_vec3(vec3: tuple[float]):
-    """
-    Convert (x, y, z) to packed 96*-bit vec3
-        * assuming FULL_WIDTH == 32
+    Convert (x, y, z) to packed 72-bit fp24_vec3
     """
     x, y, z = vec3
     return (
-        (float2fixed(x) << (FULL_WIDTH * 2)) +
-        (float2fixed(y) << (FULL_WIDTH * 1)) +
-        (float2fixed(z) << (FULL_WIDTH * 0))
+        (make_fp24(x) << (FP24_WIDTH * 2)) +
+        (make_fp24(y) << (FP24_WIDTH * 1)) +
+        (make_fp24(z) << (FP24_WIDTH * 0))
     )
 
-def convert_vec3(vec3: BinaryValue):
+def convert_fp24_vec3(vec3: BinaryValue):
     """
-    Unpack 96-bit vec3 into tuple of 3 floats
+    Unpack 72-bit vec3 into tuple of 3 floats
     """
-    mask = (1 << FULL_WIDTH) - 1
-    x = fixed2float((vec3 >> (FULL_WIDTH * 2)) & mask)
-    y = fixed2float((vec3 >> (FULL_WIDTH * 1)) & mask)
-    z = fixed2float((vec3 >> (FULL_WIDTH * 0)) & mask)
+    if isinstance(vec3, BinaryValue) and not vec3.is_resolvable:
+        return (None, None, None)
+
+    mask = (1 << FP24_WIDTH) - 1
+    x = convert_fp24((vec3 >> (FP24_WIDTH * 2)) & mask)
+    y = convert_fp24((vec3 >> (FP24_WIDTH * 1)) & mask)
+    z = convert_fp24((vec3 >> (FP24_WIDTH * 0)) & mask)
     return (x, y, z)
