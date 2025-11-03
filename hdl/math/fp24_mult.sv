@@ -1,8 +1,8 @@
 // Multiplication for 24-bit floating point
 
 module fp24_mult (
-  input wire clk,
-  input wire rst,
+  // input wire clk,
+  // input wire rst,
   input fp24 a,
   input fp24 b,
 

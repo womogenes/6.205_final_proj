@@ -12,8 +12,8 @@ function automatic [4:0] clz17(input logic [16:0] x);
 endfunction
 
 module fp24_add (
-  input wire clk,
-  input wire rst,
+  // input wire clk,
+  // input wire rst,
   input fp24 a,
   input fp24 b,
   input wire is_sub,

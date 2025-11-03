@@ -1,4 +1,5 @@
 // Compute inverse square root
+`default_nettype none
 
 /*
   inv_sqrt_stage:
@@ -11,6 +12,7 @@
   timing:
     4 cycles of delay
 */
+
 module fp24_inv_sqrt_stage (
   input wire clk,
   input wire rst,
@@ -49,21 +51,29 @@ module fp24_inv_sqrt (
 );
   // localparam fp24 half = {1'b0, 7'b011_1110, 16'b0};
   localparam fp24 MAGIC_NUMBER = 24'h5e7a09;
-
+  localparam integer NR_STAGES = 3;
 
   // fp24 half_x;
   // fp24_mult half_x_mult(.a(half), .b(x), .prod(half_x));
 
-  fp24 [3:0] x_buffer;
-  fp24 [3:0] y_buffer;
+  fp24 [NR_STAGES-1:0] x_buffer;
+  fp24 [NR_STAGES-1:0] y_buffer;
+  fp24 init_guess;
+
   fp24 [2:0] y_next_buffer;
-  logic [3:0] valid_buffer;
+  logic [NR_STAGES-1:0] valid_buffer;
+
+  // First stage assume combinational
+  assign init_guess = MAGIC_NUMBER - (x >> 1); // what the fuck???
+  
   generate
     genvar i;
-    for (i = 0; i < 3; i = i + 1) begin
+    for (i = 0; i < NR_STAGES; i = i + 1) begin
       fp24_inv_sqrt_stage inv_sqrt_stage (
-        .x(x_buffer[i]),
-        .y(y_buffer[i]),
+        .clk(clk),
+        .rst(rst),
+        .x((i == 0) ? x : x_buffer[i]),
+        .y((i == 0) ? init_guess : y_buffer[i]),
         .y_next(y_next_buffer[i])
       );
     end
@@ -72,22 +82,20 @@ module fp24_inv_sqrt (
   always_ff @(posedge clk) begin
     if (rst) begin
       valid_buffer <= 0;
+      
     end else begin
       // move x buffer and valid buffer
-      x_buffer[0] <= x;
-      valid_buffer[0] <= x_valid;
-      for (integer i = 0; i < 3; i = i + 1) begin
-        x_buffer[i + 1] <= x_buffer[i];
-        valid_buffer[i + 1] <= valid_buffer[i];
-        y_buffer[i + 1] <= y_next_buffer[i];
-      end
-
-      if (x_valid) begin
-        y_buffer[0] <= MAGIC_NUMBER - (x >> 1); // what the fuck???
+      for (integer i = 0; i < NR_STAGES; i = i + 1) begin
+        x_buffer[i] <= (i == 0) ? x : x_buffer[i - 1];
+        valid_buffer[i] <= (i == 0) ? x_valid : valid_buffer[i - 1];
+        y_buffer[i] <= (i == 0) ? init_guess : y_next_buffer[i - 1];
       end
     end
   end
-  assign inv_sqrt = y_buffer[3];
-  assign inv_sqrt_valid = valid_buffer[3];
-  // 
+
+  // Outputs are last stage in the pipeline
+  assign inv_sqrt = y_buffer[NR_STAGES-1];
+  assign inv_sqrt_valid = valid_buffer[NR_STAGES-1];
 endmodule
+
+`default_nettype wire
