@@ -39,9 +39,9 @@ module fp24_inv_sqrt_stage (
 
   fp24 y_piped5;
 
-  pipeline #(.WIDTH(24), .DEPTH(6)) x_pipe (.clk(clk), .in(x), .out(x_out));
-  pipeline #(.WIDTH(24), .DEPTH(5)) y_pipe (.clk(clk), .in(y), .out(y_piped5));
-  pipeline #(.WIDTH(1), .DEPTH(6)) valid_pipe (.clk(clk), .in(valid_in), .out(valid_out));
+  pipeline #(.WIDTH(24), .DEPTH(5)) x_pipe (.clk(clk), .in(x), .out(x_out));
+  pipeline #(.WIDTH(24), .DEPTH(4)) y_pipe (.clk(clk), .in(y), .out(y_piped5));
+  pipeline #(.WIDTH(1), .DEPTH(5)) valid_pipe (.clk(clk), .in(valid_in), .out(valid_out));
 
   fp24 y_sq;              // y * y
   fp24 y_sq_by_x;         // x * y * y

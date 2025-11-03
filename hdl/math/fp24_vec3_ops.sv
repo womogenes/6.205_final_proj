@@ -64,7 +64,7 @@ module fp24_vec3_dot (
   input wire rst,
   input fp24_vec3 a,
   input fp24_vec3 b,
-  output fp24 dot,
+  output fp24 dot
 );
   fp24_vec3 prod;
 

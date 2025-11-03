@@ -24,8 +24,6 @@ async def test_pipeline(dut):
     """
     Test if this module is truly pipelined by clocking in one value per clock cycle
     """
-    # Expect 18 cycles of delay for a 3-stage
-
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
@@ -35,8 +33,8 @@ async def test_pipeline(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    # Assume 18-cycle delay for this module
-    DELAY_CYCLES = 18
+    # Assume some-cycle delay for this module
+    DELAY_CYCLES = 15
 
     N_SAMPLES = 100
     x = np.exp2(np.random.rand(N_SAMPLES) * 63 - 31)
@@ -71,7 +69,7 @@ async def test_pipeline(dut):
     dut._log.info(f"mean relative error: {np.mean(rel_err) * 100:.6f}%")
 
 
-# @cocotb.test()
+@cocotb.test()
 async def test_module(dut):
     """cocotb test for the fp24 inv sqrt module"""
     dut._log.info("Starting...")
