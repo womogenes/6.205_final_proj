@@ -13,13 +13,13 @@ set partNum xc7s50csga324-1
 set outputDir obj
 file mkdir $outputDir
 set files [glob -nocomplain "$outputDir/*"]
-if {[llength $files] != 0} {
-    # clear folder contents
-    puts "deleting contents of $outputDir"
-    file delete -force {*}[glob -directory $outputDir *];
-} else {
-    puts "$outputDir is empty"
-}
+# if {[llength $files] != 0} {
+#     # clear folder contents
+#     puts "deleting contents of $outputDir"
+#     file delete -force {*}[glob -directory $outputDir *];
+# } else {
+#     puts "$outputDir is empty"
+# }
 
 # read in all system verilog files:
 set sources_sv [ concat \
