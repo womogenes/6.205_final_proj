@@ -45,14 +45,13 @@ module fp24_inv_sqrt_stage (
 
   fp24 y_sq;              // y * y
   fp24 y_sq_by_x;         // x * y * y
-  fp24 y_sq_by_x_buf;     // x * y * y
   fp24 sub;               // (3 - x * y * y)
   fp24 frac;              // (3 - x * y * y) / 2
   
   fp24_mul mul_y_sq(.a(y), .b(y));
   fp24_mul mul_y_sq_by_x(.a(y_sq), .b(x_pipe.pipe[0]));
   
-  fp24_add add_sub(.a(three), .b(y_sq_by_x_buf), .is_sub(1'b1));
+  fp24_add add_sub(.clk(clk), .a(three), .b(y_sq_by_x), .is_sub(1'b1));
   fp24_div2 div2_frac(.a(sub));
   
   // Final answer
@@ -61,7 +60,6 @@ module fp24_inv_sqrt_stage (
   always_ff @(posedge clk) begin
     y_sq <= mul_y_sq.prod;
     y_sq_by_x <= mul_y_sq_by_x.prod;
-    y_sq_by_x_buf <= y_sq_by_x;
     sub <= add_sub.sum;
     frac <= div2_frac.quot;
     y_next <= mul_y_next.prod;
