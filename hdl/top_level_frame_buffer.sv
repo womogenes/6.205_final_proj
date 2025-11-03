@@ -2,7 +2,7 @@
 
 `define FPATH(X) `"X`"
 
-module top_level_rtx (
+module top_level (
   input wire clk_100mhz, // crystal reference clock
   input wire [15:0] sw, // all 16 input slide switches
 
@@ -20,7 +20,7 @@ module top_level_rtx (
   // HDMI, UART peripherals etc
   output logic [2:0] hdmi_tx_p, // hdmi output signals (positives) (blue, green, red)
   output logic [2:0] hdmi_tx_n, // hdmi output signals (negatives) (blue, green, red)
-  output logic hdmi_clk_p, hdmi_clk_n // differential hdmi clock
+  output logic hdmi_clk_p, hdmi_clk_n, // differential hdmi clock
 
   //SDRAM (DDR3) ports
   inout wire [15:0]   ddr3_dq, //data input/output
@@ -43,35 +43,29 @@ module top_level_rtx (
   assign rgb0 = 0;
 
   // buffered clock signal (we need this apparently)
-  wire clk_100mhz_buffered;
-  IBUF clkin1_ibufg (
-    .I(clk_100mhz),
-    .O(clk_100mhz_buffered)
-  );
+  logic clk_100mhz_buffered;
  
   // have btn[0] control system reset
   logic sys_rst;
   assign sys_rst = btn[0]; // reset is btn[0]
+
+  logic sys_rst_rtx;
+  assign sys_rst_rtx = sys_rst;
+  logic sys_rst_pixel;
+  assign sys_rst_pixel = sys_rst;
+  logic sys_rst_controller;
+  assign sys_rst_controller = sys_rst;
  
   logic clk_pixel, clk_5x, clk_rtx; // clock lines
   logic locked; // locked signal (we'll leave unused but still hook it up)
   assign clk_rtx = clk_100mhz_buffered;
  
-  // clock manager...creates 74.25 Hz and 5 times 74.25 MHz for pixel and TMDS
-  hdmi_clk_wiz_720p mhdmicw (
-    .reset(0),
-    .locked(locked),
-    .clk_ref(clk_100mhz_buffered),
-    .clk_pixel(clk_pixel),
-    .clk_tmds(clk_5x)
-  );
- 
-  logic [10:0] h_count; // h_count of system!
-  logic [9:0] v_count; // v_count of system!
+  logic [10:0] h_count_hdmi; // h_count of system!
+  logic [9:0] v_count_hdmi; // v_count of system!
 
   logic h_sync; // horizontal sync signal
   logic v_sync; // vertical sync signal
-  logic active_draw; // ative draw! 1 when in drawing region.0 in blanking/sync
+  logic active_draw_hdmi; // ative draw! 1 when in drawing region.0 in blanking/sync
   logic new_frame; // one cycle active indicator of new frame of info!
   logic [5:0] frame_count; // 0 to 59 then rollover frame counter
  
@@ -80,11 +74,11 @@ module top_level_rtx (
   video_sig_gen mvg(
     .pixel_clk(clk_pixel),
     .rst(sys_rst),
-    .h_count(h_count),
-    .v_count(v_count),
+    .h_count(h_count_hdmi),
+    .v_count(v_count_hdmi),
     .v_sync(v_sync),
     .h_sync(h_sync),
-    .active_draw(active_draw),
+    .active_draw(active_draw_hdmi),
     .new_frame(new_frame),
     .frame_count(frame_count)
   );
@@ -92,33 +86,34 @@ module top_level_rtx (
   logic [7:0] red, green, blue; // red green and blue pixel values for output
 
   // FAKE RTX ENGINE
-  logic [10:0] pixel_h_rtx;
-  logic [9:0] pixel_v_rtx;
+  logic [10:0] rtx_h_count;
+  logic [9:0] rtx_v_count;
   logic [7:0] frame_count_rtx;
   logic [2:0][7:0] rendered_color_rtx;
+  logic [15:0] rtx_pixel;
   logic [7:0] wait_counter_rtx;
-  logic rendered_color_valid_rtx;
+  logic rtx_valid;
 
   always_ff @(posedge clk_rtx) begin
     if (sys_rst) begin
-      pixel_h_rtx <= 0;
-      pixel_v_rtx <= 0;
+      rtx_h_count <= 0;
+      rtx_v_count <= 0;
       frame_count_rtx <= 0;
     end else begin
       
       wait_counter_rtx <= wait_counter_rtx + 1;
 
       if (wait_counter_rtx == 0) begin
-        if (pixel_h_rtx == 319) begin
-          pixel_h_rtx <= 0;
-          if (pixel_v_rtx == 179) begin
-            pixel_v_rtx <= 0;
+        if (rtx_h_count == 319) begin
+          rtx_h_count <= 0;
+          if (rtx_v_count == 179) begin
+            rtx_v_count <= 0;
             frame_count_rtx <= frame_count_rtx + 1;
           end else begin
-            pixel_v_rtx <= pixel_v_rtx + 1;
+            rtx_v_count <= rtx_v_count + 1;
           end
         end else begin
-          pixel_h_rtx <= pixel_h_rtx + 1;
+          rtx_h_count <= rtx_h_count + 1;
         end
       end
     end
@@ -130,17 +125,17 @@ module top_level_rtx (
     // end else begin
     //   rendered_color_rtx[2] = 8'd255 - (frame_count_rtx[6:0] << 1);
     // end
-    rendered_color_valid_rtx = wait_counter_rtx == 0;
+    rtx_valid = wait_counter_rtx == 0;
     rendered_color_rtx[0] = 8'hff;
     // rendered_color_rtx[1] = 8'hff;
     // rendered_color_rtx[2] = 8'hff;
 
     // green channel is pwm divided by 8 width-wise
-    rendered_color_rtx[1] = frame_count_rtx[2:0] > pixel_h_rtx[7:5] ? 255 : 0;
+    rendered_color_rtx[1] = frame_count_rtx[2:0] > rtx_h_count[7:5] ? 255 : 0;
 
     // blue channel is pwn divided on a longer period
-    rendered_color_rtx[2] = frame_count_rtx[7:5] > pixel_v_rtx[6:4] ? 255 : 0;
-
+    rendered_color_rtx[2] = frame_count_rtx[7:5] > rtx_v_count[6:4] ? 255 : 0;
+    rtx_pixel = {rendered_color_rtx[2][7:3], rendered_color_rtx[1][7:2], rendered_color_rtx[0][7:3]};
     // rendered_color_rtx[0] = 0;
     // rendered_color_rtx[1] = 64;
     // rendered_color_rtx[2] = 128;
@@ -157,6 +152,7 @@ module top_level_rtx (
   );
   assign ss1_c = ss0_c;
 
+  logic [23:0] frame_buff_bram;
   frame_buffer #(
     .SIZE_H(320),
     .SIZE_V(180),
@@ -167,42 +163,61 @@ module top_level_rtx (
 
     .clk_rtx(clk_rtx),
 
-    .pixel_h(pixel_h_rtx),
-    .pixel_v(pixel_v_rtx),
+    .pixel_h(rtx_h_count),
+    .pixel_v(rtx_v_count),
     .new_color(rendered_color_rtx),
-    .new_color_valid(rendered_color_valid_rtx),
+    .new_color_valid(rtx_valid),
 
     .clk_hdmi(clk_pixel),
 
-    .active_draw_hdmi(active_draw),
-    .h_count_hdmi(h_count >> 2),
-    .v_count_hdmi(v_count >> 2),
+    .active_draw_hdmi(active_draw_hdmi),
+    .h_count_hdmi(h_count_hdmi >> 2),
+    .v_count_hdmi(v_count_hdmi >> 2),
 
-    .pixel_out_color({blue, green, red}),
+    .pixel_out_color(frame_buff_bram),
     .pixel_out_valid(), //nothing for now
     .pixel_out_h_count(), //nothing for now
     .pixel_out_v_count() //nothing for now
   );
 
 
+  logic clk_camera_locked;
+  logic clk_pixel_locked;
+
+  // clocking wizards to generate the clock speeds we need for our different domains
+  // clk_camera: 200MHz, fast enough to comfortably sample the cameera's PCLK (50MHz)
+  cw_hdmi_clk_wiz wizard_hdmi(
+      .sysclk(clk_100mhz_buffered),
+      .clk_pixel(clk_pixel),
+      .clk_tmds(clk_5x),
+      .reset(0),
+      .locked()
+  );
+
   logic clk_controller;
   logic clk_ddr3;
   logic i_ref_clk;
   logic clk_ddr3_90;
+  logic clk_camera;
 
   logic lab06_clk_locked;
 
   lab06_clk_wiz lcw(
-    .reset(btn[0]),
-    .clk_in1(clk_100mhz),
-    .clk_camera(clk_camera),
-    .clk_xc(clk_xc),
-    .clk_passthrough(clk_100_passthrough),
-    .clk_controller(clk_controller),
-    .clk_ddr3(clk_ddr3),
-    .clk_ddr3_90(clk_ddr3_90),
-    .locked(lab06_clk_locked)
+      .reset(btn[0]),
+      .clk_in1(clk_100mhz),
+      .clk_camera(clk_camera),
+      .clk_xc(0),
+      .clk_passthrough(clk_100mhz_buffered),
+      .clk_controller(clk_controller),
+      .clk_ddr3(clk_ddr3),
+      .clk_ddr3_90(clk_ddr3_90),
+      .locked(lab06_clk_locked)
   );
+  assign i_ref_clk = clk_camera;
+
+  (* mark_debug = "true" *) wire ddr3_clk_locked;
+
+  assign ddr3_clk_locked = lab06_clk_locked;
   // the high_definition_frame_buffer module does all of the
   // "top-level wiring" for the FIFOs, the stacker and unstacker
   // traffic generator, and the IP memory controller.
@@ -210,7 +225,7 @@ module top_level_rtx (
   // 1. rtx data input, to write to the frame buffer
   // 2. output connection to the HDMI output
   // 3. the wires that connect to our DRAM chip
-
+  logic [15:0] frame_buff_dram;
   high_definition_frame_buffer highdef_fb(
     // Input data from rtx/pixel reconstructor
     .clk_rtx      (clk_rtx),
@@ -253,6 +268,18 @@ module top_level_rtx (
     .ddr3_odt        (ddr3_odt)
   );
 
+  always_comb begin
+    if (sw[0]) begin
+      red = {frame_buff_dram[4:0], 3'b0};
+      green = {frame_buff_dram[10:5], 2'b0};
+      blue = {frame_buff_dram[15:11], 3'b0};
+    end else begin
+      red = frame_buff_bram[7:0];
+      green = frame_buff_bram[15:8];
+      blue = frame_buff_bram[23:16];
+    end
+  end
+
   logic v_sync_buffered;
   logic h_sync_buffered;
   logic active_draw_buffered;
@@ -261,7 +288,7 @@ module top_level_rtx (
     .DEPTH(2)
   ) vid_control_buffer (
     .clk(clk_pixel),
-    .in({v_sync, h_sync, active_draw}),
+    .in({v_sync, h_sync, active_draw_hdmi}),
     .out({v_sync_buffered, h_sync_buffered, active_draw_buffered})
   );
  

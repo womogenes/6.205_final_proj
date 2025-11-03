@@ -28,7 +28,9 @@ set sources_sv [ concat \
     [ glob ./hdl/types/*.sv ] \
     [ glob ./hdl/rtx/*.sv ] \
     [ glob ./hdl/dram/*.sv ] \
-    [ glob ./hdl/top_level_dram.sv ] \
+    [ glob ./hdl/mem/*.sv ] \
+    [ glob ./hdl/seven_seg/*.sv ] \
+    [ glob ./hdl/top_level_frame_buffer.sv ] \
 ]
 read_verilog -sv $sources_sv
 

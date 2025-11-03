@@ -112,15 +112,15 @@ module traffic_generator(
     logic [20:0] fetched_blue;
     logic [127:0] repacked_rtx_data;
 
-    logic [20:0] new_red;
-    logic [21:0] new_green;
-    logic [20:0] new_blue;
-    assign new_red = fetched_red + queued_command_data[4:0];
-    assign new_green = fetched_green + queued_command_data[10:5];
-    assign new_blue = fetched_blue + queued_command_data[15:11];
+    logic [20:0] added_red;
+    logic [21:0] added_green;
+    logic [20:0] added_blue;
+    assign added_red = fetched_red + queued_command_data[4:0];
+    assign added_green = fetched_green + queued_command_data[10:5];
+    assign added_blue = fetched_blue + queued_command_data[15:11];
 
     logic [63:0] added_color;
-    assign added_color = {new_blue, new_green, new_red};
+    assign added_color = {added_blue, added_green, added_red};
 
     always_comb begin
       // only operate on the relevant one of the packed data 
@@ -202,9 +202,9 @@ module traffic_generator(
     logic [5:0] avg_green;
     logic [4:0] avg_blue;
     logic [15:0] avg_color;
-    assign new_red = fetched_red >> shift_amt;
-    assign new_green = fetched_green >> shift_amt;
-    assign new_blue = fetched_blue >> shift_amt;
+    assign avg_red = fetched_red >> shift_amt;
+    assign avg_green = fetched_green >> shift_amt;
+    assign avg_blue = fetched_blue >> shift_amt;
     assign avg_color = {avg_blue, avg_green, avg_red};    
 
     // FIFO to store build up wb_rtx requests when:
