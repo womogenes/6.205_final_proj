@@ -25,6 +25,7 @@ int main() {
 
   // float t = 0.80;
   const int N_FRAMES = 60;
+  const int mask_565 = 0;
 
   for (int frame_idx = 0; frame_idx < N_FRAMES; frame_idx++) {
     printf("rendering frame %d\n", frame_idx);
@@ -34,9 +35,13 @@ int main() {
         ray_caster(&cam, pixel_h, pixel_v, &params);
         ray_tracer(&params, &result);
 
-        fb_float[pixel_v][pixel_h][0] += (uint8_t)result.pixel_color.r & 0b11111000;
-        fb_float[pixel_v][pixel_h][1] += (uint8_t)result.pixel_color.g & 0b11111100;
-        fb_float[pixel_v][pixel_h][2] += (uint8_t)result.pixel_color.b & 0b11111000;
+        uint8_t r_mask = mask_565 ? 0b11111000 : 0xFF;
+        uint8_t g_mask = mask_565 ? 0b11111000 : 0xFF;
+        uint8_t b_mask = mask_565 ? 0b11111000 : 0xFF;
+
+        fb_float[pixel_v][pixel_h][0] += (uint8_t)result.pixel_color.r & r_mask;
+        fb_float[pixel_v][pixel_h][1] += (uint8_t)result.pixel_color.g & g_mask;
+        fb_float[pixel_v][pixel_h][2] += (uint8_t)result.pixel_color.b & b_mask;
 
         // uint8_t* pix_r = &(fb[pixel_v][pixel_h][0]);
         // uint8_t* pix_g = &(fb[pixel_v][pixel_h][1]);

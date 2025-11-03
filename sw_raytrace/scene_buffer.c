@@ -9,57 +9,57 @@ const Object SCENE_BUFFER[] = {
     .is_trig = 0,
     .mat = (Material){
       .color = {1, 0.3, 0.3},
-      .emit_color = {1, 1, 1},
-      .smooth = 1.0f,
-      .specular = 0.0f,
-    },
-    .sphere_center = {0, 0, 500},
-    .sphere_rad = 240,
-  },
-  (Object){
-    .is_trig = 0,
-    .mat = (Material){
-      .color = {1.0, 0.8, 0.5},
       .emit_color = {0.1, 0.1, 0.1},
       .smooth = 1.0f,
       .specular = 0.0f,
     },
-    .sphere_center = {50, 0, 180},
-    .sphere_rad = 75,
+    .sphere_center = {-2, 1, 7},
+    .sphere_rad = 2,
+  },
+  (Object){
+    .is_trig = 0,
+    .mat = (Material){
+      .color = {0.3, 1, 0.3},
+      .emit_color = {0.1, 0.1, 0.1},
+      .smooth = 1.0f,
+      .specular = 0.0f,
+    },
+    .sphere_center = {0, 0, 5},
+    .sphere_rad = 1,
   },
   (Object){
     .is_trig = 0,
     .mat = (Material){
       .color = {0.3, 0.3, 1},
-      .emit_color = {1, 1, 1},
+      .emit_color = {0.1, 0.1, 0.1},
       .smooth = 1.0f,
       .specular = 0.0f,
     },
-    .sphere_center = {50, 0, 105},
-    .sphere_rad = 20,
+    .sphere_center = {1.0, -0.5, 4},
+    .sphere_rad = 0.5,
   },
-  // // Skylight
+  // Skylight
   (Object){
     .is_trig = 0,
     .mat = (Material){
       .color = {0.5, 1.0, 0.5},
-      .emit_color = {0, 0, 0},
+      .emit_color = {1, 1, 1},
       .smooth = 1.0f,
       .specular = 0.0f,
     },
-    .sphere_center = {10, 0, 30},
-    .sphere_rad = 5,
+    .sphere_center = {0, 500, 0},
+    .sphere_rad = 450,
   },
   (Object){
     .is_trig = 0,
     .mat = (Material){
       .color = {0.85, 0.8, 1.0},
-      .emit_color = {1, 1, 1},
+      .emit_color = {0.1, 0.1, 0.1},
       .smooth = 1.0f,
       .specular = 0.0f,
     },
-    .sphere_center = {-500, 0, 100},
-    .sphere_rad = 200,
+    .sphere_center = {0, -200, 5},
+    .sphere_rad = 199,
   },
 };
 

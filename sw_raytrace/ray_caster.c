@@ -7,7 +7,7 @@
 
 void ray_caster(Camera* cam, int pixel_h, int pixel_v, RayTracerParams* out) {
   float dof_dist = 50;
-  float dof_blur = 0.5;
+  float dof_blur = 0;
 
   float u = ((pixel_h + 0.5f) / WIDTH) * 2.0f - 1.0f;  // [-1, 1]
   float v = 1.0f - ((pixel_v + 0.5f) / HEIGHT) * 2.0f; // [-1, 1], flipped y
