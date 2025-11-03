@@ -2,6 +2,12 @@
 `default_nettype none
 
 /*
+  Optimizations:
+    - Ignore the `valid` pipe and just trust that this module is fully pipelined
+      with 12-cycle delay
+*/
+
+/*
   inv_sqrt_stage:
     computes one stage of Newton's method for inverse square roots
 
@@ -33,9 +39,6 @@ module fp24_inv_sqrt_stage (
   localparam fp24 half = 24'h3e0000;
 
   fp24 y_piped3;
-  fp24 x_piped1;
-
-  assign x_piped1 = x_pipe.pipe[0];
 
   pipeline #(.WIDTH(24), .DEPTH(4)) x_pipe (.clk(clk), .in(x), .out(x_out));
   pipeline #(.WIDTH(24), .DEPTH(3)) y_pipe (.clk(clk), .in(y), .out(y_piped3));
@@ -47,7 +50,7 @@ module fp24_inv_sqrt_stage (
   fp24 frac;       // (3 - x * y * y) / 2
   
   fp24_mult mul_y_sq(.a(y), .b(y));
-  fp24_mult mul_y_sq_by_x(.a(y_sq), .b(x_piped1));
+  fp24_mult mul_y_sq_by_x(.a(y_sq), .b(x_pipe.pipe[0]));
   
   fp24_add add_sub(.a(three), .b(y_sq_by_x), .is_sub(1'b1), .sum(sub));
   fp24_mult mul_frac(.a(sub), .b(half));

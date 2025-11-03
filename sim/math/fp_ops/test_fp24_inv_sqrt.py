@@ -20,6 +20,58 @@ from utils import convert_fp24, make_fp24
 test_file = os.path.basename(__file__).replace(".py", "")
 
 @cocotb.test()
+async def test_pipeline(dut):
+    """
+    Test if this module is truly pipelined by clocking in one value per clock cycle
+    """
+    # Expect 12 cycles of delay for a 3-stage
+
+    dut._log.info("Starting...")
+    cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
+
+    dut._log.info("Holding reset...")
+    dut.rst.value = 1
+    dut.x_valid.value = 0
+    await ClockCycles(dut.clk, 3)
+    dut.rst.value = 0
+
+    # Assume 12-cycle delay for this module
+    DELAY_CYCLES = 12
+
+    N_SAMPLES = 100
+    x = np.exp2(np.random.rand(N_SAMPLES) * 63 - 31)
+    x_fp24 = list(map(make_fp24, x))
+
+    # Clock in one per cycle brrr
+    dut_ans = []
+    dut.x_valid.value = 1
+    for i in range(N_SAMPLES):
+        dut.x.value = x_fp24[i]
+        await ClockCycles(dut.clk, 1)
+        dut_ans.append(convert_fp24(dut.inv_sqrt.value))
+
+        # Output must be continually good to go
+        if i >= DELAY_CYCLES:
+            assert dut.inv_sqrt_valid.value
+            pass
+
+    dut.x_valid.value = 0
+
+    for _ in range(DELAY_CYCLES):
+        # assert dut.inv_sqrt_valid.value
+        await ClockCycles(dut.clk, 1)
+        dut_ans.append(convert_fp24(dut.inv_sqrt.value))
+
+    # Get answers!
+    await ClockCycles(dut.clk, DELAY_CYCLES * 2)
+
+    dut_ans = np.array(dut_ans[DELAY_CYCLES:])
+    
+    rel_err = np.abs((dut_ans / np.power(x, -0.5)) - 1)
+    dut._log.info(f"mean relative error: {np.mean(rel_err) * 100:.6f}%")
+
+
+# @cocotb.test()
 async def test_module(dut):
     """cocotb test for the fp24 inv sqrt module"""
     dut._log.info("Starting...")
@@ -41,7 +93,7 @@ async def test_module(dut):
         dut.x_valid.value = 1
         await ClockCycles(dut.clk, 1)
         dut.x_valid.value = 0
-        
+
         await RisingEdge(dut.inv_sqrt_valid)
 
         res = convert_fp24(dut.inv_sqrt.value)
@@ -80,9 +132,9 @@ async def test_module(dut):
 
         dut._log.info(f"{x=:.5} {exp_ans=:.5} {dut_ans=:.5} {error=:.5}")
 
-        total_err += abs(math.log2(exp_ans) - math.log2(dut_ans))
+        total_err += abs((exp_ans / dut_ans) - 1)
 
-    dut._log.info(f"Mean error: {total_err / n_tests}")
+    dut._log.info(f"Mean error: {total_err / n_tests * 100:.6f}%")
 
 
 def runner():
