@@ -36,24 +36,24 @@ module fp24_inv_sqrt_stage (
   output wire valid_out
 );
   localparam fp24 three = 24'h408000;
-  localparam fp24 half = 24'h3e0000;
 
   fp24 y_piped3;
 
-  pipeline #(.WIDTH(24), .DEPTH(4)) x_pipe (.clk(clk), .in(x), .out(x_out));
-  pipeline #(.WIDTH(24), .DEPTH(3)) y_pipe (.clk(clk), .in(y), .out(y_piped3));
-  pipeline #(.WIDTH(1), .DEPTH(4)) valid_pipe (.clk(clk), .in(valid_in), .out(valid_out));
+  pipeline #(.WIDTH(24), .DEPTH(6)) x_pipe (.clk(clk), .in(x), .out(x_out));
+  pipeline #(.WIDTH(24), .DEPTH(5)) y_pipe (.clk(clk), .in(y), .out(y_piped3));
+  pipeline #(.WIDTH(1), .DEPTH(6)) valid_pipe (.clk(clk), .in(valid_in), .out(valid_out));
 
-  fp24 y_sq;       // y * y
-  fp24 y_sq_by_x;  // x * y * y
-  fp24 sub;        // (3 - x * y * y)
-  fp24 frac;       // (3 - x * y * y) / 2
+  fp24 y_sq;              // y * y
+  fp24 y_sq_by_x;         // x * y * y
+  fp24 y_sq_by_x_buf;     // x * y * y
+  fp24 sub;               // (3 - x * y * y)
+  fp24 frac;              // (3 - x * y * y) / 2
   
   fp24_mul mul_y_sq(.a(y), .b(y));
   fp24_mul mul_y_sq_by_x(.a(y_sq), .b(x_pipe.pipe[0]));
   
-  fp24_add add_sub(.a(three), .b(y_sq_by_x), .is_sub(1'b1), .sum(sub));
-  fp24_mul mul_frac(.a(sub), .b(half));
+  fp24_add add_sub(.a(three), .b(y_sq_by_x_buf), .is_sub(1'b1));
+  fp24_div2 div2_frac(.a(sub));
   
   // Final answer
   fp24_mul mul_y_next(.a(frac), .b(y_piped3));
@@ -61,7 +61,9 @@ module fp24_inv_sqrt_stage (
   always_ff @(posedge clk) begin
     y_sq <= mul_y_sq.prod;
     y_sq_by_x <= mul_y_sq_by_x.prod;
-    frac <= mul_frac.prod;
+    y_sq_by_x_buf <= y_sq_by_x;
+    sub <= add_sub.sum;
+    frac <= div2_frac.quot;
     y_next <= mul_y_next.prod;
   end
 endmodule

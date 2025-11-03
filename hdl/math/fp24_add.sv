@@ -45,33 +45,46 @@ module fp24_add (
   // Outputs
   logic [6:0] exp_diff;
   logic [17:0] frac_b_shift;
-  logic [17:0] frac_sum;
   logic [16:0] frac_norm;
   logic [6:0] exp_norm;
   logic [4:0] shift;
 
+  // PIPELINE REGISTERS
+  logic sign_a_buf;
+  logic [6:0] exp_a_buf;
+  logic [17:0] frac_sum_buf;
+
+  // Stage 1: compute exponent diff + shift
   always_comb begin
     // Align exponents
     exp_diff = exp_a - exp_b;
     frac_b_shift = frac_b >> exp_diff;
+  end
 
+  // Stage 1.5: save to registers
+  always_ff @(posedge clk) begin
     // Add/subtract
-    frac_sum = (sign_a == sign_b) ? (frac_a + frac_b_shift) : (frac_a - frac_b_shift);
+    frac_sum_buf <= (sign_a == sign_b) ? (frac_a + frac_b_shift) : (frac_a - frac_b_shift);
+    exp_a_buf <= exp_a;
+    sign_a_buf <= sign_a;
+  end
 
+  // Stage 2: clz, assemble sum
+  always_comb begin
     // Normalize result
-    shift = clz17(frac_sum[16:0]);
+    shift = clz17(frac_sum_buf[16:0]);
 
-    if (frac_sum[17]) begin
+    if (frac_sum_buf[17]) begin
       // We overflowed!
-      frac_norm = frac_sum[17:1];
-      exp_norm = exp_a + 1;
+      frac_norm = frac_sum_buf[17:1];
+      exp_norm = exp_a_buf + 1;
       
     end else begin
       // Maybe underflowed, see `shift`
-      frac_norm = frac_sum[16:0] << shift;
-      exp_norm = exp_a - shift;
+      frac_norm = frac_sum_buf[16:0] << shift;
+      exp_norm = exp_a_buf - shift;
     end
 
-    sum = {sign_a, exp_norm, frac_norm[15:0]};
+    sum = {sign_a_buf, exp_norm, frac_norm[15:0]};
   end
 endmodule
