@@ -33,12 +33,16 @@ module traffic_generator(
         input wire           write_axis_tlast,
         input wire           write_axis_valid,
         output logic         write_axis_ready,
+
+        output logic [5:0] debug,
+
         // Read AXIS FIFO output
         output logic [127:0] read_axis_data,
         output logic         read_axis_tlast,
         output logic         read_axis_valid,
         input wire           read_axis_af, // almost full signal
         input wire           read_axis_ready
+
 );
 
 
@@ -98,7 +102,7 @@ module traffic_generator(
     // Feed the read output from the memory controller to the axi-stream output
     // the queued_command_write_enable won't be set until you've instantiated your FIFO below.
     assign read_axis_valid = memrequest_complete && (queued_command_req_type == READ_HDMI);
-    assign read_axis_data = memrequest_resp_data;
+    assign read_axis_data = -1;//queued_command_address;//memrequest_resp_data;
 
     logic [23:0] rtx_fetch_addr;
     assign rtx_fetch_addr = (write_axis_addr >> 1) | {3'b001, 21'b0};
@@ -314,6 +318,8 @@ module traffic_generator(
             req_type = NONE;
           end
         end 
+      end else begin
+        req_type = NONE;
       end
     end
 
@@ -446,6 +452,12 @@ module traffic_generator(
               memrequest_en = !memrequest_busy;
               memrequest_write_enable = !memrequest_busy;
               memrequest_write_data = fb_wb_data;
+            end
+            default: begin
+              memrequest_addr = 0;
+              memrequest_en = 0;
+              memrequest_write_enable = 0;
+              memrequest_write_data = 0;
             end
           endcase
         end

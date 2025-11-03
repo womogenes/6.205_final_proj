@@ -33,6 +33,8 @@ module high_definition_frame_buffer(
     input wire          i_ref_clk,
     input wire          i_rst,
     input wire          ddr3_clk_locked,
+
+    output logic [5:0] debug,
     
     // Bus wires to connect FPGA to SDRAM chip
     inout wire [15:0]   ddr3_dq,      //data input/output
@@ -52,15 +54,17 @@ module high_definition_frame_buffer(
 );
     
     logic [15:0]  rtx_axis_tdata;
-    logic         rtx_axis_taddr;
+    logic [23:0]  rtx_axis_taddr;
     logic         rtx_axis_tready;
     logic         rtx_axis_tvalid;
 
     logic [15:0]  rtx_memclk_axis_tdata;
-    logic         rtx_memclk_axis_taddr;
+    logic [23:0]  rtx_memclk_axis_taddr;
     logic         rtx_memclk_axis_tready;
     logic         rtx_memclk_axis_tvalid;
     logic         rtx_memclk_axis_prog_empty;
+
+    assign rtx_axis_taddr = 1280 * rtx_v_count + rtx_h_count;
 
     // FIFO data queue of 128-bit messages, crosses clock domains to the 83.333MHz
     // controller clock of the memory interface
@@ -114,10 +118,11 @@ module high_definition_frame_buffer(
         .memrequest_complete     (memrequest_complete), 
 
         .write_axis_data        (rtx_memclk_axis_tdata),
-        .write_axis_addr       (rtx_memclk_axis_taddr),
+        .write_axis_addr        (rtx_memclk_axis_taddr),
         .write_axis_valid       (rtx_memclk_axis_tvalid),
         .write_axis_ready       (rtx_memclk_axis_tready),
 
+        .debug(debug),
 
         .read_axis_data         (display_memclk_axis_tdata),
         .read_axis_tlast        (display_memclk_axis_tlast),

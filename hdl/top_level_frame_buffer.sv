@@ -22,6 +22,8 @@ module top_level (
   output logic [2:0] hdmi_tx_n, // hdmi output signals (negatives) (blue, green, red)
   output logic hdmi_clk_p, hdmi_clk_n, // differential hdmi clock
 
+  output logic [7:0] pmoda,
+
   //SDRAM (DDR3) ports
   inout wire [15:0]   ddr3_dq, //data input/output
   inout wire [1:0]    ddr3_dqs_n, //data input/output differential strobe (negative)
@@ -104,9 +106,9 @@ module top_level (
       wait_counter_rtx <= wait_counter_rtx + 1;
 
       if (wait_counter_rtx == 0) begin
-        if (rtx_h_count == 319) begin
+        if (rtx_h_count == 1279) begin
           rtx_h_count <= 0;
-          if (rtx_v_count == 179) begin
+          if (rtx_v_count == 719) begin
             rtx_v_count <= 0;
             frame_count_rtx <= frame_count_rtx + 1;
           end else begin
@@ -126,7 +128,7 @@ module top_level (
     //   rendered_color_rtx[2] = 8'd255 - (frame_count_rtx[6:0] << 1);
     // end
     rtx_valid = wait_counter_rtx == 0;
-    rendered_color_rtx[0] = 8'hff;
+    rendered_color_rtx[0] = 8'hff;//frame_count_rtx < rtx_v_count + rtx_h_count ? 255 : 0;
     // rendered_color_rtx[1] = 8'hff;
     // rendered_color_rtx[2] = 8'hff;
 
@@ -136,9 +138,6 @@ module top_level (
     // blue channel is pwn divided on a longer period
     rendered_color_rtx[2] = frame_count_rtx[7:5] > rtx_v_count[6:4] ? 255 : 0;
     rtx_pixel = {rendered_color_rtx[2][7:3], rendered_color_rtx[1][7:2], rendered_color_rtx[0][7:3]};
-    // rendered_color_rtx[0] = 0;
-    // rendered_color_rtx[1] = 64;
-    // rendered_color_rtx[2] = 128;
 
   end
 
@@ -231,7 +230,7 @@ module top_level (
     .clk_rtx      (clk_rtx),
     .sys_rst_rtx  (sys_rst_rtx),
     .rtx_valid    (rtx_valid),
-    .rtx_pixel    (rtx_pixel[15:0]),
+    .rtx_pixel    (rtx_pixel),
     .rtx_h_count  (rtx_h_count[10:0]),
     .rtx_v_count  (rtx_v_count[9:0]),
     
@@ -250,6 +249,8 @@ module top_level (
     .i_ref_clk       (i_ref_clk),
     .i_rst           (sys_rst_controller),
     .ddr3_clk_locked (ddr3_clk_locked),
+
+    .debug(pmoda[5:0]),
 
     // Bus wires to connect FPGA to SDRAM chip
     .ddr3_dq         (ddr3_dq[15:0]),
@@ -341,6 +342,17 @@ module top_level (
     .rst(sys_rst),
     .tmds_in(tmds_10b[2]),
     .tmds_out(tmds_signal[2]));
+
+  // assign led[15] = highdef_fb.memrequest_busy;
+  // assign led[14] = highdef_fb.memrequest_complete;
+  // assign led[13] = highdef_fb.memrequest_resp_data[4];
+  // assign led[12] = highdef_fb.memrequest_en;
+  // assign led[11] = highdef_fb.memrequest_write_enable;
+  // assign led[10] = highdef_fb.memrequest_addr[0];
+  // assign led[9] = highdef_fb.display_memclk_axis_tvalid;
+  // assign led[8] = highdef_fb.display_memclk_axis_tready;
+  // assign led[7] = highdef_fb.camera_memclk_axis_tvalid;
+  // assign led[6] = highdef_fb.camera_memclk_axis_tready;
  
   // output buffers generating differential signals:
   // three for the r,g,b signals and one that is at the pixel clock rate
