@@ -49,18 +49,19 @@ module fp24_inv_sqrt (
 );
   // localparam fp24 half = {1'b0, 7'b011_1110, 16'b0};
   localparam fp24 MAGIC_NUMBER = 24'h5e7a09;
-
+  localparam integer NR_STAGES = 3;
 
   // fp24 half_x;
   // fp24_mult half_x_mult(.a(half), .b(x), .prod(half_x));
 
-  fp24 [3:0] x_buffer;
-  fp24 [3:0] y_buffer;
+  fp24 [NR_STAGES:0] x_buffer;
+  fp24 [NR_STAGES:0] y_buffer;
   fp24 [2:0] y_next_buffer;
-  logic [3:0] valid_buffer;
+  logic [NR_STAGES:0] valid_buffer;
+  
   generate
     genvar i;
-    for (i = 0; i < 3; i = i + 1) begin
+    for (i = 0; i < NR_STAGES; i = i + 1) begin
       fp24_inv_sqrt_stage inv_sqrt_stage (
         .x(x_buffer[i]),
         .y(y_buffer[i]),
@@ -87,7 +88,7 @@ module fp24_inv_sqrt (
       end
     end
   end
-  assign inv_sqrt = y_buffer[3];
-  assign inv_sqrt_valid = valid_buffer[3];
-  // 
+
+  assign inv_sqrt = y_buffer[NR_STAGES];
+  assign inv_sqrt_valid = valid_buffer[NR_STAGES];
 endmodule
