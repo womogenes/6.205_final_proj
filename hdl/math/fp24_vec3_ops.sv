@@ -1,8 +1,7 @@
-// Vector operations (fp24 vec3 add and multiply)
-
+// Add a vec3 to a vec3
 module fp24_vec3_add (
   input wire clk,
-  input wire rst,   // haha are we even gonna use this
+  input wire rst,
 
   input fp24_vec3 a,
   input fp24_vec3 b,
@@ -13,4 +12,19 @@ module fp24_vec3_add (
   fp24_add add_x(.clk(clk), .rst(rst), .a(a.x), .b(b.x), .is_sub(is_sub), .sum(sum.x));
   fp24_add add_y(.clk(clk), .rst(rst), .a(a.y), .b(b.y), .is_sub(is_sub), .sum(sum.y));
   fp24_add add_z(.clk(clk), .rst(rst), .a(a.z), .b(b.z), .is_sub(is_sub), .sum(sum.z));
+endmodule
+
+// Multiply a vec3 by a vec3
+module fp24_vec3_mul (
+  input wire clk,
+  input wire rst,
+
+  input fp24_vec3 a,
+  input fp24_vec3 b,
+
+  output fp24_vec3 prod
+);
+  fp24_mul mul_x(.clk(clk), .rst(rst), .a(a.x), .b(b.x), .prod(prod.x));
+  fp24_mul mul_y(.clk(clk), .rst(rst), .a(a.y), .b(b.y), .prod(prod.y));
+  fp24_mul mul_z(.clk(clk), .rst(rst), .a(a.z), .b(b.z), .prod(prod.z));
 endmodule
