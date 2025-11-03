@@ -34,7 +34,7 @@ async def test_module(dut):
 
     DELAY_CYCLES = 1
 
-    N_SAMPLES = 100
+    N_SAMPLES = 1000
 
     # Generate random (N, 3) tensors for inputs
     a_vecs = np.exp2(np.random.rand(N_SAMPLES, 3) * 63 - 31)
