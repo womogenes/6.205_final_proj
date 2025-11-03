@@ -12,7 +12,6 @@
   timing:
     4 cycles of delay
 */
-
 module fp24_inv_sqrt_stage (
   input wire clk,
   input wire rst,
@@ -29,16 +28,28 @@ module fp24_inv_sqrt_stage (
   fp24 sub;        // (3 - x * y * y)
   fp24 frac;       // (3 - x * y * y) / 2
   
-  fp24_mult mult1(.a(y), .b(y), .prod(y_sq));
-  fp24_mult mult2(.a(y_sq), .b(x), .prod(y_sq_by_x));
+  fp24_mult mul_y_sq(.a(y), .b(y));
+  fp24_mult mul_y_sq_by_x(.a(y_sq), .b(x));
   
-  fp24_add add1(.a(three), .b(y_sq_by_x), .is_sub(1'b1), .sum(sub));
+  // fp24_add add1(.a(three), .b(y_sq_by_x), .is_sub(1'b1), .sum(sub));
+  assign sub = fp24_add(three, y_sq_by_x, 1'b1);
   fp24_mult mult3(.a(sub), .b(half), .prod(frac));
   
   // Final answer
   fp24_mult mult4(.a(frac), .b(y), .prod(y_next));
 endmodule
 
+/*
+  inv_sqrt:
+    does the whole inverse square root shebang using Newton-Rhapson
+
+  inputs:
+    x: the number to be inverse-square-rooted
+    x_valid: whether the input is valid
+
+  timing:
+    ???
+*/
 module fp24_inv_sqrt (
   input wire clk,
   input wire rst,
@@ -60,7 +71,7 @@ module fp24_inv_sqrt (
   fp24 [NR_STAGES-1:0] y_buffer;
   fp24 init_guess;
 
-  fp24 [2:0] y_next_buffer;
+  fp24 [NR_STAGES-1:0] y_next_buffer;
   logic [NR_STAGES-1:0] valid_buffer;
 
   // First stage assume combinational
@@ -84,11 +95,17 @@ module fp24_inv_sqrt (
       valid_buffer <= 0;
       
     end else begin
+      // first stage
+      // (could collapse into ternary)
+      x_buffer[0] <= x;
+      valid_buffer[0] <= x_valid;
+      y_buffer[0] <= init_guess;
+
       // move x buffer and valid buffer
-      for (integer i = 0; i < NR_STAGES; i = i + 1) begin
-        x_buffer[i] <= (i == 0) ? x : x_buffer[i - 1];
-        valid_buffer[i] <= (i == 0) ? x_valid : valid_buffer[i - 1];
-        y_buffer[i] <= (i == 0) ? init_guess : y_next_buffer[i - 1];
+      for (integer i = 1; i < NR_STAGES; i = i + 1) begin
+        x_buffer[i] <= x_buffer[i - 1];
+        valid_buffer[i] <= valid_buffer[i - 1];
+        y_buffer[i] <= y_next_buffer[i - 1];
       end
     end
   end

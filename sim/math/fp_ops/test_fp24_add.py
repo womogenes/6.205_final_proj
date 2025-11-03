@@ -84,7 +84,7 @@ def runner():
     parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "fp24_add"
+    hdl_toplevel = "fp24_add_module"
     
     runner = get_runner(sim)
     runner.build(
