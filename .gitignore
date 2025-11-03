@@ -12,3 +12,6 @@ obj*/
 
 .claude/
 .vscode/
+
+# Xilinx Vivado stuff
+.Xil/

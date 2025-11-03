@@ -24,7 +24,7 @@ async def test_pipeline(dut):
     """
     Test if this module is truly pipelined by clocking in one value per clock cycle
     """
-    # Expect 12 cycles of delay for a 3-stage
+    # Expect 15 cycles of delay for a 3-stage
 
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
@@ -35,8 +35,8 @@ async def test_pipeline(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    # Assume 12-cycle delay for this module
-    DELAY_CYCLES = 12
+    # Assume 15-cycle delay for this module
+    DELAY_CYCLES = 18
 
     N_SAMPLES = 100
     x = np.exp2(np.random.rand(N_SAMPLES) * 63 - 31)
@@ -147,6 +147,7 @@ def runner():
     sources = [
         proj_path / "hdl" / "pipeline.sv",
         proj_path / "hdl" / "types" / "types.sv",
+        proj_path / "hdl" / "math" / "fp24_div2.sv",
         proj_path / "hdl" / "math" / "fp24_add.sv",
         proj_path / "hdl" / "math" / "fp24_mul.sv",
         proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv"
