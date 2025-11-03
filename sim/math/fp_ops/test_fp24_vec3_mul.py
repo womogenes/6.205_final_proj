@@ -32,7 +32,7 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    DELAY_CYCLES = 1
+    DELAY_CYCLES = 0
 
     N_SAMPLES = 100
 
