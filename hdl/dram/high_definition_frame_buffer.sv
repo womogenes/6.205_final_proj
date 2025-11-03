@@ -9,13 +9,13 @@
  */
 module high_definition_frame_buffer(
 
-    // Input data from camera/pixel reconstructor
-    input wire          clk_camera,
-    input wire          sys_rst_camera,
-    input wire          camera_valid,
-    input wire [15:0]   camera_pixel,
-    input wire [10:0]   camera_h_count,
-    input wire [9:0]    camera_v_count,
+    // Input data from rtx/pixel reconstructor
+    input wire          clk_rtx,
+    input wire          sys_rst_rtx,
+    input wire          rtx_valid,
+    input wire [15:0]   rtx_pixel,
+    input wire [10:0]   rtx_h_count,
+    input wire [9:0]    rtx_v_count,
 
     // Output data to HDMI display pipeline
     input wire          clk_pixel,
@@ -33,6 +33,8 @@ module high_definition_frame_buffer(
     input wire          i_ref_clk,
     input wire          i_rst,
     input wire          ddr3_clk_locked,
+
+    output logic [5:0] debug,
     
     // Bus wires to connect FPGA to SDRAM chip
     inout wire [15:0]   ddr3_dq,      //data input/output
@@ -51,50 +53,36 @@ module high_definition_frame_buffer(
     output wire         ddr3_odt      //on-die termination (helps impedance match)
 );
     
-    logic [127:0] camera_axis_tdata;
-    logic         camera_axis_tlast;
-    logic         camera_axis_tready;
-    logic         camera_axis_tvalid;
+    logic [15:0]  rtx_axis_tdata;
+    logic [23:0]  rtx_axis_taddr;
+    logic         rtx_axis_tready;
+    logic         rtx_axis_tvalid;
 
-    // takes our 16-bit values and deserialize/stack them into 128-bit messages to write to DRAM
-    // the data pipeline is designed such that we can fairly safely assume its always ready.
-    stacker stacker_inst(
-        .clk(clk_camera),
-        .rst(sys_rst_camera),
-        .pixel_tvalid(camera_valid),
-        .pixel_tready(),
-        .pixel_tdata(camera_pixel),
-        // TODO: define the tlast value! you can do it in one line, based on camera h_count/v_count values
-        .pixel_tlast((camera_v_count == 719) && (camera_h_count == 1279)), // CHANGE ME
-        .chunk_tvalid(camera_axis_tvalid),
-        .chunk_tready(camera_axis_tready),
-        .chunk_tdata(camera_axis_tdata),
-        .chunk_tlast(camera_axis_tlast)
-    );
+    logic [15:0]  rtx_memclk_axis_tdata;
+    logic [23:0]  rtx_memclk_axis_taddr;
+    logic         rtx_memclk_axis_tready;
+    logic         rtx_memclk_axis_tvalid;
+    logic         rtx_memclk_axis_prog_empty;
 
-    logic [127:0] camera_memclk_axis_tdata;
-    logic         camera_memclk_axis_tlast;
-    logic         camera_memclk_axis_tready;
-    logic         camera_memclk_axis_tvalid;
-    logic         camera_memclk_axis_prog_empty;
+    assign rtx_axis_taddr = 1280 * rtx_v_count + rtx_h_count;
 
     // FIFO data queue of 128-bit messages, crosses clock domains to the 83.333MHz
     // controller clock of the memory interface
-    clockdomain_fifo camera_data_fifo(
-        .sender_rst(sys_rst_camera),
+    clockdomain_addr_fifo rtx_data_fifo(
+        .sender_rst(sys_rst_rtx),
 
-        .sender_clk(clk_camera),
-        .sender_axis_tvalid(camera_axis_tvalid),
-        .sender_axis_tready(camera_axis_tready),
-        .sender_axis_tdata(camera_axis_tdata),
-        .sender_axis_tlast(camera_axis_tlast),
+        .sender_clk(clk_rtx),
+        .sender_axis_tvalid(rtx_axis_tvalid),
+        .sender_axis_tready(rtx_axis_tready),
+        .sender_axis_tdata(rtx_axis_tdata),
+        .sender_axis_taddr(rtx_axis_taddr),
 
         .receiver_clk(clk_controller),
-        .receiver_axis_tvalid(camera_memclk_axis_tvalid),
-        .receiver_axis_tready(camera_memclk_axis_tready),
-        .receiver_axis_tdata(camera_memclk_axis_tdata),
-        .receiver_axis_tlast(camera_memclk_axis_tlast),
-        .receiver_axis_prog_empty(camera_memclk_axis_prog_empty)
+        .receiver_axis_tvalid(rtx_memclk_axis_tvalid),
+        .receiver_axis_tready(rtx_memclk_axis_tready),
+        .receiver_axis_tdata(rtx_memclk_axis_tdata),
+        .receiver_axis_taddr(rtx_memclk_axis_taddr),
+        .receiver_axis_prog_empty(rtx_memclk_axis_prog_empty)
     );
 
     logic [127:0] display_memclk_axis_tdata;
@@ -129,11 +117,12 @@ module high_definition_frame_buffer(
         .memrequest_busy         (memrequest_busy), 
         .memrequest_complete     (memrequest_complete), 
 
-        .write_axis_data        (camera_memclk_axis_tdata),
-        .write_axis_tlast       (camera_memclk_axis_tlast),
-        .write_axis_valid       (camera_memclk_axis_tvalid),
-        .write_axis_ready       (camera_memclk_axis_tready),
+        .write_axis_data        (rtx_memclk_axis_tdata),
+        .write_axis_addr        (rtx_memclk_axis_taddr),
+        .write_axis_valid       (rtx_memclk_axis_tvalid),
+        .write_axis_ready       (rtx_memclk_axis_tready),
 
+        .debug(debug),
 
         .read_axis_data         (display_memclk_axis_tdata),
         .read_axis_tlast        (display_memclk_axis_tlast),
