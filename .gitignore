@@ -14,7 +14,7 @@ obj*/
 .vscode/
 
 # Xilinx Vivado stuff
-.Xil/
+.Xil/*
 clockInfo.txt
 vivado.jou
 vivado.log
