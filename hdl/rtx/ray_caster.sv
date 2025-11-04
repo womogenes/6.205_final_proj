@@ -35,6 +35,7 @@ module ray_caster #(
   );
   
   // TODO: maybe we have to pipeline the new_ray signal that goes into ray_maker?
+  //   just by a cycle... maybe
   logic [10:0] pixel_h_maker;
   logic [9:0] pixel_v_maker;
   ray_maker #(

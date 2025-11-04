@@ -18,8 +18,11 @@ module ray_maker #(
   output fp24_vec3 ray_dir,
   output logic ray_valid
 );
-  // Turn pixel_h and pixel_v into floats
-  
+  // Turn pixel_h and pixel_v into floats eek
+
+  logic signed [10:0] pixel_h_norm;
+  logic signed [9:0] pixel_v_norm;
+
 endmodule
 
 `default_nettype wire

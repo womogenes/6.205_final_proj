@@ -13,7 +13,7 @@ import random
 import ctypes
 import numpy as np
 
-sys.path.append(Path(__file__).resolve().parent.parent._str)
+sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
 from utils import convert_fp24, make_fp24
 
 test_file = os.path.basename(__file__).replace(".py", "")

@@ -14,7 +14,7 @@ import ctypes
 import numpy as np
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import make_vec3, convert_vec3, float2fixed
+from sim.utils import make_vec3, convert_vec3, float2fixed
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
