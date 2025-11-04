@@ -7,7 +7,7 @@ module rtx #(
   input wire clk,
   input wire rst,
 
-  output logic [2:0][7:0] rtx_pixel,
+  output logic [15:0] rtx_pixel,
   output logic [10:0] pixel_h,
   output logic [9:0] pixel_v,
   output logic ray_done           // i.e. pixel_color valid
@@ -83,9 +83,9 @@ module rtx #(
   );
 
   // Convert to 565 representation
-  convert_fp24_uint #(.WIDTH(8)) r_convert (.clk(clk), .x(pixel_color.x), .n(rtx_pixel[0]));
-  convert_fp24_uint #(.WIDTH(8)) g_convert (.clk(clk), .x(pixel_color.y), .n(rtx_pixel[1]));
-  convert_fp24_uint #(.WIDTH(8)) b_convert (.clk(clk), .x(pixel_color.z), .n(rtx_pixel[2]));
+  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) r_convert (.clk(clk), .x(pixel_color.x), .n(rtx_pixel[4:0]));
+  convert_fp24_uint #(.WIDTH(6), .FRAC(6)) g_convert (.clk(clk), .x(pixel_color.y), .n(rtx_pixel[10:5]));
+  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) b_convert (.clk(clk), .x(pixel_color.z), .n(rtx_pixel[15:11]));
 
 endmodule
 

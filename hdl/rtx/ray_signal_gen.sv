@@ -19,15 +19,15 @@ module ray_signal_gen #(
       pixel_v <= 0;
     end else begin
       if (new_ray) begin
-        if (pixel_h == WIDTH - 1) begin
-          pixel_h <= 0;
-          if (pixel_v == HEIGHT - 1) begin
-            pixel_v <= 0;
+        if (pixel_v == HEIGHT - 1) begin
+          pixel_v <= 0;
+          if (pixel_h == WIDTH - 1) begin
+            pixel_h <= 0;
           end else begin
-            pixel_v <= pixel_v + 1;
+            pixel_h <= pixel_h + 1;
           end
         end else begin
-          pixel_h <= pixel_h + 1;
+          pixel_v <= pixel_v + 1;
         end
       end
     end

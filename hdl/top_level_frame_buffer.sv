@@ -97,64 +97,84 @@ module top_level (
   logic [3:0] wait_counter_rtx;
   logic [2:0] rtx_skip_counter;
   logic rtx_valid;
-  assign rtx_h_count = rtx_skipped_counter | rtx_skip_counter;
 
-  always_ff @(posedge clk_rtx) begin
-    if (sys_rst || btn[1]) begin
-      rtx_skipped_counter <= 0;
-      rtx_skip_counter <= 0;
-      rtx_v_count <= 0;
-      frame_count_rtx <= 0;
-    end else begin
+  assign rendered_color_rtx = {
+    {rtx_pixel[15:11], 3'b000},
+    {rtx_pixel[10:5], 2'b00},
+    {rtx_pixel[4:0], 3'b000}
+  };
+
+  // Real rtx?
+  rtx my_rtx(
+    .clk(clk_rtx),
+    .rst(sys_rst),
+
+    .rtx_pixel(rtx_pixel),
+    .pixel_h(rtx_h_count),
+    .pixel_v(rtx_v_count),
+    .ray_done(rtx_valid)
+  );
+
+  logic rtx_overwrite;
+  assign rtx_overwrite = sw[1];
+
+  // assign rtx_h_count = rtx_skipped_counter | rtx_skip_counter;
+
+  // always_ff @(posedge clk_rtx) begin
+  //   if (sys_rst || btn[1]) begin
+  //     rtx_skipped_counter <= 0;
+  //     rtx_skip_counter <= 0;
+  //     rtx_v_count <= 0;
+  //     frame_count_rtx <= 0;
+  //   end else begin
       
-      wait_counter_rtx <= wait_counter_rtx + 1;
+  //     wait_counter_rtx <= wait_counter_rtx + 1;
 
-      if (wait_counter_rtx == 0) begin
-        if (rtx_skipped_counter == 1272) begin
-          rtx_skipped_counter <= 0;
-          if (rtx_skip_counter == 7) begin
-            rtx_skip_counter <= 0;
-            if (rtx_v_count == 719) begin
-              rtx_v_count <= 0;
-              frame_count_rtx <= frame_count_rtx + 1;
-            end else begin
-              rtx_v_count <= rtx_v_count + 1;
-            end
-          end else begin
-            rtx_skip_counter <= rtx_skip_counter + 1;
-          end
-        end else begin
-          rtx_skipped_counter <= rtx_skipped_counter + 8;
-        end
-      end
-    end
-  end
-  always_comb begin
-    // red channel moves up and down linearly
-    // if (frame_count_rtx[7] == 1'b0) begin
-    //   rendered_color_rtx[2] = frame_count_rtx[6:0] << 1;
-    // end else begin
-    //   rendered_color_rtx[2] = 8'd255 - (frame_count_rtx[6:0] << 1);
-    // end
-    rtx_valid = wait_counter_rtx == 0;
-    rendered_color_rtx[0] = 8'hff;//frame_count_rtx < rtx_v_count + rtx_h_count ? 255 : 0;
-    // rendered_color_rtx[1] = 8'hff;
-    // rendered_color_rtx[2] = 8'hff;
+  //     if (wait_counter_rtx == 0) begin
+  //       if (rtx_skipped_counter == 1272) begin
+  //         rtx_skipped_counter <= 0;
+  //         if (rtx_skip_counter == 7) begin
+  //           rtx_skip_counter <= 0;
+  //           if (rtx_v_count == 719) begin
+  //             rtx_v_count <= 0;
+  //             frame_count_rtx <= frame_count_rtx + 1;
+  //           end else begin
+  //             rtx_v_count <= rtx_v_count + 1;
+  //           end
+  //         end else begin
+  //           rtx_skip_counter <= rtx_skip_counter + 1;
+  //         end
+  //       end else begin
+  //         rtx_skipped_counter <= rtx_skipped_counter + 8;
+  //       end
+  //     end
+  //   end
+  // end
+  // always_comb begin
+  //   // red channel moves up and down linearly
+  //   // if (frame_count_rtx[7] == 1'b0) begin
+  //   //   rendered_color_rtx[2] = frame_count_rtx[6:0] << 1;
+  //   // end else begin
+  //   //   rendered_color_rtx[2] = 8'd255 - (frame_count_rtx[6:0] << 1);
+  //   // end
+  //   rtx_valid = wait_counter_rtx == 0;
+  //   rendered_color_rtx[0] = 8'hff;//frame_count_rtx < rtx_v_count + rtx_h_count ? 255 : 0;
+  //   // rendered_color_rtx[1] = 8'hff;
+  //   // rendered_color_rtx[2] = 8'hff;
 
-    // green channel is pwm divided by 8 width-wise
-    rendered_color_rtx[1] = frame_count_rtx[2:0] > rtx_h_count[7:5] ? 255 : 0;
+  //   // green channel is pwm divided by 8 width-wise
+  //   rendered_color_rtx[1] = frame_count_rtx[2:0] > rtx_h_count[7:5] ? 255 : 0;
 
-    // blue channel is pwn divided on a longer period
-    rendered_color_rtx[2] = frame_count_rtx[5:3] > rtx_v_count[6:4] ? 255 : 0;
-    rtx_pixel = {rendered_color_rtx[2][7:3], rendered_color_rtx[1][7:2], rendered_color_rtx[0][7:3]};
-
-  end
+  //   // blue channel is pwn divided on a longer period
+  //   rendered_color_rtx[2] = frame_count_rtx[5:3] > rtx_v_count[6:4] ? 255 : 0;
+  //   rtx_pixel = {rendered_color_rtx[2][7:3], rendered_color_rtx[1][7:2], rendered_color_rtx[0][7:3]};
+  // end
 
   // ==== SEVEN SEGMENT DISPLAY =======
   seven_segment_controller(
     .clk(clk_100mhz_buffered),
     .rst(sys_rst),
-    .val({frame_count_rtx, rendered_color_rtx}),//{blue, green, red}}),
+    .val({frame_count_rtx, rendered_color_rtx}), //{blue, green, red}}),
     .cat(ss0_c),
     .an({ ss0_an, ss1_an })
   );
@@ -187,7 +207,6 @@ module top_level (
     .pixel_out_h_count(), //nothing for now
     .pixel_out_v_count() //nothing for now
   );
-
 
   logic clk_camera_locked;
   logic clk_pixel_locked;
@@ -242,7 +261,7 @@ module top_level (
     .rtx_pixel    (rtx_pixel),
     .rtx_h_count  (rtx_h_count[10:0]),
     .rtx_v_count  (rtx_v_count[9:0]),
-    .rtx_overwrite(frame_count_rtx == 0),//frame_count[2:0] == 0),
+    .rtx_overwrite(rtx_overwrite), // frame_count_rtx == 0), //frame_count[2:0] == 0),
     
     // Output data to HDMI display pipeline
     .clk_pixel       (clk_pixel),

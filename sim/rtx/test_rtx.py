@@ -19,8 +19,8 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3
 
-WIDTH = 32
-HEIGHT = 18
+WIDTH = 32 * 2
+HEIGHT = 18 * 2
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -39,9 +39,9 @@ async def test_module(dut):
 
     def unpack_color8(color8):
         return (
-            (color8 >> 16) & 0xFF,
-            (color8 >> 8) & 0xFF,
-            (color8 >> 0) & 0xFF
+            ((color8 >> 0) & 0b11111) << 3,
+            ((color8 >> 5) & 0b111111) << 2,
+            ((color8 >> 11) & 0b11111) << 3
         )
 
     for _ in tqdm(range(WIDTH * HEIGHT), ncols=80, gui=False):
