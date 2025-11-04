@@ -57,8 +57,10 @@ endmodule
   Dot product of two vec3s
 
   Timing:
-    5 cycles (mul - 1, add - 2, add - 2)
+    DOT_PROD_DELAY cycles
+    Currently 5 (mul - 1, add - 2, add - 2)
 */
+parameter VEC3_DOT_DELAY = 5;
 module fp24_vec3_dot (
   input wire clk,
   input wire rst,
@@ -85,7 +87,7 @@ endmodule
   Normalize a vector to have magnitude 1 using inv_sqrt
 
   Timing:
-    21 cycles
+    VEC3_DOT_DELAY + INV_SQRT_DELAY + SCALE_DELAY (1)
 */
 module fp24_vec3_normalize (
   input wire clk,
@@ -94,7 +96,7 @@ module fp24_vec3_normalize (
   output fp24_vec3 normed
 );
   // Find |v * v|, i.e. x^2 + y^2 + z^2
-  // 5 cycles
+  // DOT_PROD_DELAY cycles
   fp24 mag_sq;
   fp24_vec3_dot dot_mag_sq(.clk(clk), .v(v), .w(v), .dot(mag_sq));
 
@@ -109,7 +111,12 @@ module fp24_vec3_normalize (
 
   // Delay a for the scaling portion
   fp24_vec3 v_piped;
-  pipeline #(.WIDTH(72), .DEPTH(5 + INV_SQRT_DELAY)) v_pipe (.clk(clk), .in(v), .out(v_piped));
+  pipeline #(
+    .WIDTH(72),
+    .DEPTH(VEC3_DOT_DELAY + INV_SQRT_DELAY)
+  ) v_pipe (
+    .clk(clk), .in(v), .out(v_piped)
+  );
 
   // Scaling portion
   // 1 cycle
