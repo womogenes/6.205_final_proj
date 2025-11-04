@@ -39,7 +39,7 @@ module ray_caster #(
   ray_maker #(
     .WIDTH(WIDTH),
     .HEIGHT(HEIGHT)
-  ) rm (
+  ) maker (
     .clk(clk),
     .rst(rst),
 

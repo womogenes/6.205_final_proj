@@ -29,6 +29,15 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
+    dut.new_ray.value = 1
+    for _ in range(100):
+        await ClockCycles(dut.clk, 1)
+
+        u = convert_fp24(dut.maker.u.value)
+        v = convert_fp24(dut.maker.v.value)
+
+        dut._log.info(f"{u=}, {v=}")
+
 
 def runner():
     """Module tester."""
@@ -55,7 +64,7 @@ def runner():
     build_test_args = ["-Wall"]
 
     # values for parameters defined earlier in the code.
-    parameters = {"WIDTH": 320, "HEIGHT": 180}
+    parameters = {"WIDTH": 10, "HEIGHT": 10}
 
     sys.path.append(str(proj_path / "sim"))
     hdl_toplevel = "ray_caster"
