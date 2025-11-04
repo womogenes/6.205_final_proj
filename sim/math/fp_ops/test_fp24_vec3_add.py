@@ -32,7 +32,7 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    DELAY_CYCLES = 1
+    DELAY_CYCLES = 2
 
     N_SAMPLES = 1000
 
@@ -51,8 +51,8 @@ async def test_module(dut):
         a_fp24_vec3 = a_vecs_fp24[i]
         b_fp24_vec3 = b_vecs_fp24[i]
 
-        dut.a.value = a_fp24_vec3
-        dut.b.value = b_fp24_vec3
+        dut.v.value = a_fp24_vec3
+        dut.w.value = b_fp24_vec3
         dut.is_sub.value = bool(is_sub[i])
 
         await ClockCycles(dut.clk, 1)

@@ -45,7 +45,7 @@ async def test_module(dut):
     for i in range(N_SAMPLES):
         a_fp24_vec3 = a_vecs_fp24[i]
 
-        dut.a.value = a_fp24_vec3
+        dut.v.value = a_fp24_vec3
 
         await ClockCycles(dut.clk, 1)
         dut_ans.append(convert_fp24_vec3(dut.normed.value))

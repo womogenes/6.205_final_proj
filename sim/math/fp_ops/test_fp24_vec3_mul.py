@@ -49,8 +49,8 @@ async def test_module(dut):
         a_fp24_vec3 = a_vecs_fp24[i]
         b_fp24_vec3 = b_vecs_fp24[i]
 
-        dut.a.value = a_fp24_vec3
-        dut.b.value = b_fp24_vec3
+        dut.v.value = a_fp24_vec3
+        dut.w.value = b_fp24_vec3
 
         await ClockCycles(dut.clk, 10)
         # await RisingEdge(dut.clk)

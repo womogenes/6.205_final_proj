@@ -49,16 +49,16 @@ async def test_module(dut):
         a_fp24_vec3 = a_vecs_fp24[i]
         s_fp24 = s_fp24s[i]
 
-        dut.a.value = a_fp24_vec3
-        dut.b.value = s_fp24
+        dut.v.value = a_fp24_vec3
+        dut.s.value = s_fp24
 
         await ClockCycles(dut.clk, 1)
         # await RisingEdge(dut.clk)
-        dut_ans.append(convert_fp24_vec3(dut.prod.value))
+        dut_ans.append(convert_fp24_vec3(dut.scaled.value))
 
     for _ in range(DELAY_CYCLES):
         await ClockCycles(dut.clk, 1)
-        dut_ans.append(convert_fp24_vec3(dut.prod.value))
+        dut_ans.append(convert_fp24_vec3(dut.scaled.value))
 
     # Get answers!
     await ClockCycles(dut.clk, DELAY_CYCLES * 2)
