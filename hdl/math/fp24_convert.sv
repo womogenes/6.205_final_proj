@@ -1,6 +1,10 @@
 // Convert integers to FP24 and vice versa
 // Turn 32-bit integer into FP24
 
+`default_nettype none
+
+// TODO: add offset parameter to allow making fractions
+// (basically interprets n as fixed-width fraction)
 module make_fp24 #(
   parameter integer WIDTH
 ) (
@@ -41,3 +45,34 @@ module make_fp24 #(
     end
   end
 endmodule
+
+module convert_fp24_uint8 #(
+  parameter integer WIDTH
+) (
+  input wire clk,
+  input wire rst,
+  input fp24 x,
+  output logic [7:0] n
+);
+  // Convert |x| to an 8-bit unsigned integer
+  logic [6:0] shift_amt;
+
+  always_ff @(posedge clk) begin
+    if (x.exp < 63) begin
+      // Magnitude is <1, round down to 0
+      n <= 8'h0;
+
+    end else if (x.exp > (7) + 63) begin
+      // Magnitude is too large to fit in this integer, cooked
+      n <= 8'hFF;
+      
+    end else begin
+      // Shift mantissa by exponent
+      // shift_amt should be between 0 and 7, inclusive
+      shift_amt = x.exp - 63;
+      n <= {1'b1, x.mant} >> (16 - shift_amt);
+    end
+  end
+endmodule
+
+`default_nettype wire
