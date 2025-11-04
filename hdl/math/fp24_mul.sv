@@ -37,13 +37,15 @@ module fp24_mul (
   
   assign sign_prod = sign_a ^ sign_b;
 
+  logic is_zero;
+  assign is_zero = (exp_a == 0 && mant_a == 0) || (exp_b == 0 && mant_b == 0);
+
   always_comb begin
     overflow = 0;
     exp_prod = 0;
     frac_prod = 0;
     // Handle the zero cases
-    if ((exp_a == 0 && mant_a == 0) || 
-    (exp_b == 0 && mant_b == 0)) begin
+    if (is_zero) begin
         exp_prod = 0;
         frac_prod = 0;
     end else begin
@@ -64,6 +66,6 @@ module fp24_mul (
   end
 
   always_ff @(posedge clk) begin
-    prod <= {sign_prod, exp_prod[6:0], overflow ? frac_prod[32:17] : frac_prod[31:16]};
+    prod <= {is_zero ? 1'b0 : sign_prod, exp_prod[6:0], overflow ? frac_prod[32:17] : frac_prod[31:16]};
   end
 endmodule

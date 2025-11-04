@@ -35,15 +35,15 @@ module ray_maker #(
 
   // Multiply by right and up vectors
   fp24_vec3 right_scaled, up_scaled;
-  fp24_vec3_scale scale_right(.clk(clk), .v(cam.right), .s(u), .scaled(right_scaled));
-  fp24_vec3_scale scale_up(.clk(clk), .v(cam.up), .s(v), .scaled(up_scaled));
+  fp24_vec3_scale scale_right(.clk(clk), .rst(rst), .v(cam.right), .s(u), .scaled(right_scaled));
+  fp24_vec3_scale scale_up(.clk(clk), .rst(rst), .v(cam.up), .s(v), .scaled(up_scaled));
 
   // Add everything together
   fp24_vec3 sum_ru;
-  fp24_vec3_add add_ru(.clk(clk), .v(right_scaled), .w(up_scaled), .sum(sum_ru));
+  fp24_vec3_add add_ru(.clk(clk), .rst(rst), .v(right_scaled), .w(up_scaled), .is_sub(1'b0), .sum(sum_ru));
 
   fp24_vec3 ray_unnormed;
-  fp24_vec3_add add_ray_unnormed(.clk(clk), .v(sum_ru), .w(cam.forward), .sum(ray_unnormed));
+  fp24_vec3_add add_ray_unnormed(.clk(clk), .rst(rst), .v(sum_ru), .w(cam.forward), .is_sub(1'b0), .sum(ray_unnormed));
 
   // Normalize it
   fp24_vec3_normalize norm_ray_dir(.clk(clk), .v(ray_unnormed), .normed(ray_dir));

@@ -13,13 +13,13 @@ module rtx #(
   output logic ray_done           // i.e. pixel_color valid
 );
   fp24 width_fp24;
-  make_fp24 #(11) width_maker (.clk(clk), .n(WIDTH), .x(width_fp24));
+  make_fp24 #(11) width_maker (.clk(clk), .n(WIDTH >> 2), .x(width_fp24));
 
   camera cam;
-  assign cam.origin = 72'b0;
-  assign cam.right = {24'h3f0000, 24'h0, 24'h0};    // (1, 0, 0)
-  assign cam.forward = {24'h0, 24'h0, width_fp24};  // (0, 0, -500)
-  assign cam.up = {24'h0, 24'h3f0000, 24'h0};       // (0, 1, 0)
+  assign cam.origin = 72'h0;
+  assign cam.right = {24'h3f0000, 24'h000000, 24'h000000};    // (1, 0, 0)
+  assign cam.forward = {24'h000000, 24'h000000, width_fp24};  // (0, 0, width)
+  assign cam.up = {24'h000000, 24'h3f0000, 24'h000000};       // (0, 1, 0)
 
   logic [10:0] pixel_h_caster;
   logic [9:0] pixel_v_caster;
