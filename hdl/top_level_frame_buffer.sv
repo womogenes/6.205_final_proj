@@ -94,14 +94,15 @@ module top_level (
   logic [7:0] frame_count_rtx;
   logic [2:0][7:0] rendered_color_rtx;
   logic [15:0] rtx_pixel;
-  logic [7:0] wait_counter_rtx;
+  logic [3:0] wait_counter_rtx;
   logic [2:0] rtx_skip_counter;
   logic rtx_valid;
   assign rtx_h_count = rtx_skipped_counter | rtx_skip_counter;
 
   always_ff @(posedge clk_rtx) begin
-    if (sys_rst) begin
+    if (sys_rst || btn[1]) begin
       rtx_skipped_counter <= 0;
+      rtx_skip_counter <= 0;
       rtx_v_count <= 0;
       frame_count_rtx <= 0;
     end else begin
@@ -144,7 +145,7 @@ module top_level (
     rendered_color_rtx[1] = frame_count_rtx[2:0] > rtx_h_count[7:5] ? 255 : 0;
 
     // blue channel is pwn divided on a longer period
-    rendered_color_rtx[2] = frame_count_rtx[7:5] > rtx_v_count[6:4] ? 255 : 0;
+    rendered_color_rtx[2] = frame_count_rtx[5:3] > rtx_v_count[6:4] ? 255 : 0;
     rtx_pixel = {rendered_color_rtx[2][7:3], rendered_color_rtx[1][7:2], rendered_color_rtx[0][7:3]};
 
   end
@@ -241,7 +242,7 @@ module top_level (
     .rtx_pixel    (rtx_pixel),
     .rtx_h_count  (rtx_h_count[10:0]),
     .rtx_v_count  (rtx_v_count[9:0]),
-    .rtx_overwrite(1),//frame_count[2:0] == 0),
+    .rtx_overwrite(frame_count_rtx == 0),//frame_count[2:0] == 0),
     
     // Output data to HDMI display pipeline
     .clk_pixel       (clk_pixel),

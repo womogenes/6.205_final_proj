@@ -84,22 +84,13 @@ module traffic_generator(
         .count(read_request_address)
     );
 
-    // count how many pixels have been written to this frame
-    logic [23:0] pixels_written_counter;
-    evt_counter #(.MAX_COUNT(MAX_WRITE_COUNT)) w_counter (
-        .clk(clk),
-        .rst(rst),
-        .evt(write_axis_ready && write_axis_valid),
-        .count(pixels_written_counter)
-    );
-
     // count how many frames have been written total
     logic [15:0] frame_count;
-    evt_counter #(.MAX_COUNT(8)) frame_counter (
+    evt_counter #(.MAX_COUNT(2**16)) frame_counter (
         .clk(clk),
-        .rst(rst),// || (write_axis_ready && write_axis_valid && write_axis_tlast &&
-        //   pixels_written_counter == 0)),
-        .evt(write_axis_ready && write_axis_valid && (write_axis_addr == 0)),
+        .rst(rst || (write_axis_ready && write_axis_valid && write_axis_tlast &&
+          write_axis_addr == 0)),
+        .evt(write_axis_ready && write_axis_valid && write_axis_addr == 0),
         .count(frame_count)
     );
 
@@ -189,78 +180,78 @@ module traffic_generator(
     logic frame_power_of_2;
     always_comb begin
       // how much to shift the result if a frame buffer writeback is also needed
-      frame_power_of_2 = 1;
+      frame_power_of_2 = 0;
       shift_amt = 0;
-      // case (frame_count)
-      //   1: begin
-      //     shift_amt = 0;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   2: begin
-      //     shift_amt = 1;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   4: begin
-      //     shift_amt = 2;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   8: begin
-      //     shift_amt = 3;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   16: begin
-      //     shift_amt = 4;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   32: begin
-      //     shift_amt = 5;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   64: begin
-      //     shift_amt = 6;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   128: begin
-      //     shift_amt = 7;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   256: begin
-      //     shift_amt = 8;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   512: begin
-      //     shift_amt = 9;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   1024: begin
-      //     shift_amt = 10;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   2048: begin
-      //     shift_amt = 11;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   4096: begin
-      //     shift_amt = 12;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   8192: begin
-      //     shift_amt = 13;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   16384: begin
-      //     shift_amt = 14;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   32768: begin
-      //     shift_amt = 15;
-      //     frame_power_of_2 = 1;
-      //   end
-      //   default begin
-      //     shift_amt = 0;
-      //     frame_power_of_2 = 0;
-      //   end
-      // endcase
+      case (frame_count)
+        1: begin
+          shift_amt = 0;
+          frame_power_of_2 = 1;
+        end
+        2: begin
+          shift_amt = 1;
+          frame_power_of_2 = 1;
+        end
+        4: begin
+          shift_amt = 2;
+          frame_power_of_2 = 1;
+        end
+        8: begin
+          shift_amt = 3;
+          frame_power_of_2 = 1;
+        end
+        16: begin
+          shift_amt = 4;
+          frame_power_of_2 = 1;
+        end
+        32: begin
+          shift_amt = 5;
+          frame_power_of_2 = 1;
+        end
+        64: begin
+          shift_amt = 6;
+          frame_power_of_2 = 1;
+        end
+        128: begin
+          shift_amt = 7;
+          frame_power_of_2 = 1;
+        end
+        256: begin
+          shift_amt = 8;
+          frame_power_of_2 = 1;
+        end
+        512: begin
+          shift_amt = 9;
+          frame_power_of_2 = 1;
+        end
+        1024: begin
+          shift_amt = 10;
+          frame_power_of_2 = 1;
+        end
+        2048: begin
+          shift_amt = 11;
+          frame_power_of_2 = 1;
+        end
+        4096: begin
+          shift_amt = 12;
+          frame_power_of_2 = 1;
+        end
+        8192: begin
+          shift_amt = 13;
+          frame_power_of_2 = 1;
+        end
+        16384: begin
+          shift_amt = 14;
+          frame_power_of_2 = 1;
+        end
+        32768: begin
+          shift_amt = 15;
+          frame_power_of_2 = 1;
+        end
+        default begin
+          shift_amt = 0;
+          frame_power_of_2 = 0;
+        end
+      endcase
     end
 
     logic [4:0] avg_red;
@@ -395,7 +386,6 @@ module traffic_generator(
           if (fetch_fb_needed) begin
             req_type = READ_FETCH_FB;
           end else if (write_axis_valid) begin
-            //TODO fix always overwriting, temp debugging
             req_type = write_axis_tlast ? READ_FETCH_RTX_OW : READ_FETCH_RTX;
           end else begin
             req_type = NONE;
@@ -498,10 +488,11 @@ module traffic_generator(
         end
     end
 
-    assign debug[0] = (state == WB_RTX) && memrequest_en;
-    assign debug[1] = (req_type == READ_FETCH_RTX_OW || req_type == READ_FETCH_RTX) && write_axis_data != 0;
+    assign debug[0] = req_type == READ_FETCH_RTX && memrequest_en;
+    assign debug[3:1] = frame_count;
+    assign debug[4] = write_axis_valid && write_axis_tlast;
+    assign debug[5] = req_type == READ_FETCH_RTX_OW && memrequest_en;
 
-    assign debug[5] = req_type == READ_FETCH_FB && queued_fetch_fb_data == 0;
     // assign debug[2] = fetch_fb_req_complete && req_type == WRITE_BACK_FB; //immediately send wb
     // assign debug[3] = fetch_fb_req_complete && !memrequest_busy;
     // assign debug[4] = fetch_fb_req_complete && wb_fb_fifo_empty;
