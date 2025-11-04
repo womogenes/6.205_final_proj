@@ -86,13 +86,13 @@ endmodule
   Normalize a vector to have magnitude 1 using inv_sqrt
 
   Timing:
-    22 cycles
+    21 cycles
 */
 module fp24_vec3_normalize (
   input wire clk,
   input wire rst,
   input fp24_vec3 a,
-  output fp24_vec3 a_norm
+  output fp24_vec3 normed
 );
   // Find |a * a|, i.e. x^2 + y^2 + z^2
   // 5 cycles
@@ -109,8 +109,10 @@ module fp24_vec3_normalize (
   );
 
   // Delay a for the scaling portion
+  fp24_vec3 a_piped20;
   pipeline #(.WIDTH(72), .DEPTH(20)) a_pipe (.clk(clk), .in(a), .out(a_piped20));
 
   // Scaling portion
-  fp24_vec3_scale scale_a_norm(.clk(clk), .a(a_piped20), .b(mag_inv), .prod(a_norm));
+  // 1 cycle
+  fp24_vec3_scale scale_a_norm(.clk(clk), .a(a_piped20), .b(mag_inv), .prod(normed));
 endmodule
