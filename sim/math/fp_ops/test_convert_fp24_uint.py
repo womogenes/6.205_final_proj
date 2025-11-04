@@ -61,10 +61,10 @@ def runner():
     build_test_args = ["-Wall"]
 
     # values for parameters defined earlier in the code.
-    parameters = {"WIDTH": 32}
+    parameters = {"WIDTH": 8}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "convert_fp24_uint8"
+    hdl_toplevel = "convert_fp24_uint"
     
     runner = get_runner(sim)
     runner.build(

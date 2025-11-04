@@ -37,17 +37,22 @@ async def test_module(dut):
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
 
+    def unpack_color8(color8):
+        return (
+            (color8 >> 16) & 0xFF,
+            (color8 >> 8) & 0xFF,
+            (color8 >> 0) & 0xFF
+        )
+
     for _ in tqdm(range(WIDTH * HEIGHT), ncols=80, gui=False):
     # for _ in range(WIDTH * HEIGHT):
         await RisingEdge(dut.ray_done)
 
         pixel_h = dut.pixel_h.value.integer
         pixel_v = dut.pixel_v.value.integer
-        pixel_color = convert_fp24_vec3(dut.pixel_color.value)
+        pixel_color = unpack_color8(dut.rtx_pixel.value.integer)
 
-        r = int((pixel_color[0] + 0.5) * 256)
-        g = int((pixel_color[1] + 0.5) * 256)
-        b = int(pixel_color[2] * 256)
+        r, g, b = pixel_color
 
         # dut._log.info(f"{pixel_h=}, {pixel_v=}, {pixel_color=}")
         img.putpixel((pixel_h, pixel_v), (r, g, b))

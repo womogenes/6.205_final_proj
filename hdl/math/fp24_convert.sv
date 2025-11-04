@@ -46,30 +46,32 @@ module make_fp24 #(
   end
 endmodule
 
-module convert_fp24_uint8 #(
-  parameter integer WIDTH
+// Offset by FRAC bits
+module convert_fp24_uint #(
+  parameter integer WIDTH = 8,
+  parameter integer FRAC = 8
 ) (
   input wire clk,
   input wire rst,
   input fp24 x,
-  output logic [7:0] n
+  output logic [WIDTH-1:0] n
 );
-  // Convert |x| to an 8-bit unsigned integer
+  // Convert |x| to a WIDTH-bit unsigned integer
   logic [6:0] shift_amt;
 
   always_ff @(posedge clk) begin
-    if (x.exp < 63) begin
+    if (x.exp + FRAC < 63) begin
       // Magnitude is <1, round down to 0
-      n <= 8'h0;
+      n <= 'h0;
 
-    end else if (x.exp > (7) + 63) begin
+    end else if (x.exp + FRAC > (WIDTH-1) + 63) begin
       // Magnitude is too large to fit in this integer, cooked
-      n <= 8'hFF;
+      n <= 'hFF;
       
     end else begin
       // Shift mantissa by exponent
       // shift_amt should be between 0 and 7, inclusive
-      shift_amt = x.exp - 63;
+      shift_amt = x.exp + FRAC - 63;
       n <= {1'b1, x.mant} >> (16 - shift_amt);
     end
   end

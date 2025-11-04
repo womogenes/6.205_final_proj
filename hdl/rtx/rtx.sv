@@ -7,7 +7,7 @@ module rtx #(
   input wire clk,
   input wire rst,
 
-  output fp24_vec3 pixel_color,
+  output logic [2:0][7:0] rtx_pixel,
   output logic [10:0] pixel_h,
   output logic [9:0] pixel_v,
   output logic ray_done           // i.e. pixel_color valid
@@ -29,14 +29,17 @@ module rtx #(
 
   // Differential to act as trigger
   logic rst_prev;
+  logic ray_done_buf0;
 
   always_ff @(posedge clk) begin
     rst_prev <= rst;
 
     if (rst) begin
+      ray_done_buf0 <= 1'b0;
       ray_done <= 1'b0;
     end else begin
-      ray_done <= tracer_ready;
+      ray_done_buf0 <= tracer_ready;
+      ray_done <= ray_done_buf0;
     end
   end
 
@@ -57,6 +60,7 @@ module rtx #(
   );
 
   logic tracer_ready;
+  fp24_vec3 pixel_color;
 
   ray_tracer #(
     .WIDTH(WIDTH), .HEIGHT(HEIGHT)
@@ -71,11 +75,18 @@ module rtx #(
     .ray_dir(ray_dir),
     .ray_valid(ray_valid_caster),
 
+    // Doubles as a "pixel valid" signal
     .tracer_ready(tracer_ready),
     .pixel_color(pixel_color),
     .pixel_h_out(pixel_h),
     .pixel_v_out(pixel_v)
   );
+
+  // Convert to 565 representation
+  convert_fp24_uint #(.WIDTH(8)) r_convert (.clk(clk), .x(pixel_color.x), .n(rtx_pixel[0]));
+  convert_fp24_uint #(.WIDTH(8)) g_convert (.clk(clk), .x(pixel_color.y), .n(rtx_pixel[1]));
+  convert_fp24_uint #(.WIDTH(8)) b_convert (.clk(clk), .x(pixel_color.z), .n(rtx_pixel[2]));
+
 endmodule
 
 `default_nettype wire
