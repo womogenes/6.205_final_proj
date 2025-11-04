@@ -1,8 +1,8 @@
 `default_nettype none
 
 module ray_caster #(
-  parameter SIZE_H = 1280,
-  parameter SIZE_V = 720
+  parameter WIDTH = 1280,
+  parameter HEIGHT = 720
 ) (
   input wire clk,
   input wire rst,
@@ -12,19 +12,17 @@ module ray_caster #(
 
   output logic [10:0] pixel_h,
   output logic [9:0] pixel_v,
-  output vec3 ray_origin,
-  output vec3s ray_dir,
+  output fp24_vec3 ray_origin,
+  output fp24_vec3 ray_dir,
   output logic ray_valid
 );
 
   logic [10:0] pixel_h_rsg;
   logic [9:0] pixel_v_rsg;
 
-  assign ray_valid = 1'b1;
-
   ray_signal_gen #(
-    .SIZE_H(SIZE_H),
-    .SIZE_V(SIZE_V)
+    .WIDTH(WIDTH),
+    .HEIGHT(HEIGHT)
   ) rsg (
     .clk(clk),
     .rst(rst),
@@ -34,14 +32,14 @@ module ray_caster #(
     .pixel_v(pixel_v_rsg)
   );
   
-  // TODO: maybe we have to pipeline the new_ray signal that goes into ray_maker?
+  // Maybe we have to pipeline the new_ray signal that goes into ray_maker?
   //   just by a cycle... maybe
   logic [10:0] pixel_h_maker;
   logic [9:0] pixel_v_maker;
   ray_maker #(
-    .SIZE_H(SIZE_H),
-    .SIZE_V(SIZE_V)
-  ) (
+    .WIDTH(WIDTH),
+    .HEIGHT(HEIGHT)
+  ) rm (
     .clk(clk),
     .rst(rst),
 
