@@ -75,7 +75,7 @@ endmodule
     x_valid: whether the input is valid
 
   timing:
-    ???
+    15 cycle delay
 */
 module fp24_inv_sqrt (
   input wire clk,

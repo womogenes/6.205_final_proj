@@ -32,7 +32,7 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    DELAY_CYCLES = 0
+    DELAY_CYCLES = 1
 
     N_SAMPLES = 1000
 
@@ -40,8 +40,8 @@ async def test_module(dut):
     a_vecs = np.exp2(np.random.rand(N_SAMPLES, 3) * 63 - 31)
     a_vecs_fp24 = list(map(make_fp24_vec3, a_vecs))
 
-    s = np.exp2(np.random.rand(N_SAMPLES) * 63 - 31)
-    s_fp24s = list(map(make_fp24, s))
+    b = np.exp2(np.random.rand(N_SAMPLES) * 63 - 31)
+    s_fp24s = list(map(make_fp24, b))
 
     # Clock in one per cycle brrr
     dut_ans = []
@@ -50,9 +50,9 @@ async def test_module(dut):
         s_fp24 = s_fp24s[i]
 
         dut.a.value = a_fp24_vec3
-        dut.s.value = s_fp24
+        dut.b.value = s_fp24
 
-        await ClockCycles(dut.clk, 10)
+        await ClockCycles(dut.clk, 1)
         # await RisingEdge(dut.clk)
         dut_ans.append(convert_fp24_vec3(dut.prod.value))
 
@@ -63,7 +63,7 @@ async def test_module(dut):
     # Get answers!
     await ClockCycles(dut.clk, DELAY_CYCLES * 2)
     dut_ans = np.array(dut_ans[DELAY_CYCLES:])
-    exp_ans = a_vecs * s[:, None]
+    exp_ans = a_vecs * b[:, None]
 
     rel_err = np.abs(dut_ans / exp_ans - 1)
     dut._log.info(f"mean relative error: {np.mean(rel_err) * 100:.6f}%")
