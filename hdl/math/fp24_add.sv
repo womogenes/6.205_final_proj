@@ -1,16 +1,5 @@
 // Addition for 24-bit floating point
 
-function automatic [4:0] clz17(input logic [16:0] x);
-  integer i;
-  begin
-    for (i = 16; i >= 0; i = i - 1) begin
-      if (x[i])
-        return 16 - i; // return immediately
-    end
-    return 17; // all zeros
-  end
-endfunction
-
 module fp24_add (
   input wire clk,
   input wire rst,
@@ -70,10 +59,11 @@ module fp24_add (
   end
 
   // Stage 2: clz, assemble sum
-  always_comb begin
-    // Normalize result
-    shift = clz17(frac_sum_buf[16:0]);
 
+  // Normalize result
+  clz #(.WIDTH(17)) clz_shift (.x(frac_sum_buf[16:0]), .count(shift));
+
+  always_comb begin
     if (frac_sum_buf[17]) begin
       // We overflowed!
       frac_norm = frac_sum_buf[17:1];

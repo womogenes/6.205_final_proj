@@ -80,6 +80,7 @@ def runner():
         proj_path / "hdl" / "pipeline.sv",
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
+        proj_path / "hdl" / "math" / "clz.sv",
         proj_path / "hdl" / "math" / "fp24_shift.sv",
         proj_path / "hdl" / "math" / "fp24_add.sv",
         proj_path / "hdl" / "math" / "fp24_mul.sv",

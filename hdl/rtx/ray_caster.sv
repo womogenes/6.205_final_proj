@@ -6,13 +6,14 @@ module ray_caster #(
 ) (
   input wire clk,
   input wire rst,
-
+  
+  input camera cam,
   input wire new_ray,
 
-  output vec3 ray_origin,
-  output vec3s ray_dir,
   output logic [10:0] pixel_h,
   output logic [9:0] pixel_v,
+  output vec3 ray_origin,
+  output vec3s ray_dir,
   output logic ray_valid
 );
 
@@ -28,13 +29,30 @@ module ray_caster #(
     .clk(clk),
     .rst(rst),
     .new_ray(new_ray),
+
     .pixel_h(pixel_h_rsg),
     .pixel_v(pixel_v_rsg)
   );
+  
+  // TODO: maybe we have to pipeline the new_ray signal that goes into ray_maker?
+  logic [10:0] pixel_h_maker;
+  logic [9:0] pixel_v_maker;
+  ray_maker #(
+    .SIZE_H(SIZE_H),
+    .SIZE_V(SIZE_V)
+  ) (
+    .clk(clk),
+    .rst(rst),
 
-  // ray_maker #(
-  //   .SIZE_H(SIZE_H),
-  //   .SIZE_V(SIZE_V)
-  // )
+    .cam(cam),
+    .pixel_h(pixel_h_rsg),
+    .pixel_v(pixel_v_rsg),
+    .new_ray(new_ray),
+
+    .ray_origin(ray_origin),
+    .ray_dir(ray_dir),
+    .ray_valid(ray_valid)
+  );
 endmodule
+
 `default_nettype wire

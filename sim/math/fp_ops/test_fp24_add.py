@@ -75,6 +75,7 @@ def runner():
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
         proj_path / "hdl" / "types" / "types.sv",
+        proj_path / "hdl" / "math" / "clz.sv",
         proj_path / "hdl" / "math" / "fp24_add.sv"
     ]
     build_test_args = ["-Wall"]

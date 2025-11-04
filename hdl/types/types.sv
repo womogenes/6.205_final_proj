@@ -25,3 +25,11 @@ typedef struct packed {
   fp24 y;
   fp24 z;
 } fp24_vec3;
+
+// ===== CAMERA =====
+typedef struct packed {
+  fp24_vec3 origin;
+  fp24_vec3 forward;
+  fp24_vec3 right;
+  fp24_vec3 up;
+} camera;
