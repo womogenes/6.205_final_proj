@@ -1,10 +1,29 @@
 # 6.205 final project
 
-## Memory
+## Project structure
+
+We use 24-bit floating point for most operations. We call this data type `fp24`, and a bunch of modules exist to deal with operations on `fp24` numbers.
+
+- `hdl/math` contains:
+  - `fp24_add`, for the addition of two `fp24` numbers
+  - `fp24_mul`, for the multiplication of two `fp24` numbers
+  - `fp24_inv_sqrt`, for calculating the fast inverse square root of an `fp24` number
+  - `fp24_shift`, for changing the exponent of an `fp24` number by some constant amount (efficient multiplication by powers of two)
+  - `fp24_vec3_ops`, for adding `fp24_vec3`s, multiplying them element-wise, calculating their dot products, scaling them by scalars (represented as `fp24`s), and normalizing them.
+
+## Possible optimizations
+
+We anticipate getting cooked by LUT usage at some point, so here are some areas for optimization:
+
+- `fp24_inv_sqrt`: we can save ~250 LUTs per stage cut. This does change the cycle count of everything.
+
+## BELOW: CPU stuff that we don't really use anymore
+
+### Memory
 
 We want to have code on an SD card for ease of reprogramming.
 
-### Flashing code onto SD card
+#### Flashing code onto SD card
 
 On Unix you can do
 
@@ -14,7 +33,7 @@ sudo dd if=<binary.bin> of=/dev/sdX bs=512 seek=0
 
 To get the value of `sdX`, use `lsblk`. For example, on my machine the SD card shows up under `/dev/sda`.
 
-### SD card protocol
+#### SD card protocol
 
 SD cards have an SPI mode available. Recall all transactions are most-significant bit first. Reference sheet: https://chlazza.nfshost.com/sdcardinfo.html
 
@@ -32,15 +51,15 @@ Initialization loop:
    - ACMD41 is `0x69 40 00 00 00 77` (again, not 100% usr)
 4. Read data
 
-## CPU
+### CPU
 
 Lives in `hdl/cpu` and implements a minimal RISC-V processor.
 
-### Tests
+#### Tests
 
 Tests live in `sim/cpu`. Decoder is `sim/cpu/test_decoder.py` and runs a bunch of instructions/verifies their outputs. Test cases are auto-generated and the code used to auto-generate them was written by an LLM. Execute state tests are in `/sim/cpu/test_execute.py` and operate similiarly.
 
-### C code
+#### C code
 
 Lives in `sw_cputest/` for now. Currently working on documenting the compilation process to go from C to RISC-V machine code runnable by the CPU. Simulator lives in `sim/cpu_picorv/test_cpu_picorv.py`.
 
@@ -62,7 +81,7 @@ sudo pacman -S riscv64-elf-newlib
 
 Maybe other things are needed too. Need to test.
 
-## UART receiving
+### UART receiving
 
 In `top_level.sv`, there is a UART receiver for sending bytes to the board from computer. Connect board via micro-USB, then run `ctrl/test_ports.py` to detect which port the board is on.
 
@@ -81,6 +100,6 @@ python ../compile.py program.c && python ../../ctrl/send_program.py program.bin
 
 From within a `sw_cputest/<program>/` directory to compile and flash it all in one go. Pressing reset on the board after flashing is advised.
 
-## Software baseline
+### Software baseline
 
 C program that does ray tracing in software to confirm our conceptual understanding lives in `sw_raytrace`.

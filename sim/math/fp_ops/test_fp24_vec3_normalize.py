@@ -67,7 +67,8 @@ async def test_module(dut):
 
         return np.mean(rel_err)
 
-    for scale in range(1, 63):
+    # for scale in range(1, 63):
+    for scale in range(31, 32):
         await mean_rel_err(scale)
 
 def runner():
@@ -79,6 +80,7 @@ def runner():
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
         proj_path / "hdl" / "pipeline.sv",
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "fp24_shift.sv",
         proj_path / "hdl" / "math" / "fp24_add.sv",

@@ -16,7 +16,7 @@
     y: current guess
 
   timing:
-    4 clock cycles
+    5 clock cycles
 */
 module fp24_inv_sqrt_stage (
   input wire clk,
@@ -75,7 +75,7 @@ endmodule
     x_valid: whether the input is valid
 
   timing:
-    15 cycle delay
+    (INV_SQRT_NR_STAGES * INV_SQRT_STAGE_DELAY) cycle delay
 */
 module fp24_inv_sqrt (
   input wire clk,
@@ -89,7 +89,7 @@ module fp24_inv_sqrt (
 );
   // localparam fp24 half = {1'b0, 7'b011_1110, 16'b0};
   localparam fp24 MAGIC_NUMBER = 24'h5e7a09;
-  localparam integer NR_STAGES = 3;
+  localparam integer NR_STAGES = INV_SQRT_NR_STAGES;
 
   // fp24 half_x;
   // fp24_mul half_x_mult(.a(half), .b(x), .prod(half_x));

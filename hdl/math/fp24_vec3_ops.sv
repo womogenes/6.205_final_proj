@@ -99,7 +99,7 @@ module fp24_vec3_normalize (
   fp24_vec3_dot dot_mag_sq(.clk(clk), .v(v), .w(v), .dot(mag_sq));
 
   // Find 1/mag(a)
-  // 15 cycles
+  // INV_SQRT_DELAY cycles
   fp24 mag_inv;
   fp24_inv_sqrt inv_sqrt_mag(
     .clk(clk), .rst(rst),
@@ -108,10 +108,10 @@ module fp24_vec3_normalize (
   );
 
   // Delay a for the scaling portion
-  fp24_vec3 v_piped20;
-  pipeline #(.WIDTH(72), .DEPTH(20)) v_pipe (.clk(clk), .in(v), .out(v_piped20));
+  fp24_vec3 v_piped;
+  pipeline #(.WIDTH(72), .DEPTH(5 + INV_SQRT_DELAY)) v_pipe (.clk(clk), .in(v), .out(v_piped));
 
   // Scaling portion
   // 1 cycle
-  fp24_vec3_scale scale_a_norm(.clk(clk), .v(v_piped20), .s(mag_inv), .scaled(normed));
+  fp24_vec3_scale scale_a_norm(.clk(clk), .v(v_piped), .s(mag_inv), .scaled(normed));
 endmodule
