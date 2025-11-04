@@ -7,10 +7,10 @@ module rtx #(
   input wire clk,
   input wire rst,
 
-  output color8 pixel_color,
+  output fp24_vec3 pixel_color,
   output logic [10:0] pixel_h,
   output logic [9:0] pixel_v,
-  output logic ray_done
+  output logic ray_done           // i.e. pixel_color valid
 );
   camera cam = 0;
 
@@ -18,7 +18,7 @@ module rtx #(
   logic [9:0] pixel_v_caster;
 
   fp24_vec3 ray_origin, ray_dir;
-  logic ray_valid;
+  logic ray_valid_caster;
 
   ray_caster #(
     .WIDTH(WIDTH), .HEIGHT(HEIGHT)
@@ -30,14 +30,11 @@ module rtx #(
 
     .pixel_h(pixel_h_caster),
     .pixel_v(pixel_v_caster),
+
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),
-    .ray_valid(ray_valid)
+    .ray_valid(ray_valid_caster)
   );
-
-  logic tracer_ready;
-  logic [10:0] pixel_h_tracer;
-  logic [9:0] pixel_v_tracer;
 
   ray_tracer #(
     .WIDTH(WIDTH), .HEIGHT(HEIGHT)
@@ -50,12 +47,12 @@ module rtx #(
 
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),
-    .ray_valid(ray_valid),
+    .ray_valid(ray_valid_caster),
 
-    .tracer_ready(tracer_ready),
+    .tracer_ready(ray_done),
     .pixel_color(pixel_color),
-    .pixel_h_out(pixel_h_tracer),
-    .pixel_v_out(pixel_v_tracer)
+    .pixel_h_out(pixel_h),
+    .pixel_v_out(pixel_v)
   );
 endmodule
 
