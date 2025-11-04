@@ -25,11 +25,9 @@ module ray_tracer #(
   // make_fp24 #(.WIDTH(9)) g_maker (.clk(clk), .n(9'd255), .x(pixel_color.g));
   // make_fp24 #(.WIDTH(9)) b_maker (.clk(clk), .n(9'd255), .x(pixel_color.b));
 
-  assign pixel_color = {
-    24'b0,
-    24'b0,
-    24'b0
-  };
+  assign pixel_color.x = 'h46fe00;
+  assign pixel_color.y = 'h460000;
+  assign pixel_color.z = 'h450000;
 
   assign pixel_h_out = pixel_h_in;
   assign pixel_v_out = pixel_v_in;

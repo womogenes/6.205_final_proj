@@ -36,6 +36,9 @@ module rtx #(
     .ray_valid(ray_valid_caster)
   );
 
+  logic tracer_ready;
+  assign ray_done = tracer_ready;
+
   ray_tracer #(
     .WIDTH(WIDTH), .HEIGHT(HEIGHT)
   ) tracer (
@@ -49,7 +52,7 @@ module rtx #(
     .ray_dir(ray_dir),
     .ray_valid(ray_valid_caster),
 
-    .tracer_ready(ray_done),
+    .tracer_ready(tracer_ready),
     .pixel_color(pixel_color),
     .pixel_h_out(pixel_h),
     .pixel_v_out(pixel_v)

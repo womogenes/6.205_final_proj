@@ -12,9 +12,13 @@ from enum import Enum
 import random
 import ctypes
 import numpy as np
+from PIL import Image
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24
+from utils import convert_fp24, make_fp24, convert_fp24_vec3
+
+WIDTH = 10
+HEIGHT = 10
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -29,8 +33,20 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
+    img = Image.new("RGB", (WIDTH, HEIGHT))
+
     for _ in range(100):
         await ClockCycles(dut.clk, 1)
+
+        pixel_h = dut.pixel_h.value.integer
+        pixel_v = dut.pixel_v.value.integer
+        pixel_color = convert_fp24_vec3(dut.pixel_color.value)
+        pixel_color_255 = tuple(map(int, pixel_color))
+
+        dut._log.info(f"{pixel_h=}, {pixel_v=}, {pixel_color_255=}")
+        img.putpixel((pixel_h, pixel_v), pixel_color_255)
+
+    img.save("test.png")
 
 
 def runner():
