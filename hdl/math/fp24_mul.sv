@@ -46,8 +46,8 @@ module fp24_mul (
     frac_prod = 0;
     // Handle the zero cases
     if (is_zero) begin
-        exp_prod = 0;
-        frac_prod = 0;
+      exp_prod = 0;
+      frac_prod = 0;
     end else begin
       frac_prod = frac_a * frac_b;
       overflow = frac_prod[33];

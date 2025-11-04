@@ -10,8 +10,8 @@ module ray_maker #(
   input wire rst,
   
   input camera cam,
-  input logic [10:0] pixel_h_in,
-  input logic [9:0] pixel_v_in,
+  input wire [10:0] pixel_h_in,
+  input wire [9:0] pixel_v_in,
   input wire new_ray,
 
   output fp24_vec3 ray_origin,
@@ -56,7 +56,7 @@ module ray_maker #(
   assign pixel_v_out = pixel_v_in;
 
   // Pipeline the valid signal
-  pipeline #(.WIDTH(1), .DEPTH(27)) valid_pipe (.clk(clk), .in(new_ray), .out(ray_valid));
+  pipeline #(.WIDTH(1), .DEPTH(28)) valid_pipe (.clk(clk), .in(new_ray), .out(ray_valid));
 endmodule
 
 `default_nettype wire

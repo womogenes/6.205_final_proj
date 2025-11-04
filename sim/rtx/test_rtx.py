@@ -45,9 +45,9 @@ async def test_module(dut):
         pixel_v = dut.pixel_v.value.integer
         pixel_color = convert_fp24_vec3(dut.pixel_color.value)
 
-        r = min(255, max(0, int((pixel_color[0] + 0.5) * 256)))
-        g = min(255, max(0, int((pixel_color[1] + 0.5) * 256)))
-        b = min(255, max(0, int(pixel_color[2] * 256)))
+        r = int((pixel_color[0] + 0.5) * 256)
+        g = int((pixel_color[1] + 0.5) * 256)
+        b = int(pixel_color[2] * 256)
 
         # dut._log.info(f"{pixel_h=}, {pixel_v=}, {pixel_color=}")
         img.putpixel((pixel_h, pixel_v), (r, g, b))

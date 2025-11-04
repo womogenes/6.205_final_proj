@@ -29,15 +29,15 @@ module make_fp24 #(
   logic [6:0] exp;
   assign exp = log2_n + 63;
 
-  logic [15:0] mant;
+  always_ff @(posedge clk) begin
+    logic [15:0] mant;
 
-  always_comb begin
     // Handle zero case separately
-    if (n == 0)
-      x = 0;
-    else begin
+    if (n == 0) begin
+      x <= 0;
+    end else begin
       mant = (log2_n >= 16) ? (frac >> (log2_n - 16)) : (frac << (16 - log2_n));
-      x = {sign, exp, mant};
+      x <= {sign, exp, mant};
     end
   end
 endmodule

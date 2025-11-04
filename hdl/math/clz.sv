@@ -3,7 +3,7 @@
 module clz #(
   parameter integer WIDTH
 ) (
-  input logic [WIDTH-1:0] x,
+  input wire [WIDTH-1:0] x,
   output logic [$clog2(WIDTH)-1:0] count
 );
   always_comb begin

@@ -25,10 +25,7 @@ module top_level (
   logic sys_rst;
   assign sys_rst = btn[0]; // reset is btn[0]
 
-  localparam integer WIDTH_A = 64;
-  localparam integer WIDTH_B = 64;
-  localparam integer BITS_DROPPED = 64;
-  localparam integer OUTPUT_WIDTH = WIDTH_A + WIDTH_B - BITS_DROPPED;
+  localparam integer OUTPUT_WIDTH = 72;
 
   logic [15:0] sw_rev;
   logic [23:0] a;
@@ -42,7 +39,7 @@ module top_level (
     b = {sw, sw_rev, sw, sw_rev};
   end
 
-  logic [$clog2(OUTPUT_WIDTH) - 1:0] counter;
+  logic [$clog2(OUTPUT_WIDTH)-1:0] counter;
   always_ff @(posedge clk_100mhz) begin
     if (counter == OUTPUT_WIDTH - 1) begin
       counter <= 0;
@@ -51,35 +48,20 @@ module top_level (
     end
   end
 
-  logic [23:0] dout;
+  logic [OUTPUT_WIDTH-1:0] dout;
 
-  // fp24_add(
-  //   .clk(clk_100mhz),
-  //   .rst(sys_rst),
-  //   .a(a),
-  //   .b(b),
-  //   .is_sub(btn[1]),
-  //   .sum(dout)
-  // );
-
-  // fp24_mul(
-  //   .clk(clk_100mhz),
-  //   .rst(sys_rst),
-  //   .a(a),
-  //   .b(b),
-  //   .prod(dout)
-  // );
-
-  fp24_inv_sqrt(
+  rtx #(.WIDTH(320), .HEIGHT(180)) my_rtx (
     .clk(clk_100mhz),
     .rst(sys_rst),
-    .x(a),
-    .x_valid(btn[1]),
-    .inv_sqrt(dout),
-    .inv_sqrt_valid(led[1])
+
+    .pixel_color(dout),
+    .pixel_h(),
+    .pixel_v(),
+    .ray_done(led[1])
   );
 
   assign led[0] = dout[counter];
  
 endmodule // top_level
+
 `default_nettype wire
