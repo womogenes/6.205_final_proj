@@ -12,13 +12,15 @@ from enum import Enum
 import random
 import ctypes
 import numpy as np
+
 from PIL import Image
+from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3
 
-WIDTH = 10
-HEIGHT = 10
+WIDTH = 32
+HEIGHT = 18
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -30,21 +32,25 @@ async def test_module(dut):
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 3)
+    await ClockCycles(dut.clk, 50)
     dut.rst.value = 0
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
 
-    for _ in range(100):
-        await ClockCycles(dut.clk, 1)
+    # for _ in tqdm(range(WIDTH * HEIGHT), ncols=80, gui=False):
+    for _ in range(WIDTH * HEIGHT):
+        await RisingEdge(dut.ray_done)
 
         pixel_h = dut.pixel_h.value.integer
         pixel_v = dut.pixel_v.value.integer
         pixel_color = convert_fp24_vec3(dut.pixel_color.value)
-        pixel_color_255 = tuple(map(int, pixel_color))
+        
+        r = int((pixel_color[0] + 0.5) * 128)
+        g = int((pixel_color[1] + 0.5) * 128)
+        b = int(pixel_color[2] * 128)
 
-        dut._log.info(f"{pixel_h=}, {pixel_v=}, {pixel_color_255=}")
-        img.putpixel((pixel_h, pixel_v), pixel_color_255)
+        dut._log.info(f"{pixel_h=}, {pixel_v=}, {pixel_color=}, {sum([x**2 for x in pixel_color])}")
+        img.putpixel((pixel_h, pixel_v), (r, g, b))
 
     img.save("test.png")
 
@@ -76,7 +82,7 @@ def runner():
     build_test_args = ["-Wall"]
 
     # values for parameters defined earlier in the code.
-    parameters = {"WIDTH": 10, "HEIGHT": 10}
+    parameters = {"WIDTH": WIDTH, "HEIGHT": HEIGHT}
 
     sys.path.append(str(proj_path / "sim"))
     hdl_toplevel = "rtx"

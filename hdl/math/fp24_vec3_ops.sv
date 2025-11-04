@@ -8,7 +8,7 @@ module fp24_vec3_add (
   input wire rst,
   input fp24_vec3 v,
   input fp24_vec3 w,
-  input wire is_sub,
+  input wire is_sub = 1'b0,
 
   output fp24_vec3 sum
 );
