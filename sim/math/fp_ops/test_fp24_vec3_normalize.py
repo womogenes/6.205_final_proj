@@ -14,6 +14,8 @@ import ctypes
 import numpy as np
 import math
 
+import matplotlib.pyplot as plt
+
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, make_fp24_vec3, convert_fp24_vec3
 
@@ -34,34 +36,39 @@ async def test_module(dut):
 
     DELAY_CYCLES = 21
 
-    N_SAMPLES = 10
+    N_SAMPLES = 1000
 
     # Generate random (N, 3) tensors for inputs
-    a_vecs = np.exp2(np.random.rand(N_SAMPLES, 3) * 63 - 31)
-    a_vecs_fp24 = list(map(make_fp24_vec3, a_vecs))
+    async def mean_rel_err(vec_scale: float):
+        a_vecs = np.exp2((np.random.rand(N_SAMPLES, 3) - 0.5) * 2 * vec_scale)
+        a_vecs_fp24 = list(map(make_fp24_vec3, a_vecs))
 
-    # Clock in one per cycle brrr
-    dut_ans = []
-    for i in range(N_SAMPLES):
-        a_fp24_vec3 = a_vecs_fp24[i]
+        # Clock in one per cycle brrr
+        dut_ans = []
+        for i in range(N_SAMPLES):
+            a_fp24_vec3 = a_vecs_fp24[i]
 
-        dut.v.value = a_fp24_vec3
+            dut.v.value = a_fp24_vec3
 
-        await ClockCycles(dut.clk, 1)
-        dut_ans.append(convert_fp24_vec3(dut.normed.value))
+            await ClockCycles(dut.clk, 1)
+            dut_ans.append(convert_fp24_vec3(dut.normed.value))
 
-    for _ in range(DELAY_CYCLES):
-        await ClockCycles(dut.clk, 1)
-        dut_ans.append(convert_fp24_vec3(dut.normed.value))
+        for _ in range(DELAY_CYCLES):
+            await ClockCycles(dut.clk, 1)
+            dut_ans.append(convert_fp24_vec3(dut.normed.value))
 
-    # Get answers!
-    await ClockCycles(dut.clk, DELAY_CYCLES * 2)
-    dut_ans = np.array(dut_ans[DELAY_CYCLES:])
-    exp_ans = a_vecs / np.linalg.norm(a_vecs, axis=1, keepdims=True)
+        # Get answers!
+        await ClockCycles(dut.clk, DELAY_CYCLES * 2)
+        dut_ans = np.array(dut_ans[DELAY_CYCLES:])
+        exp_ans = a_vecs / np.linalg.norm(a_vecs, axis=1, keepdims=True)
 
-    rel_err = np.abs(dut_ans / exp_ans - 1)
-    dut._log.info(f"mean relative error: {np.mean(rel_err) * 100:.6f}%")
+        rel_err = np.abs(dut_ans / exp_ans - 1)
+        dut._log.info(f"vector scale: {scale:>2}\tmean relative error: {np.mean(rel_err) * 100:.6f}%")
 
+        return np.mean(rel_err)
+
+    for scale in range(1, 63):
+        await mean_rel_err(scale)
 
 def runner():
     """Module tester."""
