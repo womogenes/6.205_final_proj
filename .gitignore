@@ -16,5 +16,4 @@ obj*/
 # Xilinx Vivado stuff
 .Xil/*
 clockInfo.txt
-vivado.jou
-vivado.log
+*vivado*

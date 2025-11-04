@@ -28,7 +28,7 @@ module traffic_generator(
         input wire           memrequest_complete,
         input wire           memrequest_busy,
         // Write AXIS FIFO input
-        input wire [15:0]   write_axis_data,
+        input wire [15:0]    write_axis_data,
         input wire [23:0]    write_axis_addr,
         input wire           write_axis_tlast,
         input wire           write_axis_valid,
@@ -60,7 +60,10 @@ module traffic_generator(
     // give the write FIFO a "ready" signal when the MI is ready and our state machine
     // indicates it's the write AXIS' turn.
 
-    assign write_axis_ready = !memrequest_busy && (state == READ_FETCH_RTX);
+    assign write_axis_ready = !memrequest_busy && (
+      (state == WB_RTX) && 
+      ((req_type == READ_FETCH_RTX) ||
+      (req_type == READ_FETCH_RTX_OW)));
 
     // Not an AXI-Stream, but the signals that define when we actually issue a read request.
 
@@ -70,7 +73,7 @@ module traffic_generator(
     assign read_request_ready = !memrequest_busy && state == RD_HDMI;
 
     localparam MAX_ADDR_READ = 115200;
-    localparam MAX_ADDR_WRITE = 460800;
+    localparam MAX_WRITE_COUNT = 921600;
 
     // read address tracker
     logic [23:0] read_request_address;
@@ -83,7 +86,7 @@ module traffic_generator(
 
     // count how many pixels have been written to this frame
     logic [23:0] pixels_written_counter;
-    evt_counter #(.MAX_COUNT(MAX_ADDR_WRITE)) w_counter (
+    evt_counter #(.MAX_COUNT(MAX_WRITE_COUNT)) w_counter (
         .clk(clk),
         .rst(rst),
         .evt(write_axis_ready && write_axis_valid),
@@ -92,23 +95,28 @@ module traffic_generator(
 
     // count how many frames have been written total
     logic [15:0] frame_count;
-    evt_counter #(.MAX_COUNT(2**16)) frame_counter (
+    evt_counter #(.MAX_COUNT(8)) frame_counter (
         .clk(clk),
-        .rst(rst),
-        .evt(write_axis_ready && write_axis_valid && (pixels_written_counter == 0)),
+        .rst(rst),// || (write_axis_ready && write_axis_valid && write_axis_tlast &&
+        //   pixels_written_counter == 0)),
+        .evt(write_axis_ready && write_axis_valid && (write_axis_addr == 0)),
         .count(frame_count)
     );
 
     // Feed the read output from the memory controller to the axi-stream output
     // the queued_command_write_enable won't be set until you've instantiated your FIFO below.
     assign read_axis_valid = memrequest_complete && (queued_command_req_type == READ_HDMI);
-    assign read_axis_data = -1;//queued_command_address;//memrequest_resp_data;
+    assign read_axis_data = memrequest_resp_data;
 
     logic [23:0] rtx_fetch_addr;
     assign rtx_fetch_addr = (write_axis_addr >> 1) | {3'b001, 21'b0};
     
     logic fetch_rtx_req_complete;
-    assign fetch_rtx_req_complete = (memrequest_complete && queued_command_req_type == READ_FETCH_RTX);
+    assign fetch_rtx_req_complete = (memrequest_complete && (
+      (queued_command_req_type == READ_FETCH_RTX) ||
+      (queued_command_req_type == READ_FETCH_RTX_OW)));
+    logic overwrite;
+    assign overwrite = queued_command_req_type == READ_FETCH_RTX_OW;
 
     // fetch request complete, do math and either writeback or queue a writeback
     logic [20:0] fetched_red;
@@ -119,9 +127,9 @@ module traffic_generator(
     logic [20:0] added_red;
     logic [21:0] added_green;
     logic [20:0] added_blue;
-    assign added_red = fetched_red + queued_command_data[4:0];
-    assign added_green = fetched_green + queued_command_data[10:5];
-    assign added_blue = fetched_blue + queued_command_data[15:11];
+    assign added_red = overwrite ? queued_command_data[4:0] : fetched_red + queued_command_data[4:0];
+    assign added_green = overwrite ? queued_command_data[10:5] : fetched_green + queued_command_data[10:5];
+    assign added_blue = overwrite ? queued_command_data[15:11] : fetched_blue + queued_command_data[15:11];
 
     logic [63:0] added_color;
     assign added_color = {added_blue, added_green, added_red};
@@ -152,7 +160,12 @@ module traffic_generator(
     logic [23:0] queued_wb_rtx_address;
     logic [127:0] queued_wb_rtx_data;
     logic can_issue_immediate_wb_rtx;
-    assign can_issue_immediate_wb_rtx = !memrequest_busy && wb_rtx_fifo_empty;
+    assign can_issue_immediate_wb_rtx = (
+      req_type == WRITE_BACK_RTX &&
+      !memrequest_busy && 
+      wb_rtx_fifo_empty && 
+      wb_fb_fifo_empty && 
+      !fetch_fb_req_complete);
     command_fifo #(.DEPTH(8),.WIDTH(152)) wb_rtx_fifo (
         .clk(clk),
         .rst(rst),
@@ -161,14 +174,14 @@ module traffic_generator(
         .full(wb_rtx_fifo_full),
 
         .command_out({queued_wb_rtx_address, queued_wb_rtx_data}),
-        .read((req_type == WRITE_BACK_RTX) && !memrequest_busy),
+        .read((req_type == WRITE_BACK_RTX) && memrequest_en),
         .empty(wb_rtx_fifo_empty)
     );
 
     logic [127:0] rtx_wb_data; // the full data, including other one packed with it
-    assign rtx_wb_data = wb_rtx_fifo_empty ? repacked_rtx_data : queued_wb_rtx_data;
+    assign rtx_wb_data = can_issue_immediate_wb_rtx ? repacked_rtx_data : queued_wb_rtx_data;
     logic [23:0] rtx_wb_addr; // the address it tells the memory module
-    assign rtx_wb_addr = (wb_rtx_fifo_empty ? 
+    assign rtx_wb_addr = (can_issue_immediate_wb_rtx ? 
       queued_command_address >> 1 : queued_wb_rtx_address >> 1) | {3'b001, 21'b0};
 
     // average the data if frame is a power of 2
@@ -178,28 +191,76 @@ module traffic_generator(
       // how much to shift the result if a frame buffer writeback is also needed
       frame_power_of_2 = 1;
       shift_amt = 0;
-      case (frame_count)
-        1: shift_amt = 0;
-        2: shift_amt = 1;
-        4: shift_amt = 2;
-        8: shift_amt = 3;
-        16: shift_amt = 4;
-        32: shift_amt = 5;
-        64: shift_amt = 6;
-        128: shift_amt = 7;
-        256: shift_amt = 8;
-        512: shift_amt = 9;
-        1024: shift_amt = 10;
-        2048: shift_amt = 11;
-        4096: shift_amt = 12;
-        8192: shift_amt = 13;
-        16384: shift_amt = 14;
-        32768: shift_amt = 15;
-        default begin
-          frame_power_of_2 = 0;
-        end
-
-      endcase
+      // case (frame_count)
+      //   1: begin
+      //     shift_amt = 0;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   2: begin
+      //     shift_amt = 1;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   4: begin
+      //     shift_amt = 2;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   8: begin
+      //     shift_amt = 3;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   16: begin
+      //     shift_amt = 4;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   32: begin
+      //     shift_amt = 5;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   64: begin
+      //     shift_amt = 6;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   128: begin
+      //     shift_amt = 7;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   256: begin
+      //     shift_amt = 8;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   512: begin
+      //     shift_amt = 9;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   1024: begin
+      //     shift_amt = 10;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   2048: begin
+      //     shift_amt = 11;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   4096: begin
+      //     shift_amt = 12;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   8192: begin
+      //     shift_amt = 13;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   16384: begin
+      //     shift_amt = 14;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   32768: begin
+      //     shift_amt = 15;
+      //     frame_power_of_2 = 1;
+      //   end
+      //   default begin
+      //     shift_amt = 0;
+      //     frame_power_of_2 = 0;
+      //   end
+      // endcase
     end
 
     logic [4:0] avg_red;
@@ -211,57 +272,6 @@ module traffic_generator(
     assign avg_blue = fetched_blue >> shift_amt;
     assign avg_color = {avg_blue, avg_green, avg_red};    
 
-    // FIFO to store build up wb_rtx requests when:
-    // -a response is received while mem is busy
-    // -a response is received but another wb had more priority
-    logic fetch_fb_req_complete;
-    assign fetch_fb_req_complete = (memrequest_complete && queued_command_req_type == READ_FETCH_FB);
-
-    // replace that singular color with the new averaged one
-    logic [127:0] repacked_fb_data;
-    always_comb begin
-      repacked_fb_data = memrequest_resp_data;
-      if (fetch_fb_req_complete) begin
-        case (queued_command_address[2:0])
-          3'b000: repacked_fb_data[15:0] = queued_command_data;
-          3'b001: repacked_fb_data[31:16] = queued_command_data;
-          3'b010: repacked_fb_data[47:32] = queued_command_data;
-          3'b011: repacked_fb_data[63:48] = queued_command_data;
-          3'b100: repacked_fb_data[79:64] = queued_command_data;
-          3'b101: repacked_fb_data[95:80] = queued_command_data;
-          3'b110: repacked_fb_data[111:96] = queued_command_data;
-          3'b111: repacked_fb_data[127:112] = queued_command_data;
-        endcase
-      end
-    end
-
-    logic wb_fb_needed;
-    assign wb_fb_needed = fetch_fb_req_complete || !wb_rtx_fifo_empty;
-    
-    logic wb_fb_fifo_full;
-    logic wb_fb_fifo_empty;
-    logic [23:0] queued_wb_fb_address;
-    logic [127:0] queued_wb_fb_data;
-    logic can_issue_immediate_wb_fb;
-    assign can_issue_immediate_wb_fb = !memrequest_busy && wb_fb_fifo_empty;
-    command_fifo #(.DEPTH(8),.WIDTH(152)) wb_fb_fifo (
-        .clk(clk),
-        .rst(rst),
-        .write(fetch_fb_req_complete),
-        .command_in({queued_command_address, repacked_fb_data}),
-        .full(wb_fb_fifo_full),
-
-        .command_out({queued_wb_fb_address, queued_wb_fb_data}),
-        .read((req_type == WRITE_BACK_FB) && !memrequest_busy),
-        .empty(wb_fb_fifo_empty)
-    );
-
-    logic [127:0] fb_wb_data; // the full data, including other ones packed with it
-    assign fb_wb_data = wb_fb_fifo_empty ? repacked_fb_data : queued_wb_fb_data;
-    logic [23:0] fb_wb_addr; // the address it tells the memory module
-    assign fb_wb_addr = (wb_fb_fifo_empty ? 
-      queued_command_address >> 3 : queued_wb_fb_address >> 3);
-
     // queue for fetch commands to be sent for the frame buffer
     logic fetch_fb_fifo_full;
     logic fetch_fb_fifo_empty;
@@ -269,7 +279,7 @@ module traffic_generator(
     logic fetch_fb_queued;
     logic [23:0] queued_fetch_fb_address;
     logic [15:0] queued_fetch_fb_data;
-    
+
     // saved the queued fb data to be written once there is free time
     // queues the command as soon as a new average is calculated
     command_fifo #(.DEPTH(8),.WIDTH(40)) fetch_fb_fifo(
@@ -280,7 +290,7 @@ module traffic_generator(
         .full(fetch_fb_fifo_full),
 
         .command_out({ queued_fetch_fb_address, queued_fetch_fb_data }),
-        .read((req_type == READ_FETCH_FB) && !memrequest_busy),
+        .read((req_type == READ_FETCH_FB) && memrequest_en),
         .empty(fetch_fb_fifo_empty)
     );
     logic fetch_fb_needed;
@@ -288,10 +298,82 @@ module traffic_generator(
     logic [23:0] fb_fetch_addr; // the address it tells the memory module
     assign fb_fetch_addr = queued_fetch_fb_address >> 3;
 
-    typedef enum { 
+    // FIFO to store build up wb_rtx requests when:
+    // -a response is received while mem is busy
+    // -a response is received but another wb had more priority
+    logic fetch_fb_req_complete;
+    assign fetch_fb_req_complete = (memrequest_complete && queued_command_req_type == READ_FETCH_FB);
+
+    // replace that singular color with the new averaged one
+    logic [127:0] repacked_fb_data;
+    always_comb begin
+      repacked_fb_data = memrequest_resp_data;
+      // repacked_fb_data = {
+      //   queued_command_data,
+      //   queued_command_data,
+      //   queued_command_data,
+      //   queued_command_data,
+      //   queued_command_data,
+      //   queued_command_data,
+      //   queued_command_data,
+      //   queued_command_data
+      // };
+      case (queued_command_address[2:0])
+        3'b000: repacked_fb_data[15:0] = queued_command_data;
+        3'b001: repacked_fb_data[31:16] = queued_command_data;
+        3'b010: repacked_fb_data[47:32] = queued_command_data;
+        3'b011: repacked_fb_data[63:48] = queued_command_data;
+        3'b100: repacked_fb_data[79:64] = queued_command_data;
+        3'b101: repacked_fb_data[95:80] = queued_command_data;
+        3'b110: repacked_fb_data[111:96] = queued_command_data;
+        3'b111: repacked_fb_data[127:112] = queued_command_data;
+
+        // 3'b111: repacked_fb_data[15:0] = queued_command_data;
+        // 3'b110: repacked_fb_data[31:16] = queued_command_data;
+        // 3'b101: repacked_fb_data[47:32] = queued_command_data;
+        // 3'b100: repacked_fb_data[63:48] = queued_command_data;
+        // 3'b011: repacked_fb_data[79:64] = queued_command_data;
+        // 3'b010: repacked_fb_data[95:80] = queued_command_data;
+        // 3'b001: repacked_fb_data[111:96] = queued_command_data;
+        // 3'b000: repacked_fb_data[127:112] = queued_command_data;
+      endcase
+    end
+
+    logic wb_fb_needed;
+    assign wb_fb_needed = fetch_fb_req_complete || !wb_fb_fifo_empty;
+    
+    logic wb_fb_fifo_full;
+    logic wb_fb_fifo_empty;
+    logic [23:0] queued_wb_fb_address;
+    logic [127:0] queued_wb_fb_data;
+    logic can_issue_immediate_wb_fb;
+    assign can_issue_immediate_wb_fb = (
+      req_type == WRITE_BACK_FB &&
+      !memrequest_busy && 
+      wb_fb_fifo_empty);
+    command_fifo #(.DEPTH(32),.WIDTH(152)) wb_fb_fifo (
+        .clk(clk),
+        .rst(rst),
+        .write(fetch_fb_req_complete && !can_issue_immediate_wb_fb),
+        .command_in({queued_command_address, repacked_fb_data}),
+        .full(wb_fb_fifo_full),
+
+        .command_out({queued_wb_fb_address, queued_wb_fb_data}),
+        .read((req_type == WRITE_BACK_FB) && memrequest_en),
+        .empty(wb_fb_fifo_empty)
+    );
+
+    logic [127:0] fb_wb_data; // the full data, including other ones packed with it
+    assign fb_wb_data = can_issue_immediate_wb_fb ? repacked_fb_data : queued_wb_fb_data;
+    logic [23:0] fb_wb_addr; // the address it tells the memory module
+    assign fb_wb_addr = (can_issue_immediate_wb_fb ? 
+      queued_command_address >> 3 : queued_wb_fb_address >> 3);
+
+    typedef enum bit [2:0] { 
       NONE,           // no request
       READ_HDMI,      // read 8 packed hdmi values
       READ_FETCH_RTX, // read 1 of 2 packed rtx buffer values
+      READ_FETCH_RTX_OW, // same as last, but overwrite instead of adding
       WRITE_BACK_RTX, // writeback 1 of 2 packed rtx buffer values
       READ_FETCH_FB,  // read 8 packed frame buffer values
       WRITE_BACK_FB   // writeback 1 of 8 packed frame buffer values
@@ -305,15 +387,16 @@ module traffic_generator(
       if (state == RD_HDMI) begin
         req_type = READ_HDMI;
       end else if (state == WB_RTX) begin
-        if (wb_rtx_needed) begin
-          req_type = WRITE_BACK_RTX;
-        end else if (wb_fb_needed) begin
+        if (wb_fb_needed) begin
           req_type = WRITE_BACK_FB;
+        end else if (wb_rtx_needed) begin
+          req_type = WRITE_BACK_RTX;
         end else begin
           if (fetch_fb_needed) begin
             req_type = READ_FETCH_FB;
           end else if (write_axis_valid) begin
-            req_type = READ_FETCH_RTX;
+            //TODO fix always overwriting, temp debugging
+            req_type = write_axis_tlast ? READ_FETCH_RTX_OW : READ_FETCH_RTX;
           end else begin
             req_type = NONE;
           end
@@ -340,6 +423,10 @@ module traffic_generator(
           req_address = write_axis_addr;
           req_data = write_axis_data;
         end
+        READ_FETCH_RTX_OW: begin
+          req_address = write_axis_addr;
+          req_data = write_axis_data;
+        end
         READ_FETCH_FB: begin
           req_address = queued_fetch_fb_address;
           req_data = queued_fetch_fb_data;
@@ -357,13 +444,6 @@ module traffic_generator(
           req_data = 0;
         end
       endcase
-      if (req_type == READ_FETCH_RTX) begin
-        req_data = write_axis_data;
-      end else if (req_type == READ_FETCH_FB) begin
-        req_data = queued_fetch_fb_data;
-      end else if (req_type == WRITE_BACK_RTX) begin
-        req_data = 0;
-      end
     end
     memreq_type queued_command_req_type;
     
@@ -418,6 +498,17 @@ module traffic_generator(
         end
     end
 
+    assign debug[0] = (state == WB_RTX) && memrequest_en;
+    assign debug[1] = (req_type == READ_FETCH_RTX_OW || req_type == READ_FETCH_RTX) && write_axis_data != 0;
+
+    assign debug[5] = req_type == READ_FETCH_FB && queued_fetch_fb_data == 0;
+    // assign debug[2] = fetch_fb_req_complete && req_type == WRITE_BACK_FB; //immediately send wb
+    // assign debug[3] = fetch_fb_req_complete && !memrequest_busy;
+    // assign debug[4] = fetch_fb_req_complete && wb_fb_fifo_empty;
+    // assign debug[5] = fetch_fb_req_complete && !can_issue_immediate_wb_fb && repacked_fb_data == 0;
+    // assign debug[5] = req_type == WRITE_BACK_FB && fb_wb_data
+    // assign debug[5:2] = frame_count;
+
     // communication signals to send to the controller in each state; assigned combinationally
     always_comb begin
       case(state)
@@ -427,9 +518,15 @@ module traffic_generator(
             memrequest_write_data = 0;
             memrequest_write_enable = 0;
         end
-        WB_RTX: begin 
+        WB_RTX: begin
           case (req_type)
             READ_FETCH_RTX: begin // read 1 of 2 packed rtx buffer values
+              memrequest_addr = rtx_fetch_addr;
+              memrequest_en = write_axis_valid && !memrequest_busy;
+              memrequest_write_enable = 0;
+              memrequest_write_data = 0;
+            end
+            READ_FETCH_RTX_OW: begin // read 1 of 2 packed rtx buffer values
               memrequest_addr = rtx_fetch_addr;
               memrequest_en = write_axis_valid && !memrequest_busy;
               memrequest_write_enable = 0;
@@ -464,7 +561,7 @@ module traffic_generator(
         RD_HDMI: begin
             memrequest_addr = read_request_address;
             memrequest_en = read_request_valid && !memrequest_busy;
-            memrequest_write_enable = 1'b0;
+            memrequest_write_enable = 0;
             memrequest_write_data = 0;
         end
         default: begin

@@ -17,14 +17,16 @@ module clockdomain_addr_fifo
    input wire 		sender_axis_tvalid,
    output logic 	sender_axis_tready,
    input wire [15:0] 	sender_axis_tdata,
-   input wire [23:0]		sender_axis_taddr,
+   input wire [23:0]	sender_axis_taddr,
+   input wire     sender_axis_tlast,
    output logic 	sender_axis_prog_full,
 
    input wire 		receiver_clk,
    output logic 	receiver_axis_tvalid,
    input wire 		receiver_axis_tready,
-   output logic [15:0] receiver_axis_tdata,
-   output logic [23:0]	receiver_axis_taddr,
+   output logic [15:0]  receiver_axis_tdata,
+   output logic [23:0]  receiver_axis_taddr,
+   output logic   receiver_axis_tlast,
    output logic 	receiver_axis_prog_empty
    );
 
@@ -41,7 +43,7 @@ module clockdomain_addr_fifo
       .PROG_FULL_THRESH(DEPTH-PROGFULL_DEPTH),          // DECIMAL
       .RELATED_CLOCKS(0),             // DECIMAL
       .SIM_ASSERT_CHK(0),             // DECIMAL; 0=disable simulation messages, 1=enable simulation messages
-      .TDATA_WIDTH(16 + 24),         // DECIMAL
+      .TDATA_WIDTH(40),         // DECIMAL
       .USE_ADV_FEATURES("0202")      // String
    )
    xpm_fifo_axis_inst (
@@ -52,7 +54,7 @@ module clockdomain_addr_fifo
      .m_axis_tdest(1'b0),
      .m_axis_tid(1'b0),
      .m_axis_tkeep(1'b0),
-     .m_axis_tlast(1'b0),
+     .m_axis_tlast(receiver_axis_tlast),
      .m_axis_tready(receiver_axis_tready),
      .m_axis_tstrb(16'b0),
      .m_axis_tuser(1'b0),
@@ -69,7 +71,7 @@ module clockdomain_addr_fifo
      .s_axis_tdest(0),
      .s_axis_tid(0),
      .s_axis_tkeep(0),
-     .s_axis_tlast(0),
+     .s_axis_tlast(sender_axis_tlast),
      .s_axis_tready(sender_axis_tready),
      .s_axis_tstrb(0),
      .s_axis_tuser(0),

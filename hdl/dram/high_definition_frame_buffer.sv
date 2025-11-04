@@ -16,6 +16,7 @@ module high_definition_frame_buffer(
     input wire [15:0]   rtx_pixel,
     input wire [10:0]   rtx_h_count,
     input wire [9:0]    rtx_v_count,
+    input wire          rtx_overwrite,
 
     // Output data to HDMI display pipeline
     input wire          clk_pixel,
@@ -57,14 +58,19 @@ module high_definition_frame_buffer(
     logic [23:0]  rtx_axis_taddr;
     logic         rtx_axis_tready;
     logic         rtx_axis_tvalid;
+    logic         rtx_axis_tlast;
 
     logic [15:0]  rtx_memclk_axis_tdata;
     logic [23:0]  rtx_memclk_axis_taddr;
     logic         rtx_memclk_axis_tready;
     logic         rtx_memclk_axis_tvalid;
+    logic         rtx_memclk_axis_tlast;
     logic         rtx_memclk_axis_prog_empty;
 
+    assign rtx_axis_tdata = rtx_pixel;
     assign rtx_axis_taddr = 1280 * rtx_v_count + rtx_h_count;
+    assign rtx_axis_tvalid = rtx_valid;
+    assign rtx_axis_tlast = rtx_overwrite;
 
     // FIFO data queue of 128-bit messages, crosses clock domains to the 83.333MHz
     // controller clock of the memory interface
@@ -76,12 +82,14 @@ module high_definition_frame_buffer(
         .sender_axis_tready(rtx_axis_tready),
         .sender_axis_tdata(rtx_axis_tdata),
         .sender_axis_taddr(rtx_axis_taddr),
+        .sender_axis_tlast(rtx_axis_tlast),
 
         .receiver_clk(clk_controller),
         .receiver_axis_tvalid(rtx_memclk_axis_tvalid),
         .receiver_axis_tready(rtx_memclk_axis_tready),
         .receiver_axis_tdata(rtx_memclk_axis_tdata),
         .receiver_axis_taddr(rtx_memclk_axis_taddr),
+        .receiver_axis_tlast(rtx_memclk_axis_tlast),
         .receiver_axis_prog_empty(rtx_memclk_axis_prog_empty)
     );
 
@@ -121,6 +129,7 @@ module high_definition_frame_buffer(
         .write_axis_addr        (rtx_memclk_axis_taddr),
         .write_axis_valid       (rtx_memclk_axis_tvalid),
         .write_axis_ready       (rtx_memclk_axis_tready),
+        .write_axis_tlast       (rtx_memclk_axis_tlast),
 
         .debug(debug),
 

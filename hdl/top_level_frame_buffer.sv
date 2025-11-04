@@ -89,16 +89,19 @@ module top_level (
 
   // FAKE RTX ENGINE
   logic [10:0] rtx_h_count;
+  logic [10:0] rtx_skipped_counter;
   logic [9:0] rtx_v_count;
   logic [7:0] frame_count_rtx;
   logic [2:0][7:0] rendered_color_rtx;
   logic [15:0] rtx_pixel;
   logic [7:0] wait_counter_rtx;
+  logic [2:0] rtx_skip_counter;
   logic rtx_valid;
+  assign rtx_h_count = rtx_skipped_counter | rtx_skip_counter;
 
   always_ff @(posedge clk_rtx) begin
     if (sys_rst) begin
-      rtx_h_count <= 0;
+      rtx_skipped_counter <= 0;
       rtx_v_count <= 0;
       frame_count_rtx <= 0;
     end else begin
@@ -106,16 +109,21 @@ module top_level (
       wait_counter_rtx <= wait_counter_rtx + 1;
 
       if (wait_counter_rtx == 0) begin
-        if (rtx_h_count == 1279) begin
-          rtx_h_count <= 0;
-          if (rtx_v_count == 719) begin
-            rtx_v_count <= 0;
-            frame_count_rtx <= frame_count_rtx + 1;
+        if (rtx_skipped_counter == 1272) begin
+          rtx_skipped_counter <= 0;
+          if (rtx_skip_counter == 7) begin
+            rtx_skip_counter <= 0;
+            if (rtx_v_count == 719) begin
+              rtx_v_count <= 0;
+              frame_count_rtx <= frame_count_rtx + 1;
+            end else begin
+              rtx_v_count <= rtx_v_count + 1;
+            end
           end else begin
-            rtx_v_count <= rtx_v_count + 1;
+            rtx_skip_counter <= rtx_skip_counter + 1;
           end
         end else begin
-          rtx_h_count <= rtx_h_count + 1;
+          rtx_skipped_counter <= rtx_skipped_counter + 8;
         end
       end
     end
@@ -162,8 +170,8 @@ module top_level (
 
     .clk_rtx(clk_rtx),
 
-    .pixel_h(rtx_h_count),
-    .pixel_v(rtx_v_count),
+    .pixel_h(rtx_h_count >> 2),
+    .pixel_v(rtx_v_count >> 2),
     .new_color(rendered_color_rtx),
     .new_color_valid(rtx_valid),
 
@@ -233,6 +241,7 @@ module top_level (
     .rtx_pixel    (rtx_pixel),
     .rtx_h_count  (rtx_h_count[10:0]),
     .rtx_v_count  (rtx_v_count[9:0]),
+    .rtx_overwrite(1),//frame_count[2:0] == 0),
     
     // Output data to HDMI display pipeline
     .clk_pixel       (clk_pixel),
