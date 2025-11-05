@@ -56,7 +56,7 @@ module ray_maker #(
   assign pixel_v_out = pixel_v_in;
 
   // Pipeline the valid signal
-  pipeline #(.WIDTH(1), .DEPTH(28)) valid_pipe (.clk(clk), .in(new_ray), .out(ray_valid));
+  pipeline #(.WIDTH(1), .DEPTH(33)) valid_pipe (.clk(clk), .in(new_ray), .out(ray_valid));
 endmodule
 
 `default_nettype wire

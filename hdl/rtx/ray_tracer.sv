@@ -13,26 +13,23 @@ module ray_tracer #(
   input fp24_vec3 ray_origin,
   input fp24_vec3 ray_dir,
   input wire ray_valid,
+  output fp24_vec3 bias,
 
-  output logic tracer_ready,        // back pressure
+  output logic ray_done,        // back pressure
   output fp24_vec3 pixel_color,
   output logic [10:0] pixel_h_out,
   output logic [9:0] pixel_v_out
 );
-  assign tracer_ready = ray_valid;
+  // Whole thing takes 2 cycles (for now)
+  pipeline #(.WIDTH(1), .DEPTH(2)) ray_valid_pipe (.clk(clk), .in(ray_valid), .out(ray_done));
 
-  // make_fp24 #(.WIDTH(9)) r_maker (.clk(clk), .n(9'd255), .x(pixel_color.r));
-  // make_fp24 #(.WIDTH(9)) g_maker (.clk(clk), .n(9'd255), .x(pixel_color.g));
-  // make_fp24 #(.WIDTH(9)) b_maker (.clk(clk), .n(9'd255), .x(pixel_color.b));
+  // Add 2 to each dimension
+  // fp24_vec3 bias;
+  assign bias = {24'h3f0000, 24'h3f0000, 24'h0};
+  fp24_vec3_add add_pixel_color(.clk(clk), .v(ray_dir), .w(bias), .sum(pixel_color));
 
-  // assign pixel_color.x = 'h46fe00;
-  // assign pixel_color.y = 'h460000;
-  // assign pixel_color.z = 'h450000;
-
-  assign pixel_color = ray_dir;
-
-  assign pixel_h_out = pixel_h_in;
-  assign pixel_v_out = pixel_v_in;
+  pipeline #(.WIDTH(11), .DEPTH(2)) pixel_h_pipe (.clk(clk), .in(pixel_h_in), .out(pixel_h_out));
+  pipeline #(.WIDTH(10), .DEPTH(2)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
 endmodule
 
 `default_nettype wire

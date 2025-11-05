@@ -33,14 +33,7 @@ module rtx #(
 
   always_ff @(posedge clk) begin
     rst_prev <= rst;
-
-    if (rst) begin
-      ray_done_buf0 <= 1'b0;
-      ray_done <= 1'b0;
-    end else begin
-      ray_done_buf0 <= tracer_ready;
-      ray_done <= ray_done_buf0;
-    end
+    ray_done <= ray_done_buf0;
   end
 
   ray_caster #(
@@ -76,15 +69,15 @@ module rtx #(
     .ray_valid(ray_valid_caster),
 
     // Doubles as a "pixel valid" signal
-    .tracer_ready(tracer_ready),
+    .ray_done(ray_done_buf0),
     .pixel_color(pixel_color),
     .pixel_h_out(pixel_h),
     .pixel_v_out(pixel_v)
   );
 
   // Convert to 565 representation
-  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) r_convert (.clk(clk), .x(pixel_color.x), .n(rtx_pixel[4:0]));
-  convert_fp24_uint #(.WIDTH(6), .FRAC(6)) g_convert (.clk(clk), .x(pixel_color.y), .n(rtx_pixel[10:5]));
+  convert_fp24_uint #(.WIDTH(5), .FRAC(4)) r_convert (.clk(clk), .x(pixel_color.x), .n(rtx_pixel[4:0]));
+  convert_fp24_uint #(.WIDTH(6), .FRAC(5)) g_convert (.clk(clk), .x(pixel_color.y), .n(rtx_pixel[10:5]));
   convert_fp24_uint #(.WIDTH(5), .FRAC(5)) b_convert (.clk(clk), .x(pixel_color.z), .n(rtx_pixel[15:11]));
 
 endmodule

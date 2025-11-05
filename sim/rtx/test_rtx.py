@@ -19,8 +19,8 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3
 
-WIDTH = 32 * 2
-HEIGHT = 18 * 2
+WIDTH = 32 * 1
+HEIGHT = 18 * 1
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
