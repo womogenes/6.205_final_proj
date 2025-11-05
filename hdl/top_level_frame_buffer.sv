@@ -104,6 +104,8 @@ module top_level (
     {rtx_pixel[4:0], 3'b000}
   };
 
+  assign rtx_valid = 1'b1;
+
   // Real rtx?
   rtx my_rtx(
     .clk(clk_rtx),
@@ -111,8 +113,8 @@ module top_level (
 
     .rtx_pixel(rtx_pixel),
     .pixel_h(rtx_h_count),
-    .pixel_v(rtx_v_count),
-    .ray_done(rtx_valid)
+    .pixel_v(rtx_v_count)
+    // .ray_done(rtx_valid)
   );
 
   logic rtx_overwrite;
