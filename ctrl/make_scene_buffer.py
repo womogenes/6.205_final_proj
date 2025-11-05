@@ -78,7 +78,15 @@ if __name__ == "__main__":
         mat=mat0,
         trig=None,
         trig_norm=None,
-        sphere_center=(0, 0, 5),
+        sphere_center=(-2, 0, 5),
+        sphere_rad=1,
+    )
+    obj0 = Object(
+        is_trig=False,
+        mat=mat0,
+        trig=None,
+        trig_norm=None,
+        sphere_center=(2, 0, 5),
         sphere_rad=1,
     )
 
