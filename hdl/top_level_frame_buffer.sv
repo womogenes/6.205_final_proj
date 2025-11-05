@@ -104,73 +104,34 @@ module top_level (
     {rtx_pixel[4:0], 3'b000}
   };
 
-  assign rtx_valid = 1'b1;
-
   // Real rtx?
+  // Keep it dead until memrequest_busy is false
+  logic dram_ready;
+  always_ff @(posedge clk_rtx) begin
+    if (sys_rst) begin
+      dram_ready <= 1'b0;
+    end else begin
+      dram_ready <= dram_ready | !highdef_fb.memrequest_busy;
+    end
+  end
+
   rtx my_rtx(
     .clk(clk_rtx),
-    .rst(sys_rst),
+    .rst(sys_rst | !dram_ready),
 
     .rtx_pixel(rtx_pixel),
     .pixel_h(rtx_h_count),
-    .pixel_v(rtx_v_count)
-    // .ray_done(rtx_valid)
+    .pixel_v(rtx_v_count),
+    .ray_done(rtx_valid)
   );
 
+  // Latch overwrite on top left pixel
   logic rtx_overwrite;
-  assign rtx_overwrite = sw[1];
-
-  // assign rtx_h_count = rtx_skipped_counter | rtx_skip_counter;
-
-  // always_ff @(posedge clk_rtx) begin
-  //   if (sys_rst || btn[1]) begin
-  //     rtx_skipped_counter <= 0;
-  //     rtx_skip_counter <= 0;
-  //     rtx_v_count <= 0;
-  //     frame_count_rtx <= 0;
-  //   end else begin
-      
-  //     wait_counter_rtx <= wait_counter_rtx + 1;
-
-  //     if (wait_counter_rtx == 0) begin
-  //       if (rtx_skipped_counter == 1272) begin
-  //         rtx_skipped_counter <= 0;
-  //         if (rtx_skip_counter == 7) begin
-  //           rtx_skip_counter <= 0;
-  //           if (rtx_v_count == 719) begin
-  //             rtx_v_count <= 0;
-  //             frame_count_rtx <= frame_count_rtx + 1;
-  //           end else begin
-  //             rtx_v_count <= rtx_v_count + 1;
-  //           end
-  //         end else begin
-  //           rtx_skip_counter <= rtx_skip_counter + 1;
-  //         end
-  //       end else begin
-  //         rtx_skipped_counter <= rtx_skipped_counter + 8;
-  //       end
-  //     end
-  //   end
-  // end
-  // always_comb begin
-  //   // red channel moves up and down linearly
-  //   // if (frame_count_rtx[7] == 1'b0) begin
-  //   //   rendered_color_rtx[2] = frame_count_rtx[6:0] << 1;
-  //   // end else begin
-  //   //   rendered_color_rtx[2] = 8'd255 - (frame_count_rtx[6:0] << 1);
-  //   // end
-  //   rtx_valid = wait_counter_rtx == 0;
-  //   rendered_color_rtx[0] = 8'hff;//frame_count_rtx < rtx_v_count + rtx_h_count ? 255 : 0;
-  //   // rendered_color_rtx[1] = 8'hff;
-  //   // rendered_color_rtx[2] = 8'hff;
-
-  //   // green channel is pwm divided by 8 width-wise
-  //   rendered_color_rtx[1] = frame_count_rtx[2:0] > rtx_h_count[7:5] ? 255 : 0;
-
-  //   // blue channel is pwn divided on a longer period
-  //   rendered_color_rtx[2] = frame_count_rtx[5:3] > rtx_v_count[6:4] ? 255 : 0;
-  //   rtx_pixel = {rendered_color_rtx[2][7:3], rendered_color_rtx[1][7:2], rendered_color_rtx[0][7:3]};
-  // end
+  always_ff @(posedge clk_rtx) begin
+    if (rtx_h_count == 0 && rtx_v_count == 0) begin
+      rtx_overwrite <= sw[1];
+    end
+  end
 
   // ==== SEVEN SEGMENT DISPLAY =======
   seven_segment_controller(
@@ -216,11 +177,11 @@ module top_level (
   // clocking wizards to generate the clock speeds we need for our different domains
   // clk_camera: 200MHz, fast enough to comfortably sample the cameera's PCLK (50MHz)
   cw_hdmi_clk_wiz wizard_hdmi(
-      .sysclk(clk_100mhz_buffered),
-      .clk_pixel(clk_pixel),
-      .clk_tmds(clk_5x),
-      .reset(0),
-      .locked()
+    .sysclk(clk_100mhz_buffered),
+    .clk_pixel(clk_pixel),
+    .clk_tmds(clk_5x),
+    .reset(0),
+    .locked()
   );
 
   logic clk_controller;
@@ -232,15 +193,15 @@ module top_level (
   logic lab06_clk_locked;
 
   lab06_clk_wiz lcw(
-      .reset(btn[0]),
-      .clk_in1(clk_100mhz),
-      .clk_camera(clk_camera),
-      .clk_xc(0),
-      .clk_passthrough(clk_100mhz_buffered),
-      .clk_controller(clk_controller),
-      .clk_ddr3(clk_ddr3),
-      .clk_ddr3_90(clk_ddr3_90),
-      .locked(lab06_clk_locked)
+    .reset(btn[0]),
+    .clk_in1(clk_100mhz),
+    .clk_camera(clk_camera),
+    .clk_xc(0),
+    .clk_passthrough(clk_100mhz_buffered),
+    .clk_controller(clk_controller),
+    .clk_ddr3(clk_ddr3),
+    .clk_ddr3_90(clk_ddr3_90),
+    .locked(lab06_clk_locked)
   );
   assign i_ref_clk = clk_camera;
 
