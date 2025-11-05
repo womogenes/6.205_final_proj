@@ -33,3 +33,21 @@ typedef struct packed {
   fp24_vec3 right;
   fp24_vec3 up;
 } camera;
+
+// ===== OBJECTS =====
+typedef struct packed {
+  fp24_vec3 color;          // 72 bits
+  fp24_vec3 emit_color;     // 72 bits
+  fp24_vec3 spec_color;     // 72 bits
+  fp24 smooth;              // 24 bits
+  fp24 specular;            // 24 bits
+} material;
+
+typedef struct packed {
+  logic is_trig;            // 1 bit
+  material mat;             // 264 bits
+  fp24_vec3 [2:0] trig;     // 216 bits
+  fp24_vec3 trig_norm;      // 72 bits
+  fp24_vec3 sphere_center;  // 72 bits
+  fp24 sphere_rad;          // 24 bits
+} object;

@@ -13,7 +13,7 @@ module rtx #(
   output logic ray_done           // i.e. pixel_color valid
 );
   fp24 width_fp24;
-  make_fp24 #(11) width_maker (.clk(clk), .n(WIDTH >> 2), .x(width_fp24));
+  make_fp24 #(11) width_maker (.clk(clk), .n(WIDTH >> 4), .x(width_fp24));
 
   camera cam;
   assign cam.origin = 72'h0;

@@ -51,11 +51,16 @@ def make_fp24_vec3(vec3: tuple[float]):
     Convert (x, y, z) to packed 72-bit fp24_vec3
     """
     x, y, z = vec3
-    return (
-        (make_fp24(x) << (FP24_WIDTH * 2)) +
-        (make_fp24(y) << (FP24_WIDTH * 1)) +
-        (make_fp24(z) << (FP24_WIDTH * 0))
-    )
+    # return (
+    #     (make_fp24(x) << (FP24_WIDTH * 2)) +
+    #     (make_fp24(y) << (FP24_WIDTH * 1)) +
+    #     (make_fp24(z) << (FP24_WIDTH * 0))
+    # )
+    return pack_bits([
+        (make_fp24(x), 24),
+        (make_fp24(y), 24),
+        (make_fp24(z), 24),
+    ])
 
 def convert_fp24_vec3(vec3: BinaryValue):
     """
@@ -69,3 +74,19 @@ def convert_fp24_vec3(vec3: BinaryValue):
     y = convert_fp24((vec3 >> (FP24_WIDTH * 1)) & mask)
     z = convert_fp24((vec3 >> (FP24_WIDTH * 0)) & mask)
     return (x, y, z)
+
+# Pack bits together
+def pack_bits(values: list[int, int], msb=True):
+    """
+    value is a list of (value, width) pairs
+    """
+    # If MSB, this is NOT the natural ordering for 0-index
+    values = values[::-1] if msb else values
+
+    pos = 0
+    res = 0
+    for value, width in values:
+        res += (value & ((1 << width) - 1)) << pos
+        pos += width
+
+    return res
