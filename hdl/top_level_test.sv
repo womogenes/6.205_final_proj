@@ -57,7 +57,7 @@ module top_level (
     .rtx_pixel(dout[15:0]),
     .pixel_h(),
     .pixel_v(),
-    .ray_done(led[1])
+    .ray_done(led[4])
   );
 
   logic [23:0] dout2;
