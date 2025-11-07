@@ -41,17 +41,18 @@ errors = []
 consts = []
 minerror = float("inf")
 minconst = 0
+
 for diff in tqdm(range(-delta, delta)):
     num_samples = 1000
     random.seed("wtf")
-    const = 0x5e6a0a + diff
+    const = 0x1f8000 + diff
     total_error = 0
     for i in range(num_samples):
         x = 2 ** (random.random() * 127 - 63)
         as_bin = make_fp24(x)
-        evil = const - (as_bin >> 1)
+        evil = const + (as_bin >> 1)
         res = convert_fp24(evil)
-        correct = 1 / math.sqrt(x)
+        correct = math.sqrt(x)
         # print(f"{res=} {correct=}")
         error = abs(math.log2(correct) - math.log2(res))
         total_error += error
@@ -64,4 +65,4 @@ for diff in tqdm(range(-delta, delta)):
 plt.plot(consts, errors)
 # print(consts, errors)
 print(f"{minconst=:x}")
-plt.savefig("ctrl/evil_graph.png")
+plt.savefig("ctrl/evil_graph_2.png")
