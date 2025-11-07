@@ -53,12 +53,13 @@ for diff in tqdm(range(-delta, delta)):
         res = convert_fp24(evil)
         correct = 1 / math.sqrt(x)
         # print(f"{res=} {correct=}")
-        error = abs(math.log2(correct) - math.log2(res))
+        error = abs((correct - res) / correct) * 100
         total_error += error
-    if (total_error < minerror):
+    avg_error = total_error / num_samples
+    if (avg_error < minerror):
         minconst = const
-        minerror = error
-    errors.append(total_error)
+        minerror = avg_error
+    errors.append(avg_error)
     consts.append(const)
 
 plt.plot(consts, errors)
