@@ -4,7 +4,6 @@ module quadratic_solver (
   input wire clk,
   input wire rst,
 
-  input fp24 a,
   input fp24 b,
   input fp24 c,
 

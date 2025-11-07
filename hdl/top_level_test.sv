@@ -61,22 +61,18 @@ module top_level (
   );
 
   logic [23:0] dout2;
-  logic [23:0] dout3;
 
   quadratic_solver (
     .clk(clk_100mhz),
     .rst(sys_rst),
-    .a(a),
     .b(b),
     .c(a ^ 24'hAFAFAF),
     .x0(dout2),
-    .x1(dout3),
     .valid(led[3])
   );
 
   assign led[0] = dout[counter];
   assign led[1] = dout2[~counter];
-  assign led[2] = dout3[counter];
  
 endmodule // top_level
 
