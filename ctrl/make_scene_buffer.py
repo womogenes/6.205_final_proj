@@ -43,14 +43,15 @@ class Object:
         trig: tuple[tuple[float]],
         trig_norm: tuple[float],
         sphere_center: tuple[float],
-        sphere_rad_sq: float,
+        sphere_rad: float,
     ):
         self.is_trig = is_trig
         self.mat = mat
         self.trig = trig or ((0, 0, 0),) * 3
         self.trig_norm = trig_norm or (0, 0, 0)
         self.sphere_center = sphere_center
-        self.sphere_rad_sq = sphere_rad_sq
+        self.sphere_rad_sq = sphere_rad ** 2
+        self.sphere_rad_inv = 1 / sphere_rad
 
     def pack_bits(self):
         fields = [
@@ -60,6 +61,7 @@ class Object:
             (make_fp24_vec3(self.trig_norm), 72),
             (make_fp24_vec3(self.sphere_center), 72),
             (make_fp24(self.sphere_rad_sq), 24),
+            (make_fp24(self.sphere_rad_inv), 24),
         ]
         return pack_bits(fields, msb=True), sum([width for _, width in fields])
 
@@ -80,7 +82,7 @@ if __name__ == "__main__":
             trig=None,
             trig_norm=None,
             sphere_center=(-2, 0, 5),
-            sphere_rad_sq=3.14159,
+            sphere_rad=3.14159,
         ),
         Object(
             is_trig=False,
@@ -88,7 +90,7 @@ if __name__ == "__main__":
             trig=None,
             trig_norm=None,
             sphere_center=(2, 0, 5),
-            sphere_rad_sq=6.28,
+            sphere_rad=6.28,
         ),
     ]
 
@@ -98,3 +100,5 @@ if __name__ == "__main__":
             bits, width = obj.pack_bits()
             n_hex_digits = (width + 3) // 4
             fout.write(hex(bits)[2:].zfill(n_hex_digits) + "\n")
+
+    print(f"width: {width}")
