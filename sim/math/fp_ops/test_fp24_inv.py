@@ -34,7 +34,7 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    DELAY_CYCLES = 4
+    DELAY_CYCLES = 12
 
     N_SAMPLES = 5
 
@@ -60,9 +60,7 @@ async def test_module(dut):
         dut_ans = np.array(dut_ans[DELAY_CYCLES:])
         exp_ans = 1 / xs
 
-        dut._log.info(f"{dut_ans}")
-        dut._log.info(f"{exp_ans=}")
-        dut._log.info(f"{dut_ans/exp_ans=}")
+        dut._log.info(f"{dut_ans[0]=:.6f}, {exp_ans[0]=:.6f}")
 
         rel_err = np.abs(dut_ans / exp_ans - 1)
         dut._log.info(f"vector scale: {scale:>2}\tmean relative error: {np.mean(rel_err) * 100:.6f}%")
@@ -70,7 +68,7 @@ async def test_module(dut):
         return np.mean(rel_err)
 
     # for scale in range(1, 63):
-    scale = 1
+    scale = 32
     await mean_rel_err(scale)
 
 def runner():

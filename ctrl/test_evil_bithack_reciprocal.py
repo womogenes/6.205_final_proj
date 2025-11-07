@@ -35,7 +35,8 @@ if __name__ == "__main__":
         return mean_rel_err
 
     magic_consts, scores = [], []
-    for magic_const in tqdm(np.linspace(0, 2**24, 1_000), ncols=80):
+    # for magic_const in tqdm(np.linspace(8_240_000, 8_260_000, 1_000), ncols=80):
+    for magic_const in tqdm(np.linspace(1.663e7, 1.665e7, 1_000), ncols=80):
         magic_const = int(magic_const)
         magic_consts.append(magic_const)
         scores.append(min(1, get_score(magic_const)))

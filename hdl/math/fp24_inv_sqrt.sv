@@ -92,7 +92,7 @@ module fp24_inv_sqrt (
   output wire inv_sqrt_valid
 );
   // localparam fp24 half = {1'b0, 7'b011_1110, 16'b0};
-  localparam fp24 MAGIC_NUMBER = 24'h5e7a09;
+  localparam fp24 MAGIC_NUMBER = 24'h5e669c;
   localparam integer NR_STAGES = INV_SQRT_NR_STAGES;
 
   // fp24 half_x;

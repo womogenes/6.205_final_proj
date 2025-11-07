@@ -43,7 +43,7 @@ endmodule
   timing:
     INV_DELAY (INV_NR_STAGES * INV_STAGE_DELAY)
 */
-parameter integer INV_NR_STAGES = 1;
+parameter integer INV_NR_STAGES = 3;
 parameter integer INV_STAGE_DELAY = 4;
 parameter integer INV_DELAY = INV_NR_STAGES * INV_STAGE_DELAY;
 
@@ -54,7 +54,7 @@ module fp24_inv (
   input fp24 x,
   output fp24 x_inv
 );
-  fp24 MAGIC_CONST = 16'hffff;
+  logic [15:0] MAGIC_CONST = 16'hffff;
   localparam NR_STAGES = INV_NR_STAGES;
 
   fp24 [NR_STAGES:0] x_buffer;
@@ -62,7 +62,7 @@ module fp24_inv (
 
   // To construct initial guess: negate exponent, flip all mantissa bits
   fp24 init_guess;
-  assign init_guess = { x.sign, 7'd126 - x.exp, MAGIC_CONST ^ x.mant };
+  assign init_guess = { x.sign, 7'd125 - x.exp, MAGIC_CONST ^ x.mant };
 
   generate
     genvar i;
