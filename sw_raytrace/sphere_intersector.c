@@ -7,9 +7,13 @@ int solve_quadratic(float a, float b, float c, float* x0, float* x1) {
   if (discr < 0) {
     return 0;
   } else {
-    float q = (b > 0) ? -0.5 * (b + sqrtf(discr)) : -0.5 * (b - sqrtf(discr));
-    *x0 = q / a;
-    *x1 = c / q;
+    // float q = (b > 0) ? -0.5 * (b + sqrtf(discr)) : -0.5 * (b - sqrtf(discr));
+    // *x0 = q / a;
+    // *x1 = c / q;
+    float n1 = -b + sqrtf(discr);
+    float n2 = -b - sqrtf(discr);
+    *x0 = n1 / (2 * a);
+    *x1 = n2 / (2 * a);
   }
 
   // Ensure x0 is always smaller value

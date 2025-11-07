@@ -1,5 +1,11 @@
-// Addition for 24-bit floating point
+// Hepler function: compare two fp24s
+function automatic fp24 fp24_greater(fp24 a, fp24 b);
+  logic greater;
+  greater = (a.exp > b.exp) || (a.exp == b.exp && a.mant > b.mant);
+  return greater;
+endfunction
 
+// Addition for 24-bit floating point
 module fp24_add (
   input wire clk,
   input wire rst,
@@ -11,7 +17,7 @@ module fp24_add (
 );
   // Extract fields and swap if b > a
   logic swap;
-  assign swap = (b.exp > a.exp) || (b.exp == a.exp && b.mant > a.mant);
+  assign swap = ~fp24_greater(a, b);
 
   logic [6:0] exp_a, exp_b;
   logic sign_a, sign_b;
