@@ -88,7 +88,7 @@ typedef struct {
   Vec3 trig[3];
   Vec3 trig_norm;
   Vec3 sphere_center;
-  float sphere_rad;
+  float sphere_rad_sq;
 } Object;
 
 #endif

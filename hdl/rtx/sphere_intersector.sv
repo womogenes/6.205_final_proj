@@ -7,7 +7,7 @@ module sphere_intersector (
   input fp24_vec3 ray_origin,
   input fp24_vec3 ray_dir,
   input fp24_vec3 sphere_center,
-  input fp24 sphere_rad,
+  input fp24 sphere_rad_sq,
 
   output logic hit,
   output fp24_vec3 hit_pos,

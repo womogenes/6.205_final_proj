@@ -14,7 +14,7 @@ const Object SCENE_BUFFER[] = {
       .specular = 0.0f,
     },
     .sphere_center = {-2, 1, 7},
-    .sphere_rad = 2,
+    .sphere_rad_sq = 2 * 2,
   },
   (Object){
     .is_trig = 0,
@@ -25,7 +25,7 @@ const Object SCENE_BUFFER[] = {
       .specular = 0.0f,
     },
     .sphere_center = {0, 0, 5},
-    .sphere_rad = 1,
+    .sphere_rad_sq = 1 * 1,
   },
   (Object){
     .is_trig = 0,
@@ -36,7 +36,7 @@ const Object SCENE_BUFFER[] = {
       .specular = 0.0f,
     },
     .sphere_center = {1.0, -0.5, 4},
-    .sphere_rad = 0.5,
+    .sphere_rad_sq = 0.5 * 0.5,
   },
   // Skylight
   (Object){
@@ -48,7 +48,7 @@ const Object SCENE_BUFFER[] = {
       .specular = 0.0f,
     },
     .sphere_center = {0, 500, 0},
-    .sphere_rad = 450,
+    .sphere_rad_sq = 450 * 450,
   },
   (Object){
     .is_trig = 0,
@@ -59,7 +59,7 @@ const Object SCENE_BUFFER[] = {
       .specular = 0.0f,
     },
     .sphere_center = {0, -200, 5},
-    .sphere_rad = 199,
+    .sphere_rad_sq = 199 * 199,
   },
 };
 

@@ -15,13 +15,13 @@ module scene_buffer #(
   output fp24_vec3 [2:0] trig,     // 216 bits
   output fp24_vec3 trig_norm,      // 72 bits
   output fp24_vec3 sphere_center,  // 72 bits
-  output fp24 sphere_rad           // 24 bits
+  output fp24 sphere_rad_sq        // 24 bits
 );
   // FOR DEBUG ONLY
   // TODO: remove debug signals
   assign mat = obj.mat;
   assign sphere_center = obj.sphere_center;
-  assign sphere_rad = obj.sphere_rad;
+  assign sphere_rad_sq = obj.sphere_rad_sq;
 
   // Read out objects from memory
   xilinx_true_dual_port_read_first_2_clock_ram #(

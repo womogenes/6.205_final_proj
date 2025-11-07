@@ -40,7 +40,7 @@ async def test_module(dut):
         dut.obj_idx.value = i
         await ClockCycles(dut.clk, 10)
 
-        print("Sphere radius:", convert_fp24(dut.sphere_rad.value))
+        print("Sphere radius:", convert_fp24(dut.sphere_rad_sq.value))
         print("Sphere center:", convert_fp24_vec3(dut.sphere_center.value))
 
 

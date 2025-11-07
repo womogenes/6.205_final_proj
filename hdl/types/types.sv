@@ -49,5 +49,5 @@ typedef struct packed {
   fp24_vec3 [2:0] trig;     // 216 bits
   fp24_vec3 trig_norm;      // 72 bits
   fp24_vec3 sphere_center;  // 72 bits
-  fp24 sphere_rad;          // 24 bits
+  fp24 sphere_rad_sq;       // 24 bits
 } object;
