@@ -73,26 +73,28 @@ if __name__ == "__main__":
         specular=0,
     )
 
-    obj0 = Object(
-        is_trig=False,
-        mat=mat0,
-        trig=None,
-        trig_norm=None,
-        sphere_center=(-2, 0, 5),
-        sphere_rad=1,
-    )
-    obj0 = Object(
-        is_trig=False,
-        mat=mat0,
-        trig=None,
-        trig_norm=None,
-        sphere_center=(2, 0, 5),
-        sphere_rad=1,
-    )
+    objs = [
+        Object(
+            is_trig=False,
+            mat=mat0,
+            trig=None,
+            trig_norm=None,
+            sphere_center=(-2, 0, 5),
+            sphere_rad=3.14159,
+        ),
+        Object(
+            is_trig=False,
+            mat=mat0,
+            trig=None,
+            trig_norm=None,
+            sphere_center=(2, 0, 5),
+            sphere_rad=6.28,
+        ),
+    ]
 
     # Dump to hex file
     with open(str(proj_path / "data" / "scene_buffer.mem"), "w") as fout:
-        for obj in [obj0]:
+        for obj in objs:
             bits, width = obj.pack_bits()
             n_hex_digits = (width + 3) // 4
             fout.write(hex(bits)[2:].zfill(n_hex_digits) + "\n")

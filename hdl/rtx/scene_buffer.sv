@@ -5,20 +5,29 @@ module scene_buffer #(
 ) (
   input wire clk,
   input wire rst,
-  input wire [3:0] obj_idx,
+  input wire [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx,
 
   output object obj,
-  output logic [3:0] num_objs
+
+  output logic is_trig,            // 1 bit
+  output material mat,             // 264 bits
+  output fp24_vec3 [2:0] trig,     // 216 bits
+  output fp24_vec3 trig_norm,      // 72 bits
+  output fp24_vec3 sphere_center,  // 72 bits
+  output fp24 sphere_rad           // 24 bits
 );
+  assign mat = obj.mat;
+  assign sphere_center = obj.sphere_center;
+  assign sphere_rad = obj.sphere_rad;
 
   // Read out objects from memory
   xilinx_true_dual_port_read_first_2_clock_ram #(
     .RAM_WIDTH(649),
-    .RAM_DEPTH(16),
+    .RAM_DEPTH(SCENE_BUFFER_DEPTH),
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
     .INIT_FILE(INIT_FILE)
-  ) main_mem (
-    // CPU read/write
+  ) scene_buf_mem (
+    // Reprogramming write
     .addra(),
     .clka(clk),
     .wea(1'b0),
@@ -28,7 +37,7 @@ module scene_buffer #(
     .rsta(rst),
     .douta(),
 
-    // HDMI read (frame buffer)
+    // Output port
     .addrb(obj_idx),
     .dinb(1'b0),
     .clkb(clk),

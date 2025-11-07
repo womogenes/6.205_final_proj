@@ -33,8 +33,15 @@ async def test_module(dut):
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 50)
+    await ClockCycles(dut.clk, 10)
     dut.rst.value = 0
+
+    for i in range(2):
+        dut.obj_idx.value = i
+        await ClockCycles(dut.clk, 10)
+
+        print("Sphere radius:", convert_fp24(dut.sphere_rad.value))
+        print("Sphere center:", convert_fp24_vec3(dut.sphere_center.value))
 
 
 def runner():
@@ -54,10 +61,11 @@ def runner():
     build_test_args = ["-Wall"]
 
     # values for parameters defined earlier in the code.
-    parameters = {"INIT_FILE": "scene_buffer.mem"}
+    parameters = {"INIT_FILE": '"scene_buffer.mem"'}
 
     # Copy scene buffer file
-    shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), "scene_buffer.mem")
+    build_dir = proj_path / "sim" / "sim_build"
+    shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), build_dir / "scene_buffer.mem")
 
     sys.path.append(str(proj_path / "sim"))
     hdl_toplevel = "scene_buffer"
@@ -71,7 +79,7 @@ def runner():
         parameters=parameters,
         timescale=("1ns", "1ps"),
         waves=True,
-        build_dir=(proj_path / "sim" / "sim_build")
+        build_dir=build_dir,
     )
     run_test_args = []
     runner.test(
