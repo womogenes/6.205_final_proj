@@ -12,7 +12,7 @@ module fp24_shift #(
   // Beware overflow?
 
   logic [6:0] exp_new;
-  assign exp_new = a.exp - SHIFT_AMT;
+  assign exp_new = a.exp + SHIFT_AMT;
   assign quot = {a.sign, exp_new, a.mant};
 endmodule
 

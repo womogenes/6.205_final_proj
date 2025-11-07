@@ -52,7 +52,7 @@ module fp24_inv_sqrt_stage (
   fp24_mul mul_y_sq_by_x(.clk(clk), .a(y_sq), .b(x_pipe.pipe[0]), .prod(y_sq_by_x));
   
   fp24_add add_sub(.clk(clk), .a(three), .b(y_sq_by_x), .is_sub(1'b1), .sum(sub));
-  fp24_shift #(.SHIFT_AMT(1)) div2_frac (.a(sub), .quot(frac));
+  fp24_shift #(.SHIFT_AMT(-1)) div2_frac (.a(sub), .quot(frac));
   
   // Final answer
   fp24_mul mul_y_next(.clk(clk), .a(frac), .b(y_piped5), .prod(y_next));
@@ -77,8 +77,8 @@ endmodule
   timing:
     (INV_SQRT_NR_STAGES * INV_SQRT_STAGE_DELAY) cycle delay
 */
+parameter integer INV_SQRT_NR_STAGES = 2;
 parameter integer INV_SQRT_STAGE_DELAY = 5;
-parameter integer INV_SQRT_NR_STAGES = 3;
 parameter integer INV_SQRT_DELAY = INV_SQRT_NR_STAGES * INV_SQRT_STAGE_DELAY;
 
 module fp24_inv_sqrt (

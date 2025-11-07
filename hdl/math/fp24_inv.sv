@@ -52,7 +52,7 @@ module fp24_inv (
   input wire rst,
 
   input fp24 x,
-  output fp24 x_inv
+  output fp24 inv
 );
   logic [22:0] MAGIC_NUMBER = 23'h7ddf0a;
   localparam NR_STAGES = INV_NR_STAGES;
@@ -62,7 +62,7 @@ module fp24_inv (
 
   // To construct initial guess: negate exponent, flip all mantissa bits
   fp24 init_guess;
-  assign init_guess = {x[23], MAGIC_CONST - x[22:0]};
+  assign init_guess = {x[23], MAGIC_NUMBER - x[22:0]};
 
   generate
     genvar i;
@@ -80,7 +80,7 @@ module fp24_inv (
   endgenerate
 
   // Outputs are last stage in the pipeline
-  assign x_inv = y_buffer[NR_STAGES];
+  assign inv = y_buffer[NR_STAGES];
 
 endmodule
 

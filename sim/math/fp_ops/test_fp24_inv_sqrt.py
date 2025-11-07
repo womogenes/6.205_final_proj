@@ -34,7 +34,7 @@ async def test_pipeline(dut):
     dut.rst.value = 0
 
     # Assume some-cycle delay for this module
-    DELAY_CYCLES = 15
+    DELAY_CYCLES = 10
 
     N_SAMPLES = 100
     x = np.exp2(np.random.rand(N_SAMPLES) * 63 - 31)

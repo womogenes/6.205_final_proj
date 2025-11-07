@@ -36,7 +36,7 @@ async def test_module(dut):
 
     DELAY_CYCLES = 8
 
-    N_SAMPLES = 5
+    N_SAMPLES = 1000
 
     async def mean_rel_err(vec_scale: float):
         xs = np.exp2((np.random.rand(N_SAMPLES) - 0.5) * 2 * vec_scale)
@@ -49,11 +49,11 @@ async def test_module(dut):
             dut.x.value = x
 
             await ClockCycles(dut.clk, 1)
-            dut_ans.append(convert_fp24(dut.x_inv.value))
+            dut_ans.append(convert_fp24(dut.inv.value))
 
         for _ in range(DELAY_CYCLES):
             await ClockCycles(dut.clk, 1)
-            dut_ans.append(convert_fp24(dut.x_inv.value))
+            dut_ans.append(convert_fp24(dut.inv.value))
 
         # Get answers!
         await ClockCycles(dut.clk, DELAY_CYCLES * 2)
