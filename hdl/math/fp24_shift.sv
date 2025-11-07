@@ -1,7 +1,7 @@
 `default_nettype none
 
 module fp24_shift #(
-  parameter logic [6:0] SHIFT_AMT = 0
+  parameter integer SHIFT_AMT = 0
 ) (
   input fp24 a,
   output fp24 shifted
@@ -10,9 +10,9 @@ module fp24_shift #(
   // Useful for dividing by 2 etc
   // Beware overflow?
 
-  logic [6:0] exp_new;
-  assign exp_new = a.exp + SHIFT_AMT;
-  assign shifted = {a.sign, exp_new, a.mant};
+  assign shifted.sign = a.sign;
+  assign shifted.exp = a.exp + SHIFT_AMT;
+  assign shifted.mant = a.mant;
 endmodule
 
 `default_nettype wire

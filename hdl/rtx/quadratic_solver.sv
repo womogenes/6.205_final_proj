@@ -35,7 +35,7 @@ module quadratic_solver (
   // result is 1 cycle behind
   fp24_mul mul_b_sq(.clk(clk), .a(b), .b(b), .prod(b_sq));
   fp24_mul mul_a_by_c(.clk(clk), .a(a), .b(c), .prod(a_by_c));
-  fp24_shift #(2) shift_four_a_by_c (.a(a_by_c), .shifted(four_a_by_c));  // combinational!
+  fp24_shift #(.SHIFT_AMT(2)) shift_four_a_by_c (.a(a_by_c), .shifted(four_a_by_c));  // combinational!
 
   // result is 3 cycles behind
   fp24_add add_discr(.clk(clk), .a(b_sq), .b(four_a_by_c), .is_sub(1'b1), .sum(discr));
@@ -52,7 +52,7 @@ module quadratic_solver (
   // result is INV_DELAY (10) cycles behind
   fp24_inv inv_inv_a(.clk(clk), .x(a), .inv(inv_a));
   pipeline #(.WIDTH(24), .DEPTH(3+SQRT_DELAY+2-INV_DELAY)) inv_a_pipe (.clk(clk), .in(inv_a), .out(inv_a_piped));
-  fp24_shift #(-1) shift_inv_2a (.a(inv_a_piped), .shifted(inv_2a));
+  fp24_shift #(.SHIFT_AMT(-1)) shift_inv_2a (.a(inv_a_piped), .shifted(inv_2a));
 
   // multiply numerator by 1/(2a)
   // result is INV_DELAY + 1 cycle behind

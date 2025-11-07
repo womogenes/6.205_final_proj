@@ -37,13 +37,13 @@ async def test_module(dut):
 
     DELAY_CYCLES = 18
 
-    N_SAMPLES = 300
+    N_SAMPLES = 1000
 
     # Generate random (N, 3) tensors for inputs
     A, B, C = np.exp2(np.random.rand(3, N_SAMPLES) * 5 - 4)
 
-    A, B, C = np.array([[0.0745], [1.4057], [0.2265]])
-    N_SAMPLES = 1
+    # A, B, C = np.array([[0.0745], [1.4057], [0.2265]])
+    # N_SAMPLES = 1
 
     # Clock in one per cycle brrr
     dut_valid = []
@@ -71,7 +71,7 @@ async def test_module(dut):
     dut_x0 = np.array(dut_x0)
     dut_x1 = np.array(dut_x1)
 
-    print(f"{A=}, {B=}, {C=}")
+    # print(f"{A=}, {B=}, {C=}")
 
     # Check correctness
     discr = B**2 - 4*A*C
