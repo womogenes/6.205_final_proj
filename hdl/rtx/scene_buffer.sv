@@ -9,6 +9,7 @@ module scene_buffer #(
 
   output object obj,
 
+  // TODO: remove debug signals
   output logic is_trig,            // 1 bit
   output material mat,             // 264 bits
   output fp24_vec3 [2:0] trig,     // 216 bits
@@ -16,6 +17,8 @@ module scene_buffer #(
   output fp24_vec3 sphere_center,  // 72 bits
   output fp24 sphere_rad           // 24 bits
 );
+  // FOR DEBUG ONLY
+  // TODO: remove debug signals
   assign mat = obj.mat;
   assign sphere_center = obj.sphere_center;
   assign sphere_rad = obj.sphere_rad;
