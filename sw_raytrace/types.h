@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define HD 1
+#define HD 0
 
 #if HD
   #define WIDTH 1280
