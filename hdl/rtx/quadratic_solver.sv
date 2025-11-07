@@ -12,7 +12,7 @@ module quadratic_solver (
   output fp24 x1,
   output logic valid
 );
-
+  // TODO: implement quadratic solver
 endmodule
 
 `default_nettype wire
