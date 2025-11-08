@@ -1,6 +1,6 @@
 `default_nettype none
 
-module uart_memflash (
+module uart_memflash_rtx (
   input wire clk,
   input wire rst,
 

@@ -22,6 +22,9 @@ module top_level (
   output logic [2:0] hdmi_tx_n, // hdmi output signals (negatives) (blue, green, red)
   output logic hdmi_clk_p, hdmi_clk_n, // differential hdmi clock
 
+  // UART
+  input wire uart_rxd,
+
   output logic [7:0] pmoda,
 
   //SDRAM (DDR3) ports
@@ -115,6 +118,45 @@ module top_level (
     end
   end
 
+  // ===== UART MEMFLASH =====
+  logic uart_flash_active;
+  logic [7:0] uart_flash_cmd;
+  logic [71:0] uart_flash_cam_data;
+  logic uart_flash_wen;
+
+  logic uart_rx_buf0, uart_rx_buf1;
+  always_ff @(posedge clk_100mhz_buffered) begin
+    uart_rx_buf0 <= uart_rxd;
+    uart_rx_buf1 <= uart_rx_buf0;
+  end
+
+  logic uart_rx_valid;
+  logic [7:0] uart_rx_byte;
+
+  uart_receive #(100_000_000, 115_200) uart_receiver (
+    .clk(clk_100mhz_buffered),
+    .rst(sys_rst),
+    .din(uart_rx_buf1),
+    .dout_valid(uart_rx_valid),
+    .dout(uart_rx_byte)
+  );
+
+  uart_memflash_rtx (
+    .clk(clk_rtx),
+    .rst(sys_rst),
+    .uart_rx_valid(uart_rx_valid),
+    .uart_rx_byte(uart_rx_byte),
+
+    .flash_active(uart_flash_active),
+    .flash_cmd(uart_flash_cmd),
+    .flash_cam_data(uart_flash_cam_data),
+    .flash_wen(uart_flash_wen)
+  );
+
+  assign led[15] = uart_flash_active;
+  // =========================
+
+
   // rtx requires an external scene buffer
   logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] scene_buf_obj_idx;
   object scene_buf_obj;
@@ -131,13 +173,21 @@ module top_level (
   // rtx requires external camera
   camera cam;
 
-  always_ff @(posedge clk) begin
+  always_ff @(posedge clk_rtx) begin
     // Initialize camera
-    if (rst) begin
+    if (sys_rst) begin
       cam.origin <= 72'h0;
-      cam.right <= {24'h3f0000, 24'h000000, 24'h000000};    // (1, 0, 0)
       cam.forward <= {24'h000000, 24'h000000, 24'h484000};  // (0, 0, 1280/2)
+      cam.right <= {24'h3f0000, 24'h000000, 24'h000000};    // (1, 0, 0)
       cam.up <= {24'h000000, 24'h3f0000, 24'h000000};       // (0, 1, 0)
+
+    end else if (uart_flash_wen) begin
+      case (uart_flash_cmd[1:0])
+        2'b00: cam.origin <= uart_flash_cam_data;
+        2'b01: cam.forward <= uart_flash_cam_data;
+        2'b10: cam.right <= uart_flash_cam_data;
+        2'b11: cam.up <= uart_flash_cam_data;
+      endcase
     end
   end
 

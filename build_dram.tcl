@@ -30,6 +30,7 @@ set sources_sv [ concat \
     [ glob ./hdl/math/*.sv ] \
     [ glob ./hdl/rtx/*.sv ] \
     [ glob ./hdl/dram/*.sv ] \
+    [ glob ./hdl/uart/*.sv ] \
     [ glob ./hdl/mem/*.sv ] \
     [ glob ./hdl/seven_seg/*.sv ] \
     [ glob ./hdl/top_level_frame_buffer.sv ] \
