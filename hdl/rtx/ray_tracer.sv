@@ -15,14 +15,15 @@ module ray_tracer #(
   input wire ray_valid,
   output fp24_vec3 bias,
 
-  output logic ray_done,        // back pressure
+  output logic ray_done,
   output fp24_vec3 pixel_color,
   output logic [10:0] pixel_h_out,
   output logic [9:0] pixel_v_out,
 
   // Interface to scene buffer
   output logic [$clog2(SCENE_BUFFER_DEPTH-1):0] obj_idx,
-  input object obj
+  input object obj,
+  input logic obj_last
 );
   // // Whole thing takes 2 cycles (for now)
   // pipeline #(.WIDTH(1), .DEPTH(2)) ray_valid_pipe (.clk(clk), .in(ray_valid), .out(ray_done));
@@ -35,11 +36,17 @@ module ray_tracer #(
   // pipeline #(.WIDTH(11), .DEPTH(2)) pixel_h_pipe (.clk(clk), .in(pixel_h_in), .out(pixel_h_out));
   // pipeline #(.WIDTH(10), .DEPTH(2)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
 
+  // Reset the intersector on new ray
+  // TODO: change this when we have multiple bounces
+
+  assign pixel_color = ray_intx.hit_any ? 72'h3f00003f00003f0000 : 0;
+
   ray_intersector ray_intx (
     .clk(clk),
     .rst(rst),
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),
+    .ray_valid(ray_valid),
 
     // Outputs
     .hit_mat(),
@@ -50,7 +57,8 @@ module ray_tracer #(
     .hit_valid(ray_done),
 
     .obj_idx(obj_idx),
-    .obj(obj)
+    .obj(obj),
+    .obj_last(obj_last)
   );
 
   pipeline #(.WIDTH(11), .DEPTH(2)) pixel_h_pipe (.clk(clk), .in(pixel_h_in), .out(pixel_h_out));

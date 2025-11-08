@@ -20,8 +20,9 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3
 
-WIDTH = 32 * 1
-HEIGHT = 18 * 1
+scale = 0.5
+WIDTH = int(32 * scale)
+HEIGHT = int(18 * scale)
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -47,12 +48,14 @@ async def test_module(dut):
 
     for _ in tqdm(range(WIDTH * HEIGHT), ncols=80, gui=False):
     # for _ in range(WIDTH * HEIGHT):
-        # await RisingEdge(dut.ray_done)
-        await ClockCycles(dut.clk, 100)
+        await RisingEdge(dut.ray_done)
+        # await ClockCycles(dut.clk, 100)
 
         pixel_h = dut.pixel_h.value.integer
         pixel_v = dut.pixel_v.value.integer
         pixel_color = unpack_color8(dut.rtx_pixel.value.integer)
+
+        # dut._log.info(pixel_color)
 
         r, g, b = pixel_color
 

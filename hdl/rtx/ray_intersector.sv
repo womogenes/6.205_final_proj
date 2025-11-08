@@ -5,6 +5,7 @@ module ray_intersector (
   input wire rst,
   input fp24_vec3 ray_origin,
   input fp24_vec3 ray_dir,
+  input wire ray_valid,         // single-cycle trigger
 
   // Running values
   output material hit_mat,
@@ -19,6 +20,7 @@ module ray_intersector (
   input object obj,
   input logic obj_last
 );
+  logic busy;
   logic obj_idx_valid;
   logic obj_valid;
 
@@ -29,31 +31,46 @@ module ray_intersector (
       obj_idx <= 0;
       obj_idx_valid <= 1'b0;
       hit_valid <= 1'b0;
+      hit_pos <= 0;
       hit_any <= 1'b0;
       hit_dist_sq <= 1'b0;
+      busy <= 1'b0;
+
+    end else if (ray_valid && ~busy) begin
+      obj_idx <= 0;
+      obj_idx_valid <= 1'b1;
+      hit_valid <= 1'b0;
+      hit_pos <= 0;
+      hit_any <= 1'b0;
+      hit_dist_sq <= 1'b0;
+      busy <= 1'b1;
 
     end else begin
       // Keep at last index if we're already there, else increment
       if (obj_idx == SCENE_BUFFER_DEPTH - 1) begin
         obj_idx_valid <= 1'b0;
-      end else begin
-        obj_idx <= obj_idx_valid ? (obj_idx + 1) : 0;
-        obj_idx_valid <= 1'b1;
+      end else if (busy) begin
+        obj_idx <= obj_idx + 1;
       end
 
-      if (intx_valid) begin
+      if (sphere_intx_valid) begin
         // Latch in new value if closer than current OR nothing has been hit yet
-        if (intx_hit && (~hit_any || fp24_greater(hit_dist_sq, intx_hit_dist_sq))) begin
-          hit_mat <= intx_mat;
-          hit_pos <= intx_hit_pos;
-          hit_normal <= intx_hit_norm;
-          hit_dist_sq <= intx_hit_dist_sq;
+        if (sphere_intx_hit && (~hit_any || fp24_greater(hit_dist_sq, sphere_intx_hit_dist_sq))) begin
+          hit_mat <= sphere_intx_mat;
+          hit_pos <= sphere_intx_hit_pos;
+          hit_normal <= sphere_intx_hit_norm;
+          hit_dist_sq <= sphere_intx_hit_dist_sq;
           hit_any <= 1'b1;
         end
 
-        if (intx_obj_last) begin
+        if (sphere_intx_obj_last) begin
           hit_valid <= 1'b1;
+          busy <= 1'b0;
         end
+      end
+
+      if (hit_valid) begin
+        hit_valid <= 1'b0;
       end
     end
   end
@@ -64,23 +81,24 @@ module ray_intersector (
     - object valid
     - object material
   */
-  logic intx_hit;
-  fp24_vec3 intx_hit_pos;
-  fp24 intx_hit_dist_sq;
-  fp24_vec3 intx_hit_norm;
-  logic intx_valid;
-  logic intx_obj_last;
+  logic sphere_intx_hit;
+  fp24_vec3 sphere_intx_hit_pos;
+  fp24 sphere_intx_hit_dist_sq;
+  fp24_vec3 sphere_intx_hit_norm;
+  logic sphere_intx_valid;
+  logic sphere_intx_obj_last;
 
   // Pipelined hit material (for reflection)
-  material intx_mat;
+  material sphere_intx_mat;
 
   // Lowkey don't know why SPHERE_INTX_DELAY is sufficient... would've expected +2
   //    because of the BRAM delay but alas
-  pipeline #(.WIDTH(264), .DEPTH(SPHERE_INTX_DELAY)) mat_pipe (.clk(clk), .in(obj.mat), .out(intx_mat));
+  pipeline #(.WIDTH(264), .DEPTH(SPHERE_INTX_DELAY)) mat_pipe (.clk(clk), .in(obj.mat), .out(sphere_intx_mat));
 
   // The actual intersector logic
   sphere_intersector sphere_intx(
     .clk(clk),
+    .rst(rst),
 
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),
@@ -90,12 +108,12 @@ module ray_intersector (
     .sphere_valid(obj_valid),
     .obj_last_in(obj_last),
 
-    .hit(intx_hit),
-    .hit_pos(intx_hit_pos),
-    .hit_dist_sq(intx_hit_dist_sq),
-    .hit_norm(intx_hit_norm),
-    .hit_valid(intx_valid),
-    .obj_last_out(intx_obj_last)
+    .hit(sphere_intx_hit),
+    .hit_pos(sphere_intx_hit_pos),
+    .hit_dist_sq(sphere_intx_hit_dist_sq),
+    .hit_norm(sphere_intx_hit_norm),
+    .hit_valid(sphere_intx_valid),
+    .obj_last_out(sphere_intx_obj_last)
   );
 
 endmodule

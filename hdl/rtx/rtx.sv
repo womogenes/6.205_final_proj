@@ -30,11 +30,8 @@ module rtx #(
 
   // Differential to act as trigger
   logic rst_prev;
-  logic ray_done_buf0;
-
   always_ff @(posedge clk) begin
     rst_prev <= rst;
-    ray_done <= ray_done_buf0;
   end
 
   ray_caster #(
@@ -61,12 +58,17 @@ module rtx #(
   // TODO: allow reprogramming
   logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] scene_buf_obj_idx;
   object scene_buf_obj;
+  logic obj_last;
+
   scene_buffer #(.INIT_FILE(SCENE_BUFFER_INIT_FILE)) scene_buf (
     .clk(clk),
     .rst(rst),
     .obj_idx(scene_buf_obj_idx),
-    .obj(scene_buf_obj)
+    .obj(scene_buf_obj),
+    .obj_last(obj_last)
   );
+
+  logic tracer_ray_done;
 
   ray_tracer #(
     .WIDTH(WIDTH), .HEIGHT(HEIGHT)
@@ -82,20 +84,24 @@ module rtx #(
     .ray_valid(ray_valid_caster),
 
     // Doubles as a "pixel valid" signal
-    .ray_done(ray_done_buf0),
+    .ray_done(tracer_ray_done),
     .pixel_color(pixel_color),
     .pixel_h_out(pixel_h),
     .pixel_v_out(pixel_v),
 
     // Scene buffer interface
     .obj_idx(scene_buf_obj_idx),
-    .obj(scene_buf_obj)
+    .obj(scene_buf_obj),
+    .obj_last(obj_last)
   );
 
   // Convert to 565 representation
   convert_fp24_uint #(.WIDTH(5), .FRAC(4)) r_convert (.clk(clk), .x(pixel_color.x), .n(rtx_pixel[4:0]));
   convert_fp24_uint #(.WIDTH(6), .FRAC(5)) g_convert (.clk(clk), .x(pixel_color.y), .n(rtx_pixel[10:5]));
   convert_fp24_uint #(.WIDTH(5), .FRAC(5)) b_convert (.clk(clk), .x(pixel_color.z), .n(rtx_pixel[15:11]));
+
+  // Delay ray_done by 1 cycle for the conversion
+  pipeline #(.WIDTH(1), .DEPTH(1)) ray_done_pipe (.clk(clk), .in(tracer_ray_done), .out(ray_done));
 
 endmodule
 
