@@ -15,7 +15,10 @@ module top_level (
   output logic [3:0] ss0_an,
   output logic [3:0] ss1_an,
   output logic [6:0] ss0_c,
-  output logic [6:0] ss1_c
+  output logic [6:0] ss1_c,
+
+  // pmoda & pmodb pins
+  output logic [7:0] pmoda
 );
   // shut up those rgb LEDs (active high):
   assign rgb1 = 0;
@@ -50,30 +53,14 @@ module top_level (
 
   logic [OUTPUT_WIDTH-1:0] dout;
 
-  rtx #(.WIDTH(320), .HEIGHT(180)) my_rtx (
+  ring_osc_sampler ro_sampler(
     .clk(clk_100mhz),
     .rst(sys_rst),
-
-    .rtx_pixel(dout[15:0]),
-    .pixel_h(),
-    .pixel_v(),
-    .ray_done(led[4])
+    .rng_bit(pmoda[0])
   );
 
-  logic [23:0] dout2;
-
-  quadratic_solver (
-    .clk(clk_100mhz),
-    .rst(sys_rst),
-    .b(b),
-    .c(a ^ 24'hAFAFAF),
-    .x0(dout2),
-    .valid(led[3])
-  );
-
-  assign led[0] = dout[counter];
-  assign led[1] = dout2[~counter];
+  assign led[0] = pmoda[0];
  
-endmodule // top_level
+endmodule
 
 `default_nettype wire

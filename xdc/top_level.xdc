@@ -22,11 +22,6 @@ set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/
 set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[2].n1]
 set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[3].n1]
 
-set_disable_timing -from I0 -to O \my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[0].inv0
-set_disable_timing -from I0 -to O \my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[1].inv0
-set_disable_timing -from I0 -to O \my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[2].inv0
-set_disable_timing -from I0 -to O \my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[3].inv0
-
 # USER GREEN LEDS
 set_property -dict {PACKAGE_PIN C13  IOSTANDARD LVCMOS33} [ get_ports {led[0]} ]
 set_property -dict {PACKAGE_PIN C14  IOSTANDARD LVCMOS33} [ get_ports {led[1]} ]
