@@ -7,11 +7,8 @@ subprocess.run(["./a.out"], check=True)
 with open("image.bin", "rb") as f:
     data = f.read()
     
-    if len(data) == 172800:
-        # Not HD
-        WIDTH, HEIGHT = 320, 180
-    else:
-        WIDTH, HEIGHT = 1280, 720
+    WIDTH = round((len(data) // 3)**0.5 * 4/3)
+    HEIGHT = len(data) // 3 // WIDTH
     
 img = Image.frombytes("RGB", (WIDTH, HEIGHT), data)
 img.save("output.png")
