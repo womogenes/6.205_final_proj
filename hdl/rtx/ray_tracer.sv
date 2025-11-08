@@ -13,7 +13,6 @@ module ray_tracer #(
   input fp24_vec3 ray_origin,
   input fp24_vec3 ray_dir,
   input wire ray_valid,
-  output fp24_vec3 bias,
 
   output logic ray_done,
   output fp24_vec3 pixel_color,
