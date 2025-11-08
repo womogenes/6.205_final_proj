@@ -183,7 +183,11 @@ module traffic_generator(
       frame_power_of_2 = 0;
       shift_amt = 0;
       case (frame_count)
-        0, 1: begin
+        0: begin
+          shift_amt = 0;
+          frame_power_of_2 = 0;
+        end
+        1: begin
           shift_amt = 0;
           frame_power_of_2 = 1;
         end
