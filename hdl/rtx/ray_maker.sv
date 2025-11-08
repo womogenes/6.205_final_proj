@@ -1,5 +1,8 @@
 `default_nettype none
 
+// Make ray in 3D given camera config and pixel coordinates
+// 22-cycle delay (empirical)
+
 module ray_maker #(
   parameter WIDTH = 1280,
   parameter HEIGHT = 720,
@@ -51,9 +54,8 @@ module ray_maker #(
   // Ray origin == camera origin for now
   assign ray_origin = cam.origin;
 
-  // TODO: pipeline this
-  assign pixel_h_out = pixel_h_in;
-  assign pixel_v_out = pixel_v_in;
+  pipeline #(.WIDTH(11), .DEPTH(22)) pixel_h_pipe (.clk(clk), .in(pixel_h_in), .out(pixel_h_out));
+  pipeline #(.WIDTH(10), .DEPTH(22)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
 
   // Pipeline the valid signal
   pipeline #(.WIDTH(1), .DEPTH(33)) valid_pipe (.clk(clk), .in(new_ray), .out(ray_valid));
