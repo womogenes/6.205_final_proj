@@ -31,10 +31,12 @@ module ray_caster #(
     .pixel_v(pixel_v_rsg)
   );
   
-  // Maybe we have to pipeline the new_ray signal that goes into ray_maker?
-  //   just by a cycle... maybe
   logic [10:0] pixel_h_maker;
   logic [9:0] pixel_v_maker;
+
+  // new_ray signal must be pipelined because rsg takes one cycle to generate
+  pipeline #(.WIDTH(1), .DEPTH(1)) new_ray_pipe (.clk(clk), .in(new_ray), .out(maker.new_ray));
+
   ray_maker #(
     .WIDTH(WIDTH),
     .HEIGHT(HEIGHT)
@@ -45,7 +47,7 @@ module ray_caster #(
     .cam(cam),
     .pixel_h_in(pixel_h_rsg),
     .pixel_v_in(pixel_v_rsg),
-    .new_ray(new_ray),
+    // .new_ray(new_ray),
 
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),

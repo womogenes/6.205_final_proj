@@ -89,6 +89,7 @@ endmodule
   Timing:
     VEC3_DOT_DELAY + INV_SQRT_DELAY + SCALE_DELAY (1)
 */
+parameter integer VEC3_NORM_DELAY = VEC3_DOT_DELAY + INV_SQRT_DELAY + 1;
 module fp24_vec3_normalize (
   input wire clk,
   input wire rst,

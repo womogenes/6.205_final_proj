@@ -42,6 +42,7 @@ module ray_maker #(
   fp24_vec3_scale scale_up(.clk(clk), .rst(rst), .v(cam.up), .s(v), .scaled(up_scaled));
 
   // Add everything together
+  // result 5 cycles behind
   fp24_vec3 sum_ru;
   fp24_vec3_add add_ru(.clk(clk), .rst(rst), .v(right_scaled), .w(up_scaled), .is_sub(1'b0), .sum(sum_ru));
 
@@ -58,7 +59,11 @@ module ray_maker #(
   pipeline #(.WIDTH(10), .DEPTH(22)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
 
   // Pipeline the valid signal
-  pipeline #(.WIDTH(1), .DEPTH(33)) valid_pipe (.clk(clk), .in(new_ray), .out(ray_valid));
+  // TODO: do not hard-code this
+  pipeline #(
+    .WIDTH(1),
+    .DEPTH(1 + 1 + 2  + 2 + VEC3_NORM_DELAY)
+  ) valid_pipe (.clk(clk), .in(new_ray), .out(ray_valid));
 endmodule
 
 `default_nettype wire
