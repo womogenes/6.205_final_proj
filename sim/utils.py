@@ -75,6 +75,19 @@ def convert_fp24_vec3(vec3: BinaryValue):
     z = convert_fp24((vec3 >> (FP24_WIDTH * 0)) & mask)
     return (x, y, z)
 
+def make_material(  color=0,
+                    emit_color=0,
+                    spec_color=0,
+                    smooth=0,
+                    specular=0,):
+    return pack_bits([
+        (color, 72),
+        (emit_color, 72),
+        (spec_color, 72),
+        (smooth, 24),
+        (specular, 24)
+    ])
+
 # Pack bits together
 def pack_bits(values: list[int, int], msb=True):
     """

@@ -19,6 +19,12 @@ typedef struct packed {
   logic [7:0] b;
 } color8;
 
+typedef struct packed {
+  fp24 r;
+  fp24 g;
+  fp24 b;
+} fp24_color;
+
 // ===== VECTOR TYPES =====
 typedef struct packed {
   fp24 x;
@@ -36,9 +42,9 @@ typedef struct packed {
 
 // ===== OBJECTS =====
 typedef struct packed {
-  fp24_vec3 color;          // 72 bits
-  fp24_vec3 emit_color;     // 72 bits
-  fp24_vec3 spec_color;     // 72 bits
+  fp24_color color;          // 72 bits
+  fp24_color emit_color;     // 72 bits
+  fp24_color spec_color;     // 72 bits
   fp24 smooth;              // 24 bits
   fp24 specular;            // 24 bits
 } material;
