@@ -96,8 +96,8 @@ module rtx #(
   );
 
   // Convert to 565 representation
-  convert_fp24_uint #(.WIDTH(5), .FRAC(4)) r_convert (.clk(clk), .x(pixel_color.x), .n(rtx_pixel[4:0]));
-  convert_fp24_uint #(.WIDTH(6), .FRAC(5)) g_convert (.clk(clk), .x(pixel_color.y), .n(rtx_pixel[10:5]));
+  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) r_convert (.clk(clk), .x(pixel_color.x), .n(rtx_pixel[4:0]));
+  convert_fp24_uint #(.WIDTH(6), .FRAC(6)) g_convert (.clk(clk), .x(pixel_color.y), .n(rtx_pixel[10:5]));
   convert_fp24_uint #(.WIDTH(5), .FRAC(5)) b_convert (.clk(clk), .x(pixel_color.z), .n(rtx_pixel[15:11]));
 
   // Delay ray_done by 1 cycle for the conversion

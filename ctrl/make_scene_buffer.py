@@ -27,8 +27,8 @@ class Material:
         # Pack properties into bit fields
         fields = [
             (make_fp24_vec3(self.color), 72),
-            (make_fp24_vec3(self.spec_color), 72),
             (make_fp24_vec3(self.emit_color), 72),
+            (make_fp24_vec3(self.spec_color), 72),
             (make_fp24(self.smooth), 24),
             (make_fp24(self.specular), 24),
         ]
@@ -69,8 +69,15 @@ class Object:
 if __name__ == "__main__":
     mat0 = Material(
         color=(1, 1, 1),
-        spec_color=(1, 1, 1),
-        emit_color=(1, 1, 1),
+        spec_color=(0, 0, 1),
+        emit_color=(1, 0, 0),
+        smooth=1,
+        specular=0,
+    )
+    mat1 = Material(
+        color=(1, 1, 1),
+        spec_color=(0, 0, 1),
+        emit_color=(0, 0, 1),
         smooth=1,
         specular=0,
     )
@@ -82,15 +89,15 @@ if __name__ == "__main__":
             trig=None,
             trig_norm=None,
             sphere_center=(0, 0, -5),
-            sphere_rad=3,
+            sphere_rad=4.5,
         ),
         Object(
             is_trig=False,
-            mat=mat0,
+            mat=mat1,
             trig=None,
             trig_norm=None,
             sphere_center=(0, 0, 5),
-            sphere_rad=3,
+            sphere_rad=4.5,
         ),
     ]
 

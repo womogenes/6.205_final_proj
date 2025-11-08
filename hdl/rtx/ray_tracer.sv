@@ -39,7 +39,8 @@ module ray_tracer #(
   // Reset the intersector on new ray
   // TODO: change this when we have multiple bounces
 
-  assign pixel_color = ray_intx.hit_any ? 72'h3f00003f00003f0000 : 0;
+  // assign pixel_color = ray_intx.hit_any ? 72'h3f00003f00003f0000 : 0;
+  assign pixel_color = ray_intx.hit_any ? ray_intx.hit_mat.emit_color : 0;
 
   ray_intersector ray_intx (
     .clk(clk),
