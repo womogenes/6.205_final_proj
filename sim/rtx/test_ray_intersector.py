@@ -53,16 +53,16 @@ async def test_module(dut):
             mat=mat0,
             trig=None,
             trig_norm=None,
-            sphere_center=(-2, 0, 5),
-            sphere_rad=3.14159,
+            sphere_center=(2, 0, 5),
+            sphere_rad=2.01,
         ),
         Object(
             is_trig=False,
             mat=mat0,
             trig=None,
             trig_norm=None,
-            sphere_center=(2, 0, 5),
-            sphere_rad=6.28,
+            sphere_center=(2, 0, 4),
+            sphere_rad=2.01,
         ),
     ]
     
