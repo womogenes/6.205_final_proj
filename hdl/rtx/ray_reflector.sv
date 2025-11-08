@@ -72,7 +72,7 @@ module ray_reflector (
     .rst(rst),
     .v(rng_vec),
     .w(saved_hit_normal),
-    .is_sub(1'b1),
+    .is_sub(1'b0),
     .sum(rng_added)
   );
 

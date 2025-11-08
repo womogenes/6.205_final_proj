@@ -10,4 +10,4 @@ parameter integer INV_SQRT_DELAY = INV_SQRT_NR_STAGES * INV_SQRT_STAGE_DELAY;
 
 parameter integer SQRT_DELAY = INV_SQRT_DELAY + 1;
 
-parameter integer MAX_BOUNCES = 5;
+parameter integer MAX_BOUNCES = 3;

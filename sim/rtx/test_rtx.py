@@ -20,7 +20,7 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3
 
-scale = 1
+scale = 2
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
 
@@ -79,6 +79,7 @@ def runner():
         proj_path / "hdl" / "math" / "clz.sv",
         proj_path / "hdl" / "math" / "fp24_shift.sv",
         proj_path / "hdl" / "math" / "fp24_add.sv",
+        proj_path / "hdl" / "math" / "fp24_clip.sv",
         proj_path / "hdl" / "math" / "fp24_mul.sv",
         proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
         proj_path / "hdl" / "math" / "fp24_sqrt.sv",

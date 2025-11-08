@@ -21,10 +21,9 @@ uint32_t lfsr32(uint32_t* q) {
 }
 
 float randf() {
-  uint32_t bits = rand();
-  bits &= 0b11111111111111111111111111111111;
-  return *(float*) &bits;
-  // return (float)rand() / RAND_MAX;
+  // uint32_t bits = rand();
+  // return *(float*) &bits;
+  return (float)rand() / RAND_MAX;
 }
 
 Vec3 prng_sphere() {
