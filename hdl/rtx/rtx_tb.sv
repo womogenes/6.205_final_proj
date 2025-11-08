@@ -9,6 +9,7 @@ module rtx_tb #(
 ) (
   input wire clk,
   input wire rst,
+  input camera cam,
 
   output logic [15:0] rtx_pixel,
   output logic [10:0] pixel_h,
@@ -33,6 +34,7 @@ module rtx_tb #(
   rtx #(.WIDTH(WIDTH), .HEIGHT(HEIGHT)) my_rtx (
     .clk(clk),
     .rst(rst),
+    .cam(cam),
 
     .rtx_pixel(rtx_pixel),
     .pixel_h(pixel_h),

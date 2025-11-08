@@ -18,7 +18,7 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24, convert_fp24_vec3
+from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp24_vec3
 
 scale = 0.5
 WIDTH = int(32 * scale)
@@ -36,6 +36,13 @@ async def test_module(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 100)
     dut.rst.value = 0
+
+    dut.cam.value = pack_bits([
+        (make_fp24_vec3((0, 0, 0)), 72),            # origin
+        (make_fp24_vec3((0, 0, WIDTH / 2)), 72),    # forward
+        (make_fp24_vec3((1, 0, 0)), 72),            # right
+        (make_fp24_vec3((0, 1, 0)), 72),            # up
+    ])
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
 

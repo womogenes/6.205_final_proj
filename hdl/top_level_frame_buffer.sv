@@ -128,9 +128,23 @@ module top_level (
     .obj_last(scene_buf_obj_last)
   );
 
+  // rtx requires external camera
+  camera cam;
+
+  always_ff @(posedge clk) begin
+    // Initialize camera
+    if (rst) begin
+      cam.origin <= 72'h0;
+      cam.right <= {24'h3f0000, 24'h000000, 24'h000000};    // (1, 0, 0)
+      cam.forward <= {24'h000000, 24'h000000, 24'h484000};  // (0, 0, 1280/2)
+      cam.up <= {24'h000000, 24'h3f0000, 24'h000000};       // (0, 1, 0)
+    end
+  end
+
   rtx my_rtx(
     .clk(clk_rtx),
     .rst(sys_rst | !dram_ready),
+    .cam(cam),
 
     .rtx_pixel(rtx_pixel),
     .pixel_h(rtx_h_count),
