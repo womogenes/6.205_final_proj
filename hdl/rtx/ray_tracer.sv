@@ -23,7 +23,7 @@ module ray_tracer #(
   // Interface to scene buffer
   output logic [$clog2(SCENE_BUFFER_DEPTH-1):0] obj_idx,
   input object obj,
-  input logic obj_last
+  input wire obj_last
 );
   // // Whole thing takes 2 cycles (for now)
   // pipeline #(.WIDTH(1), .DEPTH(2)) ray_valid_pipe (.clk(clk), .in(ray_valid), .out(ray_done));

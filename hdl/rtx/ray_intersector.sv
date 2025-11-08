@@ -18,7 +18,7 @@ module ray_intersector (
   // Scene buffer interface
   output logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx,
   input object obj,
-  input logic obj_last
+  input wire obj_last
 );
   logic busy;
   logic obj_idx_valid;
