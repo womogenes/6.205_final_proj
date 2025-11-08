@@ -143,6 +143,7 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "pipeline.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
