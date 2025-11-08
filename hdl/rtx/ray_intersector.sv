@@ -16,33 +16,43 @@ module ray_intersector (
 
   // Scene buffer interface
   output logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx,
-  input object obj
+  input object obj,
+  input logic obj_last
 );
   logic obj_idx_valid;
   logic obj_valid;
+
+  pipeline #(.WIDTH(1), .DEPTH(2)) obj_valid_pipe (.clk(clk), .in(obj_idx_valid), .out(obj_valid));
 
   always_ff @(posedge clk) begin
     if (rst) begin
       obj_idx <= 0;
       obj_idx_valid <= 1'b0;
+      hit_valid <= 1'b0;
       hit_any <= 1'b0;
       hit_dist_sq <= 1'b0;
 
     end else begin
-      // Next object
-      obj_idx <= (obj_idx >= SCENE_BUFFER_DEPTH - 1) ? 0 : obj_idx + 1;
-      obj_idx_valid <= 1'b1;
+      // Keep at last index if we're already there, else increment
+      if (obj_idx == SCENE_BUFFER_DEPTH - 1) begin
+        obj_idx_valid <= 1'b0;
+      end else begin
+        obj_idx <= obj_idx_valid ? (obj_idx + 1) : 0;
+        obj_idx_valid <= 1'b1;
+      end
 
       if (intx_valid) begin
-        // Latch in new value if closer than current OR nothing has been hit yet OR we're at the first object
-        // TODO: confirm that this thing runs continuously, i.e. hit_valid is a signal for the next object
-        //    having index 0
-        if (intx_hit && (~hit_any || fp24_greater(hit_dist_sq, intx_hit_dist_sq || hit_valid))) begin
+        // Latch in new value if closer than current OR nothing has been hit yet
+        if (intx_hit && (~hit_any || fp24_greater(hit_dist_sq, intx_hit_dist_sq))) begin
           hit_mat <= intx_mat;
           hit_pos <= intx_hit_pos;
           hit_normal <= intx_hit_norm;
           hit_dist_sq <= intx_hit_dist_sq;
           hit_any <= 1'b1;
+        end
+
+        if (intx_obj_last) begin
+          hit_valid <= 1'b1;
         end
       end
     end
@@ -59,16 +69,13 @@ module ray_intersector (
   fp24 intx_hit_dist_sq;
   fp24_vec3 intx_hit_norm;
   logic intx_valid;
+  logic intx_obj_last;
 
   // Pipelined hit material (for reflection)
   material intx_mat;
 
-  pipeline #(.WIDTH(1), .DEPTH(2 + SPHERE_INTX_DELAY)) obj_last_pipe (
-    .clk(clk),
-    .in(obj_idx == SCENE_BUFFER_DEPTH - 1),
-    .out(hit_valid)
-  );
-  pipeline #(.WIDTH(1), .DEPTH(2)) obj_valid_pipe (.clk(clk), .in(obj_idx_valid), .out(obj_valid));
+  // Lowkey don't know why SPHERE_INTX_DELAY is sufficient... would've expected +2
+  //    because of the BRAM delay but alas
   pipeline #(.WIDTH(264), .DEPTH(SPHERE_INTX_DELAY)) mat_pipe (.clk(clk), .in(obj.mat), .out(intx_mat));
 
   // The actual intersector logic
@@ -81,12 +88,14 @@ module ray_intersector (
     .sphere_rad_sq(obj.sphere_rad_sq),
     .sphere_rad_inv(obj.sphere_rad_inv),
     .sphere_valid(obj_valid),
+    .obj_last_in(obj_last),
 
     .hit(intx_hit),
     .hit_pos(intx_hit_pos),
     .hit_dist_sq(intx_hit_dist_sq),
     .hit_norm(intx_hit_norm),
-    .hit_valid(intx_valid)
+    .hit_valid(intx_valid),
+    .obj_last_out(intx_obj_last)
   );
 
 endmodule

@@ -52,3 +52,6 @@ typedef struct packed {
   fp24 sphere_rad_sq;       // 24 bits
   fp24 sphere_rad_inv;      // 24 bits
 } object;
+
+// Scene buffer width calculated as sum of bit-widths of `object` fields
+parameter integer SCENE_BUFFER_WIDTH = 673;

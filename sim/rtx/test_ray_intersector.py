@@ -18,7 +18,10 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24, convert_fp24_vec3
+from utils import convert_fp24, make_fp24, convert_fp24_vec3, make_fp24_vec3
+
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent / "ctrl"))
+from make_scene_buffer import Material, Object
 
 WIDTH = 32 * 1
 HEIGHT = 18 * 1
@@ -33,8 +36,50 @@ async def test_module(dut):
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 100)
+    await ClockCycles(dut.clk, 60)
     dut.rst.value = 0
+
+    # Fake object
+    mat0 = Material(
+        color=(1, 1, 1),
+        spec_color=(1, 1, 1),
+        emit_color=(1, 1, 1),
+        smooth=1,
+        specular=0,
+    )
+    objs = [
+        Object(
+            is_trig=False,
+            mat=mat0,
+            trig=None,
+            trig_norm=None,
+            sphere_center=(-2, 0, 5),
+            sphere_rad=3.14159,
+        ),
+        Object(
+            is_trig=False,
+            mat=mat0,
+            trig=None,
+            trig_norm=None,
+            sphere_center=(2, 0, 5),
+            sphere_rad=6.28,
+        ),
+    ]
+    
+    dut.ray_origin.value = make_fp24_vec3((0, 0, 0))
+    dut.ray_dir.value = make_fp24_vec3((0, 0, 1))
+
+    # Manual timing
+    await ClockCycles(dut.clk, 3)
+    dut.obj.value = objs[0].pack_bits()[0]
+    await ClockCycles(dut.clk, 1)
+    dut.obj.value = objs[1].pack_bits()[0]
+    dut.obj_last.value = 1
+
+    for _ in range(50):
+        await ClockCycles(dut.clk, 1)
+
+    return
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
 
@@ -86,28 +131,17 @@ def runner():
         proj_path / "hdl" / "rtx" / "ray_caster.sv",
         proj_path / "hdl" / "rtx" / "quadratic_solver.sv",
         proj_path / "hdl" / "rtx" / "sphere_intersector.sv",
-
-        proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
-        proj_path / "hdl" / "rtx" / "scene_buffer.sv",
-
         proj_path / "hdl" / "rtx" / "ray_intersector.sv",
-        proj_path / "hdl" / "rtx" / "ray_tracer.sv",
-        proj_path / "hdl" / "rtx" / "rtx.sv",
     ]
     build_test_args = ["-Wall"]
 
     build_dir = proj_path / "sim" / "sim_build"
-    shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), build_dir / "scene_buffer.mem")
 
     # values for parameters defined earlier in the code.
-    parameters = {
-        "WIDTH": WIDTH,
-        "HEIGHT": HEIGHT,
-        "SCENE_BUFFER_INIT_FILE": '"scene_buffer.mem"'
-    }
+    parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "rtx"
+    hdl_toplevel = "ray_intersector"
     
     runner = get_runner(sim)
     runner.build(
