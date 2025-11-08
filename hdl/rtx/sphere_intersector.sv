@@ -2,6 +2,7 @@
 
 // Compute intersection between ray and sphere
 
+// Given QR_SOLVER_DELAY of 16, this is 2 + 5 + 2 + 16 = 25
 parameter integer SPHERE_INTX_QR_STAGE_DELAY = 2 + VEC3_DOT_DELAY + 2 + QR_SOLVER_DELAY;
 parameter integer SPHERE_INTX_DELAY = SPHERE_INTX_QR_STAGE_DELAY + 4;
 

@@ -1,5 +1,6 @@
 `default_nettype none
 
+// Empirically, 16
 parameter integer QR_SOLVER_DELAY = 3 + SQRT_DELAY + 2;
 
 module quadratic_solver (

@@ -2,7 +2,8 @@
 
 module rtx #(
   parameter WIDTH = 1280,
-  parameter HEIGHT = 720
+  parameter HEIGHT = 720,
+  parameter SCENE_BUFFER_INIT_FILE = ""
 ) (
   input wire clk,
   input wire rst,
@@ -55,6 +56,18 @@ module rtx #(
   logic tracer_ready;
   fp24_vec3 pixel_color;
 
+  // Initialize scene buffer
+  // Bind inputs to ray tracer
+  // TODO: allow reprogramming
+  logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] scene_buf_obj_idx;
+  object scene_buf_obj;
+  scene_buffer #(.INIT_FILE(SCENE_BUFFER_INIT_FILE)) scene_buf (
+    .clk(clk),
+    .rst(rst),
+    .obj_idx(scene_buf_obj_idx),
+    .obj(scene_buf_obj)
+  );
+
   ray_tracer #(
     .WIDTH(WIDTH), .HEIGHT(HEIGHT)
   ) tracer (
@@ -72,7 +85,11 @@ module rtx #(
     .ray_done(ray_done_buf0),
     .pixel_color(pixel_color),
     .pixel_h_out(pixel_h),
-    .pixel_v_out(pixel_v)
+    .pixel_v_out(pixel_v),
+
+    // Scene buffer interface
+    .obj_idx(scene_buf_obj_idx),
+    .obj(scene_buf_obj)
   );
 
   // Convert to 565 representation

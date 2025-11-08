@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 
 from pathlib import Path
 
@@ -32,7 +33,7 @@ async def test_module(dut):
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 50)
+    await ClockCycles(dut.clk, 100)
     dut.rst.value = 0
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
@@ -76,6 +77,7 @@ def runner():
         proj_path / "hdl" / "math" / "fp24_add.sv",
         proj_path / "hdl" / "math" / "fp24_mul.sv",
         proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp24_sqrt.sv",
         proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
         proj_path / "hdl" / "math" / "fp24_convert.sv",
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
@@ -83,14 +85,25 @@ def runner():
         proj_path / "hdl" / "rtx" / "ray_caster.sv",
         proj_path / "hdl" / "rtx" / "quadratic_solver.sv",
         proj_path / "hdl" / "rtx" / "sphere_intersector.sv",
+
+        proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
+        proj_path / "hdl" / "rtx" / "scene_buffer.sv",
+
         proj_path / "hdl" / "rtx" / "ray_intersector.sv",
         proj_path / "hdl" / "rtx" / "ray_tracer.sv",
         proj_path / "hdl" / "rtx" / "rtx.sv",
     ]
     build_test_args = ["-Wall"]
 
+    build_dir = proj_path / "sim" / "sim_build"
+    shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), build_dir / "scene_buffer.mem")
+
     # values for parameters defined earlier in the code.
-    parameters = {"WIDTH": WIDTH, "HEIGHT": HEIGHT}
+    parameters = {
+        "WIDTH": WIDTH,
+        "HEIGHT": HEIGHT,
+        "SCENE_BUFFER_INIT_FILE": '"scene_buffer.mem"'
+    }
 
     sys.path.append(str(proj_path / "sim"))
     hdl_toplevel = "rtx"
@@ -104,7 +117,7 @@ def runner():
         parameters=parameters,
         timescale=("1ns", "1ps"),
         waves=True,
-        build_dir=(proj_path / "sim" / "sim_build")
+        build_dir=build_dir,
     )
     run_test_args = []
     runner.test(
