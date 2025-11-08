@@ -11,9 +11,9 @@ create_clock -add -name gclk -period 10.000 -waveform {0 4} [get_ports {clk_100m
 
 set_max_delay -datapath_only 6 -from  [get_clocks clk_controller_clk_wiz_0] -to [get_clocks clk_pixel_cw_hdmi]
 set_max_delay -datapath_only 6 -from  [get_clocks clk_pixel_cw_hdmi] -to [get_clocks clk_controller_clk_wiz_0]
-set_max_delay -datapath_only 6 -from  [get_clocks clk_controller_clk_wiz_0] -to [get_clocks clk_camera_clk_wiz_0]
-set_max_delay -datapath_only 6 -from  [get_clocks clk_camera_clk_wiz_0] -to [get_clocks clk_controller_clk_wiz_0]
 set_max_delay -datapath_only 6 -from  [get_clocks clk_controller_clk_wiz_0] -to [get_clocks clk_passthrough_clk_wiz_0]
+set_max_delay -datapath_only 6 -from  [get_clocks clk_passthrough_clk_wiz_0] -to [get_clocks clk_controller_clk_wiz_0]
+set_max_delay -datapath_only 6 -from  [get_clocks clk_passthrough_clk_wiz_0] -to [get_clocks clk_passthrough_clk_wiz_0]
 
 # USER GREEN LEDS
 set_property -dict {PACKAGE_PIN C13  IOSTANDARD LVCMOS33} [ get_ports {led[0]} ]
