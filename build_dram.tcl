@@ -23,6 +23,7 @@ set files [glob -nocomplain "$outputDir/*"]
 
 # read in all system verilog files:
 set sources_sv [ concat \
+    [ glob ./hdl/constants.sv ] \
     [ glob ./hdl/pipeline.sv ] \
     [ glob ./hdl/hdmi/*.sv ] \
     [ glob ./hdl/types/*.sv ] \

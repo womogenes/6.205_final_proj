@@ -88,16 +88,16 @@ if __name__ == "__main__":
             mat=mat0,
             trig=None,
             trig_norm=None,
-            sphere_center=(1, 0, 20),
-            sphere_rad=19,
+            sphere_center=(10, 0, 30),
+            sphere_rad=10,
         ),
         Object(
             is_trig=False,
             mat=mat1,
             trig=None,
             trig_norm=None,
-            sphere_center=(-1, 0, 5),
-            sphere_rad=4.5,
+            sphere_center=(-10, 0, 30),
+            sphere_rad=10,
         ),
     ]
 

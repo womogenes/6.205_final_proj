@@ -40,7 +40,8 @@ module ray_tracer #(
   // TODO: change this when we have multiple bounces
 
   // assign pixel_color = ray_intx.hit_any ? 72'h3f00003f00003f0000 : 0;
-  assign pixel_color = ray_intx.hit_any ? ray_intx.hit_mat.emit_color : 0;
+  // assign pixel_color = ray_intx.hit_any ? ray_intx.hit_mat.emit_color : 0;
+  assign pixel_color = ray_intx.hit_any ? ray_intx.hit_normal : 0;
 
   ray_intersector ray_intx (
     .clk(clk),
@@ -52,7 +53,7 @@ module ray_tracer #(
     // Outputs
     .hit_mat(),
     .hit_pos(),
-    .hit_normal(),
+    // .hit_normal(pixel_color),
     .hit_dist_sq(),
     .hit_any(),
     .hit_valid(ray_done),

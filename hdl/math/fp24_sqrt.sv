@@ -7,7 +7,6 @@
   timing:
     INV_SQRT_DELAY + fp24_mul delay (1)
 */
-parameter integer SQRT_DELAY = INV_SQRT_DELAY + 1;
 
 module fp24_sqrt (
   input wire clk,
