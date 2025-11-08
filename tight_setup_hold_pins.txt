@@ -1,22 +1,14 @@
 +===========================+===========================+=================================================================================================================================+
 | Launch Setup Clock        | Launch Hold Clock         | Pin                                                                                                                             |
 +===========================+===========================+=================================================================================================================================+
-| clk_controller_clk_wiz_0  | clk_controller_clk_wiz_0  | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.rd_pntr_cdc_inst/dest_graysync_ff_reg[0][4]/D       |
-| clk_controller_clk_wiz_0  | clk_controller_clk_wiz_0  | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.rd_pntr_cdc_inst/dest_graysync_ff_reg[0][2]/D       |
-| clk_controller_clk_wiz_0  | clk_controller_clk_wiz_0  | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.rd_pntr_cdc_inst/dest_graysync_ff_reg[0][3]/D       |
-| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | my_rtx/tracer/ray_intx/sphere_intx/add_hit_pos/add_x/frac_sum_buf_reg[15]/D                                                     |
+| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/xpm_fifo_rst_inst/gen_rst_ic.wrst_rd_inst/syncstages_ff_reg[0]/D |
+| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][3]/D       |
 | clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][5]/D       |
 | clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][1]/D       |
-| clk_controller_clk_wiz_0  | clk_controller_clk_wiz_0  | dram_ready_reg/D                                                                                                                |
-| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][0]/D       |
-| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][6]/D       |
-| clk_controller_clk_wiz_0  | clk_controller_clk_wiz_0  | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.rd_pntr_cdc_inst/dest_graysync_ff_reg[0][1]/D       |
-| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/xpm_fifo_rst_inst/gen_rst_ic.wrst_rd_inst/syncstages_ff_reg[0]/D |
 | clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][2]/D       |
-| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][3]/D       |
+| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][0]/D       |
 | clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][4]/D       |
-| clk_controller_clk_wiz_0  | clk_controller_clk_wiz_0  | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.rd_pntr_cdc_inst/dest_graysync_ff_reg[0][5]/D       |
-| clk_controller_clk_wiz_0  | clk_controller_clk_wiz_0  | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.rd_pntr_cdc_inst/dest_graysync_ff_reg[0][0]/D       |
-| clk_controller_clk_wiz_0  | clk_controller_clk_wiz_0  | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.rd_pntr_cdc_inst/dest_graysync_ff_reg[0][6]/D       |
-| clk_controller_clk_wiz_0  | clk_controller_clk_wiz_0  | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/xpm_fifo_rst_inst/gen_rst_ic.rrst_wr_inst/syncstages_ff_reg[0]/D |
+| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | highdef_fb/rtx_data_fifo/xpm_fifo_axis_inst/xpm_fifo_base_inst/gen_cdc_pntr.wr_pntr_cdc_inst/dest_graysync_ff_reg[0][6]/D       |
+| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | my_rtx/tracer/ray_reflect/emit_adder/add_y/frac_sum_buf_reg[15]/D                                                               |
+| clk_passthrough_clk_wiz_0 | clk_passthrough_clk_wiz_0 | my_rtx/tracer/ray_intx/sphere_intx/add_hit_pos/add_y/frac_sum_buf_reg[17]/D                                                     |
 +---------------------------+---------------------------+---------------------------------------------------------------------------------------------------------------------------------+

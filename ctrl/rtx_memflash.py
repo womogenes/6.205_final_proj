@@ -24,14 +24,26 @@ BAUD = 115200  # Make sure this matches your UART receiver
 def send_program():
     ser = serial.Serial(SERIAL_PORTNAME, BAUD)
 
-    data = make_fp24_vec3((0, 0, -1))
+    def set_cam(
+        origin: tuple[float] = None,
+        forward: tuple[float] = None,
+        right: tuple[float] = None,
+        up: tuple[float] = None,
+    ):
+        for cmd, vec in zip([0, 1, 2, 3], [origin, forward, right, up]):
+            if vec is None:
+                continue
 
-    # Command (move origin)
-    ser.write((0b0000_0000).to_bytes(4, "little"))
+            ser.write((cmd).to_bytes(1, "little"))
+            data = make_fp24_vec3(vec)
+            ser.write(data.to_bytes(9, "little"))
 
-    # Message length
-    print(f"Writing 9 bytes...")
-    ser.write(data.to_bytes(9, "little"))
+    set_cam(
+        origin=(0, 0, 1),
+        forward=(0, 0, 1280/2),
+        right=(1, 0, 0),
+        up=(0, 1, 0),
+    )
 
 
 if __name__ == "__main__":

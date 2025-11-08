@@ -17,6 +17,7 @@ module ray_signal_gen #(
     if (rst) begin
       pixel_h <= 0;
       pixel_v <= 0;
+
     end else begin
       if (new_ray) begin
         if (pixel_v == HEIGHT - 1) begin

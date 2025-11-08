@@ -208,11 +208,20 @@ module top_level (
 
   // Latch overwrite on top left pixel
   logic rtx_overwrite;
+  logic scene_changed;
   always_ff @(posedge clk_rtx) begin
-    if (rtx_h_count == 0 && rtx_v_count == 0) begin
-      rtx_overwrite <= sw[1];
+    if (rtx_h_count == 1279 && rtx_v_count == 719 && rtx_valid) begin
+      // At start of new frame, latch overwrite for entire frame
+      rtx_overwrite <= sw[1] | scene_changed | uart_flash_wen;
+      scene_changed <= 1'b0;
+
+    end else if (uart_flash_wen) begin
+      // Set flag when camera update happens mid-frame
+      scene_changed <= 1'b1;
     end
   end
+
+  assign led[14] = rtx_overwrite;
 
   // ==== SEVEN SEGMENT DISPLAY =======
   seven_segment_controller(
@@ -224,33 +233,33 @@ module top_level (
   );
   assign ss1_c = ss0_c;
 
-  logic [23:0] frame_buff_bram;
-  frame_buffer #(
-    .SIZE_H(320),
-    .SIZE_V(180),
-    .COLOR_WIDTH(12),
-    .EXP_RATIO(8)
-  ) frame_render (
-    .rst(sys_rst),
+  // logic [23:0] frame_buff_bram;
+  // frame_buffer #(
+  //   .SIZE_H(320),
+  //   .SIZE_V(180),
+  //   .COLOR_WIDTH(12),
+  //   .EXP_RATIO(8)
+  // ) frame_render (
+  //   .rst(sys_rst),
 
-    .clk_rtx(clk_rtx),
+  //   .clk_rtx(clk_rtx),
 
-    .pixel_h(rtx_h_count >> 2),
-    .pixel_v(rtx_v_count >> 2),
-    .new_color(rendered_color_rtx),
-    .new_color_valid(rtx_valid),
+  //   .pixel_h(rtx_h_count >> 2),
+  //   .pixel_v(rtx_v_count >> 2),
+  //   .new_color(rendered_color_rtx),
+  //   .new_color_valid(rtx_valid),
 
-    .clk_hdmi(clk_pixel),
+  //   .clk_hdmi(clk_pixel),
 
-    .active_draw_hdmi(active_draw_hdmi),
-    .h_count_hdmi(h_count_hdmi >> 2),
-    .v_count_hdmi(v_count_hdmi >> 2),
+  //   .active_draw_hdmi(active_draw_hdmi),
+  //   .h_count_hdmi(h_count_hdmi >> 2),
+  //   .v_count_hdmi(v_count_hdmi >> 2),
 
-    .pixel_out_color(frame_buff_bram),
-    .pixel_out_valid(), //nothing for now
-    .pixel_out_h_count(), //nothing for now
-    .pixel_out_v_count() //nothing for now
-  );
+  //   .pixel_out_color(frame_buff_bram),
+  //   .pixel_out_valid(), //nothing for now
+  //   .pixel_out_h_count(), //nothing for now
+  //   .pixel_out_v_count() //nothing for now
+  // );
 
   logic clk_camera_locked;
   logic clk_pixel_locked;
@@ -305,7 +314,7 @@ module top_level (
     .rtx_pixel    (rtx_pixel),
     .rtx_h_count  (rtx_h_count[10:0]),
     .rtx_v_count  (rtx_v_count[9:0]),
-    .rtx_overwrite(rtx_overwrite), // frame_count_rtx == 0), //frame_count[2:0] == 0),
+    .rtx_overwrite(rtx_overwrite),
     
     // Output data to HDMI display pipeline
     .clk_pixel       (clk_pixel),
@@ -343,15 +352,16 @@ module top_level (
   );
 
   always_comb begin
-    if (sw[0]) begin
+    // always use dram; commented out bram
+    // if (sw[0]) begin
       red = {frame_buff_dram[4:0], 3'b0};
       green = {frame_buff_dram[10:5], 2'b0};
       blue = {frame_buff_dram[15:11], 3'b0};
-    end else begin
-      red = frame_buff_bram[7:0];
-      green = frame_buff_bram[15:8];
-      blue = frame_buff_bram[23:16];
-    end
+    // end else begin
+    //   red = frame_buff_bram[7:0];
+    //   green = frame_buff_bram[15:8];
+    //   blue = frame_buff_bram[23:16];
+    // end
   end
 
   logic v_sync_buffered;
