@@ -105,20 +105,20 @@ module ray_tracer #(
           ray_valid_rflx <= 1'b0;
 
           if (ray_done_reflect) begin
+            // Latch reflector values and keep going
+            cur_ray_dir <= rflx_new_dir;
+            cur_ray_origin <= rflx_new_origin;    // ??
+            cur_ray_color <= rflx_new_color;
+            cur_income_light <= rflx_new_income_light;
+            pixel_color <= rflx_new_income_light;
+
             if (bounce_count >= MAX_BOUNCES - 1) begin
               // Bounced max no. of times, exit loop
               state <= IDLE;
-              pixel_color <= cur_income_light;
               ray_done <= 1'b1;
               
             end else begin
-              // Latch reflector values and keep going
-              cur_ray_dir <= rflx_new_dir;
-              cur_ray_origin <= rflx_new_origin;    // ??
-              cur_ray_color <= rflx_new_color;
-              cur_income_light <= rflx_new_income_light;
-              
-              // Transition the state
+              // Transition the next state
               ray_valid_intx <= 1'b1;
               bounce_count <= bounce_count + 1;
               state <= INTX;
@@ -133,7 +133,7 @@ module ray_tracer #(
     .clk(clk),
     .rst(rst),
     .ray_origin(cur_ray_origin),
-    .ray_dir(ray_dir),
+    .ray_dir(cur_ray_dir),
     .ray_valid(ray_valid_intx),
 
     // Outputs
