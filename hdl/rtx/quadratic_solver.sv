@@ -1,5 +1,7 @@
 `default_nettype none
 
+parameter integer QR_SOLVER_DELAY = 3 + SQRT_DELAY + 2;
+
 module quadratic_solver (
   input wire clk,
   input wire rst,

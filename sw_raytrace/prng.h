@@ -20,6 +20,13 @@ uint32_t lfsr32(uint32_t* q) {
   return *q;
 }
 
+float randf() {
+  uint32_t bits = rand();
+  bits &= 0b11111111111111111111111111111111;
+  return *(float*) &bits;
+  // return (float)rand() / RAND_MAX;
+}
+
 Vec3 prng_sphere() {
   // Vec3 rand_vec = (Vec3){
   //   .x = GAUSSIAN_LOOKUP[lfsr32(&rand0) >> 22],
@@ -30,11 +37,18 @@ Vec3 prng_sphere() {
 
   float x, y, z;
   do {
-    x = 2 * ((float)rand() / RAND_MAX) - 1.0f;
-    y = 2 * ((float)rand() / RAND_MAX) - 1.0f;
-    z = 2 * ((float)rand() / RAND_MAX) - 1.0f;
+    x = (randf() - 0.5) * 2;
+    y = (randf() - 0.5) * 2;
+    z = (randf() - 0.5) * 2;
 
-    return norm_vec3((Vec3){ x, y, z });
+    // x = randf() + 1.0f;
+    // y = randf() + 1.0f;
+    // z = randf() + 1.0f;
+    // x = (randf() < 0.5) ? x : -x;
+    // y = (randf() < 0.5) ? y : -y;
+    // z = (randf() < 0.5) ? z : -z;
+
+    return norm_vec3((Vec3){x, y, z});
   } while (1);
 }
 
