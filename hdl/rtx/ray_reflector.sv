@@ -15,7 +15,7 @@ module ray_reflector (
   input fp24_vec3 hit_location,
   input fp24_vec3 hit_normal,
   input material hit_mat,
-  input logic hit_valid,
+  input wire hit_valid,
 
   output fp24_vec3 new_dir,
   output fp24_vec3 new_origin,

@@ -62,7 +62,7 @@ module ray_maker #(
   // TODO: do not hard-code this
   pipeline #(
     .WIDTH(1),
-    .DEPTH(1 + 1 + 2  + 2 + VEC3_NORM_DELAY)
+    .DEPTH(1 + 1 + 2 + 2 + VEC3_NORM_DELAY)
   ) valid_pipe (.clk(clk), .in(new_ray), .out(ray_valid));
 endmodule
 

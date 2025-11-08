@@ -157,7 +157,7 @@ module traffic_generator(
       wb_rtx_fifo_empty && 
       wb_fb_fifo_empty && 
       !fetch_fb_req_complete);
-    command_fifo #(.DEPTH(8),.WIDTH(152)) wb_rtx_fifo (
+    command_fifo #(.DEPTH(64),.WIDTH(152)) wb_rtx_fifo (
         .clk(clk),
         .rst(rst),
         .write(fetch_rtx_req_complete && !can_issue_immediate_wb_rtx),
@@ -273,7 +273,7 @@ module traffic_generator(
 
     // saved the queued fb data to be written once there is free time
     // queues the command as soon as a new average is calculated
-    command_fifo #(.DEPTH(8),.WIDTH(40)) fetch_fb_fifo(
+    command_fifo #(.DEPTH(64),.WIDTH(40)) fetch_fb_fifo(
         .clk(clk),
         .rst(rst),
         .write(frame_power_of_2 && fetch_rtx_req_complete),
@@ -342,7 +342,7 @@ module traffic_generator(
       req_type == WRITE_BACK_FB &&
       !memrequest_busy && 
       wb_fb_fifo_empty);
-    command_fifo #(.DEPTH(32),.WIDTH(152)) wb_fb_fifo (
+    command_fifo #(.DEPTH(64),.WIDTH(152)) wb_fb_fifo (
         .clk(clk),
         .rst(rst),
         .write(fetch_fb_req_complete && !can_issue_immediate_wb_fb),
