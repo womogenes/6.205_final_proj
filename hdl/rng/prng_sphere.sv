@@ -2,20 +2,29 @@
 `default_nettype none
 
 module prng_sphere_lfsr (
-    input wire clk,
-    input wire rst,
-    input wire [47:0] seed,
-    output fp24_vec3 rng_vec
-  );
+  input wire clk,
+  input wire rst,
+  input wire [47:0] seed,
+  output fp24_vec3 rng_vec
+);
   logic [47:0] lfsr_reg;
+  logic feedback_bit;
+
+  // Use ring oscillator in synthesis mode
+  `ifdef SYNTHESIS
+    logic ring_osc_bit;
+    ring_osc_sampler ro_sampler(.clk(clk), .rst(rst), .rng_bit(ring_osc_bit));
+    assign feedback_bit = lfsr_reg[47] ^ ring_osc_bit;
+  `endif
+
   always_ff @(posedge clk) begin
     if (rst)
       lfsr_reg <= seed; // Nonzero seed. Never all-zeros!
     else begin
-      lfsr_reg[0]     <= lfsr_reg[47];
-      lfsr_reg[1]     <= lfsr_reg[0]  ^ lfsr_reg[47];
-      lfsr_reg[26]    <= lfsr_reg[25] ^ lfsr_reg[47];
-      lfsr_reg[27]    <= lfsr_reg[26] ^ lfsr_reg[47];
+      lfsr_reg[0]     <= feedback_bit;
+      lfsr_reg[1]     <= lfsr_reg[0]  ^ feedback_bit;
+      lfsr_reg[26]    <= lfsr_reg[25] ^ feedback_bit;
+      lfsr_reg[27]    <= lfsr_reg[26] ^ feedback_bit;
       lfsr_reg[25:2]  <= lfsr_reg[24:1];
       lfsr_reg[47:28] <= lfsr_reg[46:27];
     end

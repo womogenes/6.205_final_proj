@@ -9,10 +9,14 @@ create_clock -add -name gclk -period 10.000 -waveform {0 4} [get_ports {clk_100m
 
 # new for week 6: avoid having Vivado freak out about clock domain crossing!
 
-set_max_delay -datapath_only 6 -from  [get_clocks clk_controller_clk_wiz_0] -to [get_clocks clk_pixel_cw_hdmi]
-set_max_delay -datapath_only 6 -from  [get_clocks clk_pixel_cw_hdmi] -to [get_clocks clk_controller_clk_wiz_0]
-set_max_delay -datapath_only 6 -from  [get_clocks clk_controller_clk_wiz_0] -to [get_clocks clk_passthrough_clk_wiz_0]
-set_max_delay -datapath_only 6 -from  [get_clocks clk_passthrough_clk_wiz_0] -to [get_clocks clk_controller_clk_wiz_0]
+set_max_delay -datapath_only 6 -from [get_clocks clk_controller_clk_wiz_0] -to [get_clocks clk_pixel_cw_hdmi]
+set_max_delay -datapath_only 6 -from [get_clocks clk_pixel_cw_hdmi] -to [get_clocks clk_controller_clk_wiz_0]
+set_max_delay -datapath_only 6 -from [get_clocks clk_controller_clk_wiz_0] -to [get_clocks clk_passthrough_clk_wiz_0]
+set_max_delay -datapath_only 6 -from [get_clocks clk_passthrough_clk_wiz_0] -to [get_clocks clk_controller_clk_wiz_0]
+
+# Allow combinational loop for ring oscillator RNG
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets -hierarchical -filter {NAME =~ ".*ro_array\\[.*\\].n1"}]
+set_disable_timing -from I0 -to O "*ro_array\\[.*\\].inv."
 
 # USER GREEN LEDS
 set_property -dict {PACKAGE_PIN C13  IOSTANDARD LVCMOS33} [ get_ports {led[0]} ]

@@ -28,6 +28,7 @@ set sources_sv [ concat \
     [ glob ./hdl/hdmi/*.sv ] \
     [ glob ./hdl/types/*.sv ] \
     [ glob ./hdl/math/*.sv ] \
+    [ glob ./hdl/rng/*.sv ] \
     [ glob ./hdl/rtx/*.sv ] \
     [ glob ./hdl/dram/*.sv ] \
     [ glob ./hdl/uart/*.sv ] \

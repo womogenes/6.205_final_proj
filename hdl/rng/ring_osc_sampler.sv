@@ -13,16 +13,16 @@ module ring_osc_sampler #(
 
   genvar i;
   generate
-    for (i = 0; i < RO_COUNT; i++) begin
+    for (i = 0; i < RO_COUNT; i++) begin : ro_array
       // Ring oscillator wires
       wire n0, n1, n2;
 
       (* keep = "true", dont_touch = "true" *)
-      LUT1 #(.INIT(2'b01)) ivn0 (.IO(n0), .O(n1));
+      LUT1 #(.INIT(2'b01)) inv0 (.I0(n0), .O(n1));
       (* keep = "true", dont_touch = "true" *)
-      LUT1 #(.INIT(2'b01)) ivn1 (.IO(n1), .O(n2));
+      LUT1 #(.INIT(2'b01)) inv1 (.I0(n1), .O(n2));
       (* keep = "true", dont_touch = "true" *)
-      LUT1 #(.INIT(2'b01)) ivn2 (.IO(n2), .O(n0));
+      LUT1 #(.INIT(2'b01)) inv2 (.I0(n2), .O(n0));
 
       assign ro_bits_raw[i] = n2;
     end

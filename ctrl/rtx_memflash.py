@@ -40,7 +40,7 @@ def send_program():
 
     set_cam(
         origin=(0, 0, 1),
-        forward=(0, 0, 1280),
+        forward=(0, 0, 1280 // 2),
         right=(1, 0, 0),
         up=(0, 1, 0),
     )
