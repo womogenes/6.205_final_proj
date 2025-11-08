@@ -48,8 +48,8 @@ async def test_module(dut):
 
     for _ in tqdm(range(WIDTH * HEIGHT), ncols=80, gui=False):
     # for _ in range(WIDTH * HEIGHT):
-        await RisingEdge(dut.ray_done)
-        # await ClockCycles(dut.clk, 100)
+        # await RisingEdge(dut.ray_done)
+        await ClockCycles(dut.clk, 100)
 
         pixel_h = dut.pixel_h.value.integer
         pixel_v = dut.pixel_v.value.integer
@@ -84,6 +84,7 @@ def runner():
         proj_path / "hdl" / "math" / "fp24_sqrt.sv",
         proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
         proj_path / "hdl" / "math" / "fp24_convert.sv",
+        proj_path / "hdl" / "math" / "prng_sphere.sv",
         proj_path / "hdl" / "math" / "quadratic_solver.sv",
         proj_path / "hdl" / "math" / "sphere_intersector.sv",
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
@@ -94,6 +95,7 @@ def runner():
         proj_path / "hdl" / "rtx" / "scene_buffer.sv",
 
         proj_path / "hdl" / "rtx" / "ray_intersector.sv",
+        proj_path / "hdl" / "rtx" / "ray_reflector.sv",
         proj_path / "hdl" / "rtx" / "ray_tracer.sv",
         proj_path / "hdl" / "rtx" / "rtx.sv",
     ]

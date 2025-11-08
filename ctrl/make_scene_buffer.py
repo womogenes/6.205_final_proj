@@ -68,16 +68,16 @@ class Object:
 
 if __name__ == "__main__":
     mat0 = Material(
-        color=(1, 1, 1),
+        color=(1, 1, 0),
         spec_color=(0, 0, 0),
-        emit_color=(1, 0, 0),
+        emit_color=(0, 0, 0),
         smooth=1,
         specular=0,
     )
     mat1 = Material(
         color=(1, 1, 1),
         spec_color=(0, 0, 0),
-        emit_color=(0, 0, 1),
+        emit_color=(1, 1, 1),
         smooth=1,
         specular=0,
     )
