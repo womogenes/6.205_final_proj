@@ -26,7 +26,6 @@ module rtx_tb #(
     .clk(clk),
     .rst(rst),
     .obj_idx(obj_idx),
-    
     .obj(obj),
     .obj_last(obj_last)
   );

@@ -15,6 +15,8 @@ module prng_sphere_lfsr (
     logic ring_osc_bit;
     ring_osc_sampler ro_sampler(.clk(clk), .rst(rst), .rng_bit(ring_osc_bit));
     assign feedback_bit = lfsr_reg[47] ^ ring_osc_bit;
+  `else
+    assign feedback_bit = lfsr_reg[47];
   `endif
 
   always_ff @(posedge clk) begin

@@ -20,7 +20,7 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp24_vec3
 
-scale = 0.5
+scale = 2
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
 
