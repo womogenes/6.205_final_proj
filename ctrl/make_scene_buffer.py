@@ -96,8 +96,8 @@ if __name__ == "__main__":
             mat=mat1,
             trig=None,
             trig_norm=None,
-            sphere_center=(-10, 0, 30),
-            sphere_rad=10,
+            sphere_center=(-100, 0, 30),
+            sphere_rad=100,
         ),
     ]
 

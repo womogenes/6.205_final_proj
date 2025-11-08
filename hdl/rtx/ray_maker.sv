@@ -28,7 +28,7 @@ module ray_maker #(
   logic signed [10:0] pixel_h_norm;
   logic signed [9:0] pixel_v_norm;
 
-  assign pixel_h_norm = $signed(WIDTH / 2) - $signed(pixel_h_in);
+  assign pixel_h_norm = $signed(pixel_h_in) - $signed(WIDTH / 2);
   assign pixel_v_norm = $signed(HEIGHT / 2) - $signed(pixel_v_in);
 
   // Normalized device coordinates
