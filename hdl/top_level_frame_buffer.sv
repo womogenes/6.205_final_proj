@@ -115,6 +115,19 @@ module top_level (
     end
   end
 
+  // rtx requires an external scene buffer
+  logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] scene_buf_obj_idx;
+  object scene_buf_obj;
+  logic scene_buf_obj_last;
+
+  scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
+    .clk(clk_rtx),
+    .rst(sys_rst),
+    .obj_idx(scene_buf_obj_idx),
+    .obj(scene_buf_obj),
+    .obj_last(scene_buf_obj_last)
+  );
+
   rtx my_rtx(
     .clk(clk_rtx),
     .rst(sys_rst | !dram_ready),
@@ -122,7 +135,11 @@ module top_level (
     .rtx_pixel(rtx_pixel),
     .pixel_h(rtx_h_count),
     .pixel_v(rtx_v_count),
-    .ray_done(rtx_valid)
+    .ray_done(rtx_valid),
+
+    .obj_idx(scene_buf_obj_idx),
+    .obj(scene_buf_obj),
+    .obj_last(scene_buf_obj_last)
   );
 
   // Latch overwrite on top left pixel
