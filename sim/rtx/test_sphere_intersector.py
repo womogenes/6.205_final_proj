@@ -45,6 +45,10 @@ async def test_module(dut):
     dut.sphere_rad_sq.value = make_fp24(1)
     dut.sphere_rad_inv.value = make_fp24(1)
 
+    dut.sphere_valid.value = 1
+    await ClockCycles(dut.clk, 1)
+    dut.sphere_valid.value = 0
+
     await ClockCycles(dut.clk, 100)
 
     # Extract answer

@@ -81,6 +81,9 @@ def runner():
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
         proj_path / "hdl" / "rtx" / "ray_maker.sv",
         proj_path / "hdl" / "rtx" / "ray_caster.sv",
+        proj_path / "hdl" / "rtx" / "quadratic_solver.sv",
+        proj_path / "hdl" / "rtx" / "sphere_intersector.sv",
+        proj_path / "hdl" / "rtx" / "ray_intersector.sv",
         proj_path / "hdl" / "rtx" / "ray_tracer.sv",
         proj_path / "hdl" / "rtx" / "rtx.sv",
     ]
