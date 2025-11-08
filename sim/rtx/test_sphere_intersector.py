@@ -83,8 +83,8 @@ def runner():
         proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
         proj_path / "hdl" / "math" / "fp24_sqrt.sv",
         proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
+        proj_path / "hdl" / "math" / "quadratic_solver.sv",
         proj_path / "hdl" / "math" / "sphere_intersector.sv",
-        proj_path / "hdl" / "rtx" / "quadratic_solver.sv",
     ]
     build_test_args = ["-Wall"]
 

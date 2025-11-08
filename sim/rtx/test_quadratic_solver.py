@@ -107,7 +107,7 @@ def runner():
         proj_path / "hdl" / "math" / "fp24_inv.sv",
         proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
         proj_path / "hdl" / "math" / "fp24_sqrt.sv",
-        proj_path / "hdl" / "rtx" / "quadratic_solver.sv",
+        proj_path / "hdl" / "math" / "quadratic_solver.sv",
     ]
     build_test_args = ["-Wall"]
 

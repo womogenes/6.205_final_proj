@@ -84,11 +84,11 @@ def runner():
         proj_path / "hdl" / "math" / "fp24_sqrt.sv",
         proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
         proj_path / "hdl" / "math" / "fp24_convert.sv",
+        proj_path / "hdl" / "math" / "quadratic_solver.sv",
         proj_path / "hdl" / "math" / "sphere_intersector.sv",
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
         proj_path / "hdl" / "rtx" / "ray_maker.sv",
         proj_path / "hdl" / "rtx" / "ray_caster.sv",
-        proj_path / "hdl" / "rtx" / "quadratic_solver.sv",
 
         proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
         proj_path / "hdl" / "rtx" / "scene_buffer.sv",
