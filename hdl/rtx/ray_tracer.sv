@@ -20,7 +20,7 @@ module ray_tracer #(
   output logic [9:0] pixel_v_out,
 
   // Interface to scene buffer
-  output logic [$clog2(SCENE_BUFFER_DEPTH-1):0] obj_idx,
+  output logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx,
   input object obj,
   input wire obj_last
 );

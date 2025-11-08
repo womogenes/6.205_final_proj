@@ -70,8 +70,9 @@ module ray_reflector (
   fp24_vec3_add diffuse_adder (
     .clk(clk),
     .rst(rst),
-    .v(saved_hit_normal),
-    .w(rng_vec),
+    .v(rng_vec),
+    .w(saved_hit_normal),
+    .is_sub(1'b1),
     .sum(rng_added)
   );
 
