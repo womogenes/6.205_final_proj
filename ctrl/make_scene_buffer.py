@@ -69,14 +69,14 @@ class Object:
 if __name__ == "__main__":
     mat0 = Material(
         color=(1, 1, 1),
-        spec_color=(0, 0, 1),
+        spec_color=(0, 0, 0),
         emit_color=(1, 0, 0),
         smooth=1,
         specular=0,
     )
     mat1 = Material(
         color=(1, 1, 1),
-        spec_color=(0, 0, 1),
+        spec_color=(0, 0, 0),
         emit_color=(0, 0, 1),
         smooth=1,
         specular=0,
@@ -88,15 +88,15 @@ if __name__ == "__main__":
             mat=mat0,
             trig=None,
             trig_norm=None,
-            sphere_center=(0, 0, -5),
-            sphere_rad=4.5,
+            sphere_center=(1, 0, 20),
+            sphere_rad=19,
         ),
         Object(
             is_trig=False,
             mat=mat1,
             trig=None,
             trig_norm=None,
-            sphere_center=(0, 0, 5),
+            sphere_center=(-1, 0, 5),
             sphere_rad=4.5,
         ),
     ]
