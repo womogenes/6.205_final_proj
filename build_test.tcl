@@ -27,6 +27,7 @@ set sources_sv [ concat \
     [ glob ./hdl/pipeline.sv ] \
     [ glob ./hdl/types/*.sv ] \
     [ glob ./hdl/math/*.sv ] \
+    [ glob ./hdl/rng/*.sv ] \
     [ glob ./hdl/rtx/*.sv ] \
     [ glob ./hdl/top_level_test.sv ] \
 ]

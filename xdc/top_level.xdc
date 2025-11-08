@@ -15,8 +15,17 @@ set_max_delay -datapath_only 6 -from [get_clocks clk_controller_clk_wiz_0] -to [
 set_max_delay -datapath_only 6 -from [get_clocks clk_passthrough_clk_wiz_0] -to [get_clocks clk_controller_clk_wiz_0]
 
 # Allow combinational loop for ring oscillator RNG
-set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets -hierarchical -filter {NAME =~ ".*ro_array\\[.*\\].n1"}]
-set_disable_timing -from I0 -to O "*ro_array\\[.*\\].inv."
+# TODO: clean this up
+
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[0].n1]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[1].n1]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[2].n1]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[3].n1]
+
+set_disable_timing -from I0 -to O \my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[0].inv0
+set_disable_timing -from I0 -to O \my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[1].inv0
+set_disable_timing -from I0 -to O \my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[2].inv0
+set_disable_timing -from I0 -to O \my_rtx/tracer/ray_reflect/prng_sphere/ro_sampler/ro_array[3].inv0
 
 # USER GREEN LEDS
 set_property -dict {PACKAGE_PIN C13  IOSTANDARD LVCMOS33} [ get_ports {led[0]} ]
@@ -160,14 +169,10 @@ set_property -dict {PACKAGE_PIN B16 IOSTANDARD LVCMOS33} [get_ports {uart_rxd}]
 set_property -dict {PACKAGE_PIN A16 IOSTANDARD LVCMOS33} [get_ports {uart_txd}]
 
 # MICRO SD SPI signals
-set_property -dict {PACKAGE_PIN M16 IOSTANDARD LVCMOS33} [get_ports {sd_cipo}]
-set_property -dict {PACKAGE_PIN N18 IOSTANDARD LVCMOS33} [get_ports {sd_cs}]
-set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33} [get_ports {sd_copi}]
-set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33} [get_ports {sd_dclk}]
-
-
-
-
+# set_property -dict {PACKAGE_PIN M16 IOSTANDARD LVCMOS33} [get_ports {sd_cipo}]
+# set_property -dict {PACKAGE_PIN N18 IOSTANDARD LVCMOS33} [get_ports {sd_cs}]
+# set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33} [get_ports {sd_copi}]
+# set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33} [get_ports {sd_dclk}]
 
 ############## NET - IOSTANDARD ##################
 ### Pins below are for the DDR3

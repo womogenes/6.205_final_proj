@@ -15,9 +15,10 @@ module ring_osc_sampler #(
   generate
     for (i = 0; i < RO_COUNT; i++) begin : ro_array
       // Ring oscillator wires
+      (* ALLOW_COMBINATORIAL_LOOPS = "TRUE" *)
       wire n0, n1, n2;
 
-      (* keep = "true", dont_touch = "true" *)
+      (* keep = "true", dont_touch = "true", DISABLE_TIMING = "TRUE" *)
       LUT1 #(.INIT(2'b01)) inv0 (.I0(n0), .O(n1));
       (* keep = "true", dont_touch = "true" *)
       LUT1 #(.INIT(2'b01)) inv1 (.I0(n1), .O(n2));
