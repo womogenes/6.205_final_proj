@@ -93,25 +93,18 @@ module top_level(
   // assign cam_xclk = clk_xc;
 
   // video signal generator signals
-  logic       h_sync_hdmi;
-  logic       v_sync_hdmi;
+  logic         h_sync_hdmi;
+  logic         v_sync_hdmi;
   logic [10:0]  h_count_hdmi;
   logic [9:0]   v_count_hdmi;
-  logic       active_draw_hdmi;
-  logic       new_frame_hdmi;
+  logic         active_draw_hdmi;
+  logic         new_frame_hdmi;
   logic [5:0]   frame_count_hdmi;
 
   // rgb output values
   logic [7:0]   red, green, blue;
 
   // ** Handling input from the camera **
-
-  // synchronizers to prevent metastability
-  // logic [7:0]   camera_d_buf [1:0];
-  // logic       cam_h_sync_buf [1:0];
-  // logic       cam_v_sync_buf [1:0];
-  // logic       cam_pclk_buf [1:0];
-
   logic       sys_rst_camera_buf [1:0];
   logic       sys_rst_pixel_buf [1:0];
   logic       sys_rst_controller_buf [1:0];
@@ -129,35 +122,34 @@ module top_level(
   logic [10:0]  camera_h_count;
   logic [9:0]   camera_v_count;
   logic [15:0]  camera_pixel;
-  logic       camera_valid;
+  logic         camera_valid;
 
-  // your pixel_reconstruct module, from the exercise!
-  // hook it up to buffered inputs.
-  // pixel_reconstruct(
-  //   .clk(clk_camera),
-  //   .rst(sys_rst_camera),
-  //   .camera_pclk(cam_pclk_buf[0]),
-  //   .camera_h_sync(cam_h_sync_buf[0]),
-  //   .camera_v_sync(cam_v_sync_buf[0]),
-  //   .camera_data(camera_d_buf[0]),
-  //   .pixel_valid(camera_valid),
-  //   .pixel_h_count(camera_h_count),
-  //   .pixel_v_count(camera_v_count),
-  //   .pixel_data(camera_pixel)
-  // );
+  // rtx requires a scene buffer
+  logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] scene_buf_obj_idx;
+  object scene_buf_obj;
+  logic scene_buf_obj_last;
+
+  scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
+    .clk(clk),
+    .rst(rst),
+    .obj_idx(scene_buf_obj_idx),
+    .obj(scene_buf_obj),
+    .obj_last(scene_buf_obj_last)
+  );
 
   color8 rtx_pixel;
-  // assign camera_pixel = 16'hFFFF;
-
-  // TODO: hook this up
   rtx (
     .clk(clk_camera),
     .rst(sys_rst_camera),
 
-    .pixel_color(rtx_pixel),j
+    .pixel_color(rtx_pixel),
     .pixel_h(camera_h_count),
     .pixel_v(camera_v_count),
-    .ray_done(camera_valid)
+    .ray_done(camera_valid),
+
+    .obj_idx(scene_buf_obj_idx),
+    .obj(scene_buf_obj),
+    .obj_last(scene_buf_obj_last)
   );
 
   assign camera_pixel = {
@@ -165,6 +157,8 @@ module top_level(
     rtx_pixel.g[7:2],
     rtx_pixel.b[7:3]
   };
+
+  // TODO: allow UART reflashing of scene buffer
 
   // Two ways to store a frame buffer:
   // 1. down-sampled with BRAM; same as week 05

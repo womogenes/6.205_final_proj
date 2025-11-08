@@ -10,7 +10,12 @@ module rtx #(
   output logic [15:0] rtx_pixel,
   output logic [10:0] pixel_h,
   output logic [9:0] pixel_v,
-  output logic ray_done           // i.e. pixel_color valid
+  output logic ray_done,          // i.e. pixel_color valid
+
+  // scene buffer interface
+  output logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx,
+  input object obj,
+  input logic obj_last
 );
   fp24 width_fp24;
   make_fp24 #(11) width_maker (.clk(clk), .n(WIDTH >> 1), .x(width_fp24));
@@ -52,21 +57,6 @@ module rtx #(
   logic tracer_ready;
   fp24_color pixel_color;
 
-  // Initialize scene buffer
-  // Bind inputs to ray tracer
-  // TODO: allow reprogramming
-  logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] scene_buf_obj_idx;
-  object scene_buf_obj;
-  logic obj_last;
-
-  scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
-    .clk(clk),
-    .rst(rst),
-    .obj_idx(scene_buf_obj_idx),
-    .obj(scene_buf_obj),
-    .obj_last(obj_last)
-  );
-
   logic tracer_ray_done;
 
   ray_tracer #(
@@ -89,8 +79,8 @@ module rtx #(
     .pixel_v_out(pixel_v),
 
     // Scene buffer interface
-    .obj_idx(scene_buf_obj_idx),
-    .obj(scene_buf_obj),
+    .obj_idx(obj_idx),
+    .obj(obj),
     .obj_last(obj_last)
   );
 

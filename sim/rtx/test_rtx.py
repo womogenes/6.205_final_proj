@@ -20,7 +20,7 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3
 
-scale = 2
+scale = 0.5
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
 
@@ -99,6 +99,7 @@ def runner():
         proj_path / "hdl" / "rtx" / "ray_reflector.sv",
         proj_path / "hdl" / "rtx" / "ray_tracer.sv",
         proj_path / "hdl" / "rtx" / "rtx.sv",
+        proj_path / "hdl" / "rtx" / "rtx_tb.sv",
     ]
     build_test_args = ["-Wall"]
 
@@ -112,7 +113,7 @@ def runner():
     }
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "rtx"
+    hdl_toplevel = "rtx_tb"
     
     runner = get_runner(sim)
     runner.build(
