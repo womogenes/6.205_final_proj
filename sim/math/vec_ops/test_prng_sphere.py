@@ -38,14 +38,26 @@ async def test_module(dut):
         points.append(convert_fp24_vec3(dut.rng_vec.value))
         await ClockCycles(dut.clk, 1)
 
-    fig = plt.figure(figsize=(12, 12))
-    ax = fig.add_subplot(projection='3d')
-    ax.set_aspect('equal')
-
     x_data, y_data, z_data = zip(*points)
 
-    ax.scatter(x_data, y_data, z_data, s=0.5, alpha=1, marker='.')
-    plt.show()
+    # Print statistics
+    dut._log.info(f"\nGenerated {num_points} random vectors:")
+    dut._log.info(f"  X range: [{min(x_data):.3f}, {max(x_data):.3f}]")
+    dut._log.info(f"  Y range: [{min(y_data):.3f}, {max(y_data):.3f}]")
+    dut._log.info(f"  Z range: [{min(z_data):.3f}, {max(z_data):.3f}]")
+    dut._log.info(f"  X avg: {sum(x_data)/len(x_data):.3f}")
+    dut._log.info(f"  Y avg: {sum(y_data)/len(y_data):.3f}")
+    dut._log.info(f"  Z avg: {sum(z_data)/len(z_data):.3f}")
+
+    # Check if all positive (which would be wrong)
+    all_x_positive = all(x >= 0 for x in x_data)
+    all_y_positive = all(y >= 0 for y in y_data)
+    all_z_positive = all(z >= 0 for z in z_data)
+
+    if all_x_positive and all_y_positive and all_z_positive:
+        dut._log.error("  BUG: All vectors are in the positive octant!")
+    else:
+        dut._log.info("  OK: Vectors span negative and positive regions")
 
 
 def runner():
@@ -56,6 +68,7 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types"/ "types.sv",
         proj_path / "hdl" / "pipeline.sv"
     ]

@@ -12,10 +12,10 @@ class Material:
     def __init__(
         self,
         color: tuple[float],
-        spec_color: tuple[float],
         emit_color: tuple[float],
-        smooth: float,
-        specular: float
+        spec_color: tuple[float] = (0, 0, 0),
+        smooth: float = 0,
+        specular: float = 0,
     ):
         self.color = color              # 72
         self.spec_color = spec_color    # 72
@@ -38,12 +38,12 @@ class Material:
 class Object:
     def __init__(
         self,
-        is_trig: bool,
         mat: Material,
-        trig: tuple[tuple[float]],
-        trig_norm: tuple[float],
         sphere_center: tuple[float],
         sphere_rad: float,
+        is_trig: bool = False,
+        trig: tuple[tuple[float]] = (),
+        trig_norm: tuple[float] = (),
     ):
         self.is_trig = is_trig
         self.mat = mat
@@ -67,38 +67,18 @@ class Object:
 
 
 if __name__ == "__main__":
-    mat0 = Material(
-        color=(1, 1, 0),
-        spec_color=(0, 0, 0),
-        emit_color=(0, 0, 0),
-        smooth=1,
-        specular=0,
-    )
-    mat1 = Material(
-        color=(1, 1, 1),
-        spec_color=(0, 0, 0),
-        emit_color=(1, 1, 1),
-        smooth=1,
-        specular=0,
-    )
+    mat0 = Material(color=(1, 0.3, 0.3), emit_color=(0.1, 0.1, 0.1))
+    mat1 = Material(color=(0.3, 1, 0.3), emit_color=(0.1, 0.1, 0.1))
+    mat2 = Material(color=(0.3, 0.3, 1), emit_color=(0.1, 0.1, 0.1))
+    mat3 = Material(color=(0.5, 1, 0.5), emit_color=(1, 1, 1))
+    mat4 = Material(color=(0.85, 0.8, 1), emit_color=(0.1, 0.1, 0.1))
 
     objs = [
-        Object(
-            is_trig=False,
-            mat=mat0,
-            trig=None,
-            trig_norm=None,
-            sphere_center=(10, 0, 50),
-            sphere_rad=10,
-        ),
-        Object(
-            is_trig=False,
-            mat=mat1,
-            trig=None,
-            trig_norm=None,
-            sphere_center=(-30, 0, 30),
-            sphere_rad=30,
-        ),
+        Object(mat=mat0, sphere_center=(-2, 1, 7), sphere_rad=2),
+        Object(mat=mat1, sphere_center=(0, 0, 5), sphere_rad=1),
+        Object(mat=mat2, sphere_center=(1, -0.5, 4), sphere_rad=0.5),
+        Object(mat=mat3, sphere_center=(0, 500, 0), sphere_rad=450),
+        Object(mat=mat4, sphere_center=(0, -200, 5), sphere_rad=199),
     ]
 
     # Dump to hex file
