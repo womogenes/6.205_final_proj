@@ -106,7 +106,6 @@ def runner():
     parameters = {
         "WIDTH": WIDTH,
         "HEIGHT": HEIGHT,
-        "SCENE_BUFFER_INIT_FILE": '"scene_buffer.mem"'
     }
 
     sys.path.append(str(proj_path / "sim"))

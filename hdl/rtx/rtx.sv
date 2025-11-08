@@ -2,8 +2,7 @@
 
 module rtx #(
   parameter WIDTH = 1280,
-  parameter HEIGHT = 720,
-  parameter SCENE_BUFFER_INIT_FILE = ""
+  parameter HEIGHT = 720
 ) (
   input wire clk,
   input wire rst,
@@ -60,7 +59,7 @@ module rtx #(
   object scene_buf_obj;
   logic obj_last;
 
-  scene_buffer #(.INIT_FILE(SCENE_BUFFER_INIT_FILE)) scene_buf (
+  scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
     .clk(clk),
     .rst(rst),
     .obj_idx(scene_buf_obj_idx),
