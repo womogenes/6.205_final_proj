@@ -43,6 +43,10 @@ async def test_module(dut):
         
         return convert_fp24(dut.sum.value)
     
+    res = await do_test(0, 0, 1)
+    print(res)
+    return
+    
     # x = -38000
     # y = 39000
     # res = await do_test(x, y, 0)

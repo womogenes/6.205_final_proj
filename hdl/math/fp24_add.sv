@@ -48,6 +48,7 @@ module fp24_add (
   logic sign_a_buf;
   logic [6:0] exp_a_buf;
   logic [17:0] frac_sum_buf;
+  logic both_zero; // required to handle (0 - 0) edge case
 
   // Stage 1: compute exponent diff + shift
   always_comb begin
@@ -62,6 +63,7 @@ module fp24_add (
     frac_sum_buf <= (sign_a == sign_b) ? (frac_a + frac_b_shift) : (frac_a - frac_b_shift);
     exp_a_buf <= exp_a;
     sign_a_buf <= sign_a;
+    both_zero <= (exp_a == 0 && mant_a == 0 && exp_b == 0 && mant_b == 0);
   end
 
   // Stage 2: clz, assemble sum
@@ -84,6 +86,6 @@ module fp24_add (
 
   // Stage 2 end: latch
   always_ff @(posedge clk) begin
-    sum <= {sign_a_buf, exp_norm, frac_norm[15:0]};
+    sum <= both_zero ? 0 : {sign_a_buf, exp_norm, frac_norm[15:0]};
   end
 endmodule
