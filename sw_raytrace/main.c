@@ -24,7 +24,7 @@ int main() {
   RayTracerResult result;
 
   // float t = 0.80;
-  const int N_FRAMES = 600;
+  const int N_FRAMES = 15;
   const int mask_565 = 0;
 
   for (int frame_idx = 0; frame_idx < N_FRAMES; frame_idx++) {

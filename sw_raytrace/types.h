@@ -9,8 +9,8 @@
   #define WIDTH 1280
   #define HEIGHT 720
 #else
-  #define WIDTH 64
-  #define HEIGHT 36
+  #define WIDTH 320
+  #define HEIGHT 180
 #endif
 
 // ===== SHARED TYPES =====
