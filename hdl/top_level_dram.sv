@@ -17,6 +17,8 @@ module top_level(
   output logic [2:0]  hdmi_tx_p, //hdmi output signals (positives) (blue, green, red)
   output logic [2:0]  hdmi_tx_n, //hdmi output signals (negatives) (blue, green, red)
   output logic    hdmi_clk_p, hdmi_clk_n, //differential hdmi clock
+  // uart
+  input wire uart_rxd, // UART computer->FPGA
   // New for week 6: SDRAM (DDR3) ports
   inout wire [15:0]   ddr3_dq, //data input/output
   inout wire [1:0]  ddr3_dqs_n, //data input/output differential strobe (negative)
@@ -136,6 +138,8 @@ module top_level(
     .obj(scene_buf_obj),
     .obj_last(scene_buf_obj_last)
   );
+
+  // uart flashing of scene buffer (among other things)
 
   color8 rtx_pixel;
   rtx (

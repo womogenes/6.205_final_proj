@@ -15,16 +15,22 @@ module rtx #(
   // scene buffer interface
   output logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx,
   input object obj,
-  input logic obj_last
+  input wire obj_last
 );
   fp24 width_fp24;
   make_fp24 #(11) width_maker (.clk(clk), .n(WIDTH >> 1), .x(width_fp24));
 
   camera cam;
-  assign cam.origin = 72'h0;
-  assign cam.right = {24'h3f0000, 24'h000000, 24'h000000};    // (1, 0, 0)
-  assign cam.forward = {24'h000000, 24'h000000, width_fp24};  // (0, 0, width)
-  assign cam.up = {24'h000000, 24'h3f0000, 24'h000000};       // (0, 1, 0)
+
+  always_ff @(posedge clk) begin
+    // Initialize camera
+    if (rst) begin
+      cam.origin <= 72'h0;
+      cam.right <= {24'h3f0000, 24'h000000, 24'h000000};    // (1, 0, 0)
+      cam.forward <= {24'h000000, 24'h000000, width_fp24};  // (0, 0, width)
+      cam.up <= {24'h000000, 24'h3f0000, 24'h000000};       // (0, 1, 0)
+    end
+  end
 
   logic [10:0] pixel_h_caster;
   logic [9:0] pixel_v_caster;
