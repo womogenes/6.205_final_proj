@@ -126,11 +126,11 @@ def runner():
         proj_path / "hdl" / "math" / "fp24_sqrt.sv",
         proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
         proj_path / "hdl" / "math" / "fp24_convert.sv",
+        proj_path / "hdl" / "math" / "sphere_intersector.sv",
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
         proj_path / "hdl" / "rtx" / "ray_maker.sv",
         proj_path / "hdl" / "rtx" / "ray_caster.sv",
         proj_path / "hdl" / "rtx" / "quadratic_solver.sv",
-        proj_path / "hdl" / "rtx" / "sphere_intersector.sv",
         proj_path / "hdl" / "rtx" / "ray_intersector.sv",
     ]
     build_test_args = ["-Wall"]
