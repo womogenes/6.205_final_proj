@@ -15,6 +15,7 @@ module seven_segment_controller #(parameter COUNT_PERIOD = 100000)
 
     // current hex digit (select from segment_state)
     always_comb begin
+        sel_values = 0;
         if (segment_state == 8'b00000001) begin
             sel_values = val[ 3: 0];
         end else if (segment_state == 8'b00000010) begin
