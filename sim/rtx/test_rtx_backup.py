@@ -21,7 +21,7 @@ sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import make_fp24_vec3, pack_bits
 
 # MULTIPROCESSING GO BRRR
-from multiprocessing import Pool
+from multiprocessing import Pool, Manager
 
 N_CHUNKS = 4 * os.cpu_count()
 
@@ -47,17 +47,24 @@ proj_path = Path(__file__).resolve().parent.parent.parent
 CHUNKS_OUT_DIR = proj_path / "sim" / "sim_build" / "rtx_parallel" / "chunks"
 os.makedirs(CHUNKS_OUT_DIR, exist_ok=True)
 
-# Single shared build directory for all workers
-BUILD_DIR = proj_path / "sim" / "sim_build" / "rtx_parallel" / f"verilator_{WIDTH}x{HEIGHT}"
-os.makedirs(BUILD_DIR, exist_ok=True)
+# Build directory
+SHARED_BASE_DIR = proj_path / "sim" / "sim_build" / "rtx_parallel"
+os.makedirs(SHARED_BASE_DIR, exist_ok=True)
+
+def get_shared_build_dir(shared_idx: int):
+    """Return the path to a shared build directory for index shared_idx."""
+    build_dir = SHARED_BASE_DIR / f"shared_build_{shared_idx:03}"
+    os.makedirs(build_dir, exist_ok=True)
+    return build_dir
 
 
 @cocotb.test()
 async def test_module(dut):
-    # dut._log.info("Starting...")
+    """Render chunk with frame averaging (saves each chunk to CHUNKS_OUT_DIR)."""
+    dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
-    # dut._log.info("Holding reset...")
+    dut._log.info("Holding reset...")
     dut.lfsr_seed.value = int.from_bytes(os.urandom(6))
     dut.rst.value = 1
     await ClockCycles(dut.clk, 100)
@@ -109,79 +116,27 @@ async def test_module(dut):
     dut._log.info(f"Saved pixel chunk to {save_path}")
 
 
-def build_verilator():
-    """Build Verilator executable once (called from main process)."""
-    print(f"Building Verilator for {WIDTH}x{HEIGHT}...")
+def runner(
+    pixel_start_idx: int,
+    pixel_end_idx: int,
+    chunk_idx: int,
+    shared_idx: int,
+    shared_lock
+):
+    """Module tester.
 
-    sim = os.getenv("SIM", "verilator")
+      - Acquire lock for shared build dir
+      - Copy scene file into the shared build dir, call runner.build
+      - Run test
+    """
 
-    sources = [
-        proj_path / "hdl" / "pipeline.sv",
-        proj_path / "hdl" / "constants.sv",
-        proj_path / "hdl" / "types" / "types.sv",
-        proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_clip.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
-        proj_path / "hdl" / "math" / "fp24_convert.sv",
-        proj_path / "hdl" / "rng" / "prng_sphere.sv",
-        proj_path / "hdl" / "math" / "quadratic_solver.sv",
-        proj_path / "hdl" / "math" / "sphere_intersector.sv",
-        proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
-        proj_path / "hdl" / "rtx" / "ray_maker.sv",
-        proj_path / "hdl" / "rtx" / "ray_caster.sv",
-        proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
-        proj_path / "hdl" / "rtx" / "scene_buffer.sv",
-        proj_path / "hdl" / "rtx" / "ray_intersector.sv",
-        proj_path / "hdl" / "rtx" / "ray_reflector.sv",
-        proj_path / "hdl" / "rtx" / "ray_tracer.sv",
-        proj_path / "hdl" / "rtx" / "rtx.sv",
-        proj_path / "hdl" / "rtx" / "rtx_tb_parallel.sv",
-    ]
-
-    build_test_args = ["-Wno-WIDTHEXPAND", "-Wno-MULTIDRIVEN", "-Wno-WIDTHTRUNC", "-Wno-TIMESCALEMOD", "-Wno-PINMISSING"]
-
-    # Copy scene buffer to build dir
-    shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), BUILD_DIR / "scene_buffer.mem")
-
-    parameters = {
-        "WIDTH": WIDTH,
-        "HEIGHT": HEIGHT,
-    }
-
-    sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "rtx_tb"
-
-    runner = get_runner(sim)
-    runner.build(
-        sources=sources,
-        hdl_toplevel=hdl_toplevel,
-        always=False,  # skip if already built
-        build_args=build_test_args,
-        parameters=parameters,
-        timescale=("1ns", "1ps"),
-        waves=False,
-        build_dir=BUILD_DIR,
-    )
-
-    print(f"Build complete. Executable cached in {BUILD_DIR}")
-
-
-def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
-    """Run test for a specific pixel chunk (called from worker process)."""
-
-    # Set environment variables for this chunk
+    # Set pixel_start_idx and pixel_end_idx for multiprocessing
     os.environ["PIXEL_START_IDX"] = str(pixel_start_idx)
     os.environ["PIXEL_END_IDX"] = str(pixel_end_idx)
     os.environ["CHUNK_IDX"] = str(chunk_idx)
 
+    hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
     sim = os.getenv("SIM", "verilator")
-    sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "rtx_tb"
 
     sources = [
         proj_path / "hdl" / "pipeline.sv",
@@ -202,8 +157,10 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
         proj_path / "hdl" / "rtx" / "ray_maker.sv",
         proj_path / "hdl" / "rtx" / "ray_caster.sv",
+
         proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
         proj_path / "hdl" / "rtx" / "scene_buffer.sv",
+
         proj_path / "hdl" / "rtx" / "ray_intersector.sv",
         proj_path / "hdl" / "rtx" / "ray_reflector.sv",
         proj_path / "hdl" / "rtx" / "ray_tracer.sv",
@@ -213,25 +170,38 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
 
     build_test_args = ["-Wno-WIDTHEXPAND", "-Wno-MULTIDRIVEN", "-Wno-WIDTHTRUNC", "-Wno-TIMESCALEMOD", "-Wno-PINMISSING"]
 
+    # determine the shared build dir used for this run
+    build_dir = get_shared_build_dir(shared_idx)
+
+    # We only allow one process at a time to touch/use the shared build dir
+    shared_lock.acquire()
+
+    # copy static artifacts (scene buffer) into the shared build dir
+    shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), build_dir / "scene_buffer.mem")
+
+    # values for parameters defined earlier in the code.
     parameters = {
         "WIDTH": WIDTH,
         "HEIGHT": HEIGHT,
     }
 
-    # Get runner and initialize (build will be skipped since already built)
+    # ensure sim/ is in path as before
+    sys.path.append(str(proj_path / "sim"))
+    hdl_toplevel = "rtx_tb_parallel"
+
+    # get runner for the simulator (same code as original)
     runner = get_runner(sim)
     runner.build(
         sources=sources,
         hdl_toplevel=hdl_toplevel,
-        always=False,  # skip actual build, just initialize
+        always=False,  # allow skip if already built
         build_args=build_test_args,
         parameters=parameters,
         timescale=("1ns", "1ps"),
         waves=False,
-        build_dir=BUILD_DIR,
+        build_dir=build_dir,
     )
-
-    # Now run test
+    # Now run the test (the cocotb test saves the chunk to CHUNKS_OUT_DIR)
     runner.test(
         hdl_toplevel=hdl_toplevel,
         test_module=test_file,
@@ -239,42 +209,42 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
         waves=False,
     )
 
-    return chunk_idx
+    shared_lock.release()
 
 
 def worker(task):
-    """Wrapper for Pool.map"""
-    chunk_idx, start_idx, end_idx = task
-    return run_test_worker(start_idx, end_idx, chunk_idx)
+    """Wrapper used by Pool.map: task = (chunk_idx, start_idx, end_idx, shared_idx)"""
+
+    # Must pass lock to runner so it has shared dir to itself
+    chunk_idx, start_idx, end_idx, shared_idx, lock_proxy = task
+    runner(start_idx, end_idx, chunk_idx, shared_idx, lock_proxy)
+    return chunk_idx
 
 
 if __name__ == "__main__":
-    print(f"=== Parallel RTX Renderer ===")
-    print(f"Resolution: {WIDTH}x{HEIGHT}")
-    print(f"Frames: {N_FRAMES}")
-    print(f"Chunks: {NUM_CHUNKS_ACTUAL}")
-    print(f"Worker processes: {os.cpu_count()}")
-    print()
+    print(f"Starting parallel render: {WIDTH}x{HEIGHT}, {N_FRAMES} frames, {NUM_CHUNKS_ACTUAL} chunks, {N_SHARED_DIRS} build dirs")
 
-    # Step 1: Build Verilator once
-    build_start = time.time()
-    build_verilator()
-    build_time = time.time() - build_start
-    print(f"Build time: {build_time:.1f}s\n")
+    # Precompute chunk tasks: associate each chunk with a shared build index (round-robin)
+    tasks = []
+    for chunk_idx, (start_idx, end_idx) in enumerate(CHUNK_RANGES):
+        shared_idx = chunk_idx % N_SHARED_DIRS
+        tasks.append((chunk_idx, start_idx, end_idx, shared_idx, None))  # lock will be filled below
 
-    # Step 2: Create tasks for parallel execution
-    tasks = [(chunk_idx, start_idx, end_idx)
-             for chunk_idx, (start_idx, end_idx) in enumerate(CHUNK_RANGES)]
+    manager = Manager()
+    # Create lock proxies, one per shared build dir index (up to N_SHARED_DIRS)
+    shared_locks = [manager.Lock() for _ in range(N_SHARED_DIRS)]
 
-    # Step 3: Run tests in parallel
-    print("Starting parallel render...")
-    render_start = time.time()
+    # Fill lock proxies into tasks
+    tasks_with_locks = []
+    for (chunk_idx, start_idx, end_idx, shared_idx, _) in tasks:
+        tasks_with_locks.append((chunk_idx, start_idx, end_idx, shared_idx, shared_locks[shared_idx]))
+
+    # Run workers with a process pool
+    start_time = time.time()
     with Pool(processes=os.cpu_count()) as pool:
-        results = pool.map(worker, tasks)
-    render_time = time.time() - render_start
+        results = pool.map(worker, tasks_with_locks)
 
-    # Step 4: Gather chunks and combine
-    print("\nCombining chunks...")
+    # Gather chunks and combine
     pixel_chunks = []
     for chunk_idx in range(len(CHUNK_RANGES)):
         chunk_path = CHUNKS_OUT_DIR / f"chunk_{chunk_idx:04}.npy"
@@ -284,12 +254,9 @@ if __name__ == "__main__":
 
     pixels_all = np.concatenate(pixel_chunks)
     img = Image.fromarray(pixels_all.reshape((HEIGHT, WIDTH, 3)).astype("uint8"))
-    output_file = f"test_rtx_{WIDTH}x{HEIGHT}_f{N_FRAMES}.png"
-    img.save(output_file)
+    img.save(f"test_rtx_{WIDTH}x{HEIGHT}_f{N_FRAMES}.png")
 
-    total_time = time.time() - build_start
-    print(f"\n=== Render Complete ===")
-    print(f"Output: {output_file}")
-    print(f"Build time: {build_time:.1f}s")
-    print(f"Render time: {render_time:.1f}s ({render_time/60:.1f} min)")
-    print(f"Total time: {total_time:.1f}s ({total_time/60:.1f} min)")
+    elapsed = time.time() - start_time
+    print(f"\nSaved image to test_rtx_{WIDTH}x{HEIGHT}_f{N_FRAMES}.png")
+    print(f"Render time: {elapsed:.1f}s ({elapsed/60:.1f} min)")
+    print(f"{N_CHUNKS=}, {N_SHARED_DIRS=}, {WIDTH=}, {HEIGHT=}, {N_FRAMES=}")
