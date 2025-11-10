@@ -14,8 +14,7 @@ module rtx_tb #(
   input logic [10:0] pixel_h_in,
   input logic [9:0] pixel_v_in,
 
-  output fp24_color pixel_color,
-  // output logic [15:0] rtx_pixel,
+  output logic [15:0] rtx_pixel,
   // output logic [10:0] pixel_h_out,
   // output logic [9:0] pixel_v_out,
   output logic ray_done          // i.e. pixel_color valid
@@ -94,13 +93,12 @@ module rtx_tb #(
   // fp24_clip_upper #(.UPPER_BOUND(24'h3f0000)) g_min(.clk(clk), .a(pixel_color.g), .clipped(pixel_color_clipped.g));
   // fp24_clip_upper #(.UPPER_BOUND(24'h3f0000)) b_min(.clk(clk), .a(pixel_color.b), .clipped(pixel_color_clipped.b));
 
-  // convert_fp24_uint #(.WIDTH(5), .FRAC(5)) r_convert (.clk(clk), .x(pixel_color.r), .n(rtx_pixel[4:0]));
-  // convert_fp24_uint #(.WIDTH(6), .FRAC(6)) g_convert (.clk(clk), .x(pixel_color.g), .n(rtx_pixel[10:5]));
-  // convert_fp24_uint #(.WIDTH(5), .FRAC(5)) b_convert (.clk(clk), .x(pixel_color.b), .n(rtx_pixel[15:11]));
+  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) r_convert (.clk(clk), .x(pixel_color.r), .n(rtx_pixel[4:0]));
+  convert_fp24_uint #(.WIDTH(6), .FRAC(6)) g_convert (.clk(clk), .x(pixel_color.g), .n(rtx_pixel[10:5]));
+  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) b_convert (.clk(clk), .x(pixel_color.b), .n(rtx_pixel[15:11]));
 
   // Delay ray_done by 1 cycle for the conversion
-  // pipeline #(.WIDTH(1), .DEPTH(1)) ray_done_pipe (.clk(clk), .in(ray_done_tracer), .out(ray_done));
-  assign ray_done = ray_done_tracer;
+  pipeline #(.WIDTH(1), .DEPTH(1)) ray_done_pipe (.clk(clk), .in(ray_done_tracer), .out(ray_done));
 
 endmodule
 

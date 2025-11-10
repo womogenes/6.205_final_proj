@@ -23,7 +23,7 @@ from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp
 # MULTIPROCESSING GO BRRR
 from multiprocessing import Process, Pool, Manager
 
-N_CHUNKS = 32
+N_CHUNKS = 2 * os.cpu_count()
 
 scale = 1
 WIDTH = int(32 * scale)
@@ -67,7 +67,7 @@ async def test_module(dut):
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 25)
+    await ClockCycles(dut.clk, 100)
     dut.rst.value = 0
 
     dut.cam.value = pack_bits([
@@ -76,6 +76,13 @@ async def test_module(dut):
         (make_fp24_vec3((1, 0, 0)), 72),            # right
         (make_fp24_vec3((0, 1, 0)), 72),            # up
     ])
+
+    def unpack_color8(color8):
+        return (
+            ((color8 >> 0) & 0b11111) << 3,
+            ((color8 >> 5) & 0b111111) << 2,
+            ((color8 >> 11) & 0b11111) << 3
+        )
 
     # Extract pixel_start_idx and pixel_end_idx from environment vars
     pixel_start_idx = int(os.environ["PIXEL_START_IDX"])
@@ -93,7 +100,7 @@ async def test_module(dut):
 
         await RisingEdge(dut.ray_done)
 
-        pixel_color = [min(1, x) * 255 for x in convert_fp24_vec3(dut.pixel_color.value.integer)]
+        pixel_color = unpack_color8(dut.rtx_pixel.value.integer)
 
         r, g, b = pixel_color
         pixel_values.append((r, g, b))
