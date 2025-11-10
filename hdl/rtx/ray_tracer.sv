@@ -14,6 +14,8 @@ module ray_tracer #(
   input fp24_vec3 ray_dir,
   input wire ray_valid,
 
+  input logic [47:0] lfsr_seed,
+
   output logic ray_done,
   output fp24_vec3 pixel_color,
   output logic [10:0] pixel_h_out,
@@ -157,6 +159,8 @@ module ray_tracer #(
     .ray_dir(cur_ray_dir),
     .ray_color(cur_ray_color),
     .income_light(cur_income_light),
+
+    .lfsr_seed(lfsr_seed),
 
     .hit_pos(intx_hit_pos),
     .hit_normal(intx_hit_norm),

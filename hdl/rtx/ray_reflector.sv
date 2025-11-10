@@ -17,6 +17,8 @@ module ray_reflector (
   input material hit_mat,
   input wire hit_valid,
 
+  input logic [47:0] lfsr_seed,
+
   output fp24_vec3 new_dir,
   output fp24_vec3 new_origin,
   output fp24_color new_color,
@@ -62,7 +64,8 @@ module ray_reflector (
   prng_sphere_lfsr prng_sphere (
     .clk(clk),
     .rst(rst),
-    .seed(48'h123456789abc),
+    .seed(lfsr_seed),
+    // .seed(48'h123456789abc),
     .rng_vec(rng_vec)
   );
 

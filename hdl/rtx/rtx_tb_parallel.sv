@@ -14,6 +14,8 @@ module rtx_tb #(
   input logic [10:0] pixel_h_in,
   input logic [9:0] pixel_v_in,
 
+  input logic [47:0] lfsr_seed,
+
   output logic [15:0] rtx_pixel,
   // output logic [10:0] pixel_h_out,
   // output logic [9:0] pixel_v_out,
@@ -60,6 +62,7 @@ module rtx_tb #(
   );
 
   logic ray_done_tracer;
+  fp24_color pixel_color;
 
   ray_tracer #(
     .WIDTH(WIDTH),
@@ -74,6 +77,8 @@ module rtx_tb #(
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),
     .ray_valid(1'b1),
+
+    .lfsr_seed(lfsr_seed),
 
     // Doubles as a "pixel valid" signal
     .ray_done(ray_done_tracer),

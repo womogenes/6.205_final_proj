@@ -66,6 +66,7 @@ async def test_module(dut):
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
     dut._log.info("Holding reset...")
+    dut.lfsr_seed = int.from_bytes(os.urandom(6))
     dut.rst.value = 1
     await ClockCycles(dut.clk, 100)
     dut.rst.value = 0
@@ -192,7 +193,7 @@ def runner(
         build_args=build_test_args,
         parameters=parameters,
         timescale=("1ns", "1ps"),
-        waves=False,
+        waves=True,
         build_dir=build_dir,
     )
     # Now run the test (the cocotb test saves the chunk to CHUNKS_OUT_DIR)
@@ -200,7 +201,7 @@ def runner(
         hdl_toplevel=hdl_toplevel,
         test_module=test_file,
         test_args=[],
-        waves=False,
+        waves=True,
     )
 
     shared_lock.release()
