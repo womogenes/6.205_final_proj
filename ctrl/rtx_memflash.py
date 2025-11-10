@@ -39,7 +39,8 @@ def send_program():
             ser.write(data.to_bytes(9, "little"))
 
     set_cam(
-        origin=(0, 0, 1),
+        # origin=(0, 0, 1),
+        origin=(-2, 1, 4),
         forward=(0, 0, 1280 // 2),
         right=(1, 0, 0),
         up=(0, 1, 0),

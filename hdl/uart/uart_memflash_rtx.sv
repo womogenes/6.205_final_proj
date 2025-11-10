@@ -10,8 +10,12 @@ module uart_memflash_rtx (
   output logic flash_active,
   output logic [7:0] flash_cmd,
   output logic [71:0] flash_cam_data,
+  output logic [FLASH_OBJ_WIDTH-1:0] flash_obj_data,
   output logic flash_wen
 );
+  localparam integer FLASH_OBJ_BYTES = $ceil(SCENE_BUFFER_WIDTH / 8);
+  localparam integer FLASH_OBJ_WIDTH = $ceil(SCENE_BUFFER_WIDTH / 8) * 8;
+
   // Goal: allow writing words to consecutive memory addresses
   /*
     Protocol:
@@ -27,11 +31,13 @@ module uart_memflash_rtx (
 
   typedef enum {
     IDLE,
-    DATA_CAM
+    DATA_CAM,
+    DATA_OBJ
   } flash_state;
 
   flash_state state;
-  logic [3:0] flash_cam_byte_idx;         // 9 bytes for 72-bit cam vector
+  logic [3:0] flash_cam_byte_idx;                           // 9 bytes for 72-bit cam vector
+  logic [$clog2(FLASH_OBJ_BYTES)-1:0] flash_obj_byte_idx;   // N/8 bytes
   
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -45,15 +51,20 @@ module uart_memflash_rtx (
           flash_wen <= 1'b0;
 
           if (uart_rx_valid) begin
-            state <= DATA_CAM;
+            if (uart_rx_byte[7] == 1'b1) begin
+              state <= DATA_CAM;
+            end else begin
+              state <= DATA_OBJ;
+            end
             flash_active <= 1'b1;
             
             /*
               COMMAND REFERENCE:
-                'hxx00 is cam.origin
-                'hxx01 is cam.right
-                'hxx10 is cam.forward
-                'hxx11 is cam.up
+                'hxxx0 is cam.origin
+                'hxxx1 is cam.right
+                'hxxx0 is cam.forward
+                'hxxx1 is cam.up
+                'b1xxxxxxx is object overwrite
             */
             flash_cmd <= uart_rx_byte;
             flash_cam_byte_idx <= 0;
@@ -73,6 +84,19 @@ module uart_memflash_rtx (
               state <= IDLE;
             end else begin
               flash_cam_byte_idx <= flash_cam_byte_idx + 1;
+            end
+          end
+        end
+        DATA_OBJ: begin
+          if (uart_rx_valid) begin
+            flash_obj_data <= {uart_rx_byte, flash_obj_data[FLASH_OBJ_WIDTH-1:8]};
+
+            if (flash_obj_byte_idx == FLASH_OBJ_BYTES - 1) begin
+              flash_obj_byte_idx <= 0;
+              flash_wen <= 1'b1;
+              state <= IDLE;
+            end else begin
+              flash_obj_byte_idx <= flash_obj_byte_idx + 1;
             end
           end
         end
