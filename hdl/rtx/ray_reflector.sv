@@ -109,6 +109,7 @@ module ray_reflector (
     .clk(clk),
     .rst(rst),
     .v(emitted_light),
+    .is_sub(1'b0),
     .w(saved_income_light),
     .sum(new_income_light)
   );

@@ -8,7 +8,7 @@ module fp24_vec3_add (
   input wire rst,
   input fp24_vec3 v,
   input fp24_vec3 w,
-  input wire is_sub = 1'b0,
+  input wire is_sub,
 
   output fp24_vec3 sum
 );
@@ -73,13 +73,13 @@ module fp24_vec3_dot (
   fp24_vec3_mul mul(.clk(clk), .v(v), .w(w), .prod(prod));
 
   // Add the elementwise products
-  fp24_add add_xy(.clk(clk), .a(prod.x), .b(prod.y), .sum(sum_xy));
+  fp24_add add_xy(.clk(clk), .a(prod.x), .b(prod.y), .is_sub(1'b0), .sum(sum_xy));
 
   // Store z-value because pipeline timing
   pipeline #(.WIDTH(24), .DEPTH(2)) z_pipe (.clk(clk), .in(prod.z), .out(z_piped2));
 
   // Final add
-  fp24_add add_xyz(.clk(clk), .a(sum_xy), .b(z_piped2), .sum(dot));
+  fp24_add add_xyz(.clk(clk), .a(sum_xy), .b(z_piped2), .is_sub(1'b0), .sum(dot));
 endmodule
 
 /*
