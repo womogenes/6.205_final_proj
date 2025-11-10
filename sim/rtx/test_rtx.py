@@ -20,15 +20,17 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp24_vec3
 
-scale = 0.5
+scale = 1
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
+
+N_FRAMES = 2
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
 @cocotb.test()
 async def test_module(dut):
-    """cocotb test for the lazy mult module"""
+
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
@@ -44,7 +46,8 @@ async def test_module(dut):
         (make_fp24_vec3((0, 1, 0)), 72),            # up
     ])
 
-    img = Image.new("RGB", (WIDTH, HEIGHT))
+    # img = Image.new("RGB", (WIDTH, HEIGHT))
+    img_arr = np.zeros((HEIGHT, WIDTH, 3))
 
     def unpack_color8(color8):
         return (
@@ -53,23 +56,19 @@ async def test_module(dut):
             ((color8 >> 11) & 0b11111) << 3
         )
 
-    for _ in tqdm(range(WIDTH * HEIGHT), ncols=80, gui=False):
-    # for _ in range(WIDTH * HEIGHT):
-        await RisingEdge(dut.ray_done)
-        # await ClockCycles(dut.clk, 100)
+    for _ in range(N_FRAMES):
+        for _ in tqdm(range(WIDTH * HEIGHT), ncols=80, gui=False):
+            await RisingEdge(dut.ray_done)
 
-        pixel_h = dut.pixel_h.value.integer
-        pixel_v = dut.pixel_v.value.integer
-        pixel_color = unpack_color8(dut.rtx_pixel.value.integer)
+            pixel_h = dut.pixel_h.value.integer
+            pixel_v = dut.pixel_v.value.integer
+            pixel_color = unpack_color8(dut.rtx_pixel.value.integer)
 
-        # dut._log.info(pixel_color)
+            r, g, b = pixel_color
+            img_arr[pixel_v, pixel_h] += (r, g, b)
 
-        r, g, b = pixel_color
-
-        # dut._log.info(f"{pixel_h=}, {pixel_v=}, {pixel_color=}")
-        img.putpixel((pixel_h, pixel_v), (r, g, b))
-
-    img.save("test.png")
+    img = Image.fromarray((img_arr / N_FRAMES).astype("uint8"))
+    img.save("test_avg.png")
 
 
 def runner():
@@ -110,7 +109,9 @@ def runner():
     ]
     build_test_args = ["-Wno-WIDTHEXPAND", "-Wno-MULTIDRIVEN", "-Wno-WIDTHTRUNC", "-Wno-TIMESCALEMOD", "-Wno-PINMISSING"]
 
-    build_dir = proj_path / "sim" / "sim_build"
+    build_dir = proj_path / "sim" / "sim_build" / f"rtx_{WIDTH}x{HEIGHT}"
+    os.makedirs(build_dir, exist_ok=True)
+    
     shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), build_dir / "scene_buffer.mem")
 
     # values for parameters defined earlier in the code.
@@ -126,7 +127,7 @@ def runner():
     runner.build(
         sources=sources,
         hdl_toplevel=hdl_toplevel,
-        always=True,
+        always=False,
         build_args=build_test_args,
         parameters=parameters,
         timescale=("1ns", "1ps"),
