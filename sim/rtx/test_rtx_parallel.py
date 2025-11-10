@@ -22,9 +22,9 @@ sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp24_vec3
 
 # MULTIPROCESSING GO BRRR
-from multiprocessing import Process
+from multiprocessing import Process, Pool
 
-N_CHUNKS = 16
+N_CHUNKS = 128
 
 scale = 4
 WIDTH = int(32 * scale)
@@ -166,24 +166,21 @@ def runner(pixel_start_idx: int, pixel_end_idx: int):
     )
 
 
+def worker(chunk):
+    start_idx, end_idx = chunk
+    runner(start_idx, end_idx)
+    return start_idx, end_idx
+
 if __name__ == "__main__":
     total_pixels = WIDTH * HEIGHT
-    chunk_size = total_pixels // N_CHUNKS
-    
-    procs = []
-    chunk_ranges = []
-    for chunk_idx in range(N_CHUNKS):
-        start_idx = chunk_idx * chunk_size
-        end_idx = (chunk_idx + 1) * chunk_size - 1
-        chunk_ranges.append((start_idx, end_idx))
+    chunk_size = total_pixels // (N_CHUNKS * 2)  # smaller chunks
+    chunk_ranges = [
+        (i, min(i + chunk_size - 1, total_pixels - 1))
+        for i in range(0, total_pixels, chunk_size)
+    ]
 
-        p = Process(target=runner, args=(start_idx, end_idx))
-
-        p.start()
-        procs.append(p)
-
-    for p in procs:
-        p.join()
+    with Pool(processes=os.cpu_count()) as pool:
+        results = pool.map(worker, chunk_ranges)
 
     pixel_chunks = []
     for start_idx, end_idx in chunk_ranges:
