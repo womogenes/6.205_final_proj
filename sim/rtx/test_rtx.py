@@ -20,7 +20,7 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp24_vec3
 
-scale = 1
+scale = 3
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
 
@@ -111,7 +111,7 @@ def runner():
 
     build_dir = proj_path / "sim" / "sim_build" / f"rtx_{WIDTH}x{HEIGHT}"
     os.makedirs(build_dir, exist_ok=True)
-    
+
     shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), build_dir / "scene_buffer.mem")
 
     # values for parameters defined earlier in the code.
