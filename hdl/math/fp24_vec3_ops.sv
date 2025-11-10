@@ -60,7 +60,6 @@ endmodule
     VEC3_DOT_DELAY cycles
     Currently 5 (mul - 1, add - 2, add - 2)
 */
-parameter VEC3_DOT_DELAY = 5;
 module fp24_vec3_dot (
   input wire clk,
   input wire rst,
@@ -89,7 +88,6 @@ endmodule
   Timing:
     VEC3_DOT_DELAY + INV_SQRT_DELAY + SCALE_DELAY (1)
 */
-parameter integer VEC3_NORM_DELAY = VEC3_DOT_DELAY + INV_SQRT_DELAY + 1;
 module fp24_vec3_normalize (
   input wire clk,
   input wire rst,

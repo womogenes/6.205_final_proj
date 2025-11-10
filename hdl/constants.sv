@@ -3,11 +3,18 @@
 
 parameter integer SCENE_BUFFER_DEPTH = 5;
 
-// Math module delay counts
+// ===== FP24 ADVANCED MATH OPS =====
+
+// fp24_inv_sqrt module delay counts
 parameter integer INV_SQRT_NR_STAGES = 2;
 parameter integer INV_SQRT_STAGE_DELAY = 5;
 parameter integer INV_SQRT_DELAY = INV_SQRT_NR_STAGES * INV_SQRT_STAGE_DELAY;
 
 parameter integer SQRT_DELAY = INV_SQRT_DELAY + 1;
 
+// ===== FP24 VEC OPS =====
+parameter integer VEC3_DOT_DELAY = 5;
+parameter integer VEC3_NORM_DELAY = VEC3_DOT_DELAY + INV_SQRT_DELAY + 1;
+
+// ===== RAYTRACER CONFIG PARAMS =====
 parameter integer MAX_BOUNCES = 3;
