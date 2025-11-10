@@ -52,7 +52,7 @@ module scene_buffer #(
 
     // Output port
     .addrb(obj_idx),
-    .dinb(1'b0),
+    .dinb(0),
     .clkb(clk),
     .web(1'b0),
     .enb(1'b1),

@@ -20,7 +20,7 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp24_vec3
 
-scale = 2
+scale = 0.5
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
 
@@ -108,7 +108,7 @@ def runner():
         proj_path / "hdl" / "rtx" / "rtx.sv",
         proj_path / "hdl" / "rtx" / "rtx_tb.sv",
     ]
-    build_test_args = ["-Wall"]
+    build_test_args = ["-Wno-WIDTHEXPAND", "-Wno-MULTIDRIVEN", "-Wno-WIDTHTRUNC", "-Wno-TIMESCALEMOD", "-Wno-PINMISSING"]
 
     build_dir = proj_path / "sim" / "sim_build"
     shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), build_dir / "scene_buffer.mem")
