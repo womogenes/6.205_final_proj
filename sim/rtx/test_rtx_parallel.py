@@ -25,7 +25,7 @@ from multiprocessing import Process, Pool, Manager
 
 N_CHUNKS = 128
 
-scale = 4
+scale = 1
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
 
@@ -247,3 +247,4 @@ if __name__ == "__main__":
     img.save(f"test_frame_0.png")
 
     print(f"Saved image to test_frame_0.png")
+    print(f"{N_CHUNKS=}, {WIDTH=}, {HEIGHT=}")
