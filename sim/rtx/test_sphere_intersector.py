@@ -12,6 +12,7 @@ from enum import Enum
 import random
 import ctypes
 import numpy as np
+import matplotlib.pyplot as plt
 
 from PIL import Image
 from tqdm import tqdm
@@ -33,36 +34,62 @@ async def test_module(dut):
     dut._log.info("Holding reset...")
     dut.rst.value = 1
     await ClockCycles(dut.clk, 5)
-    dut.rst.value = 0
+    dut.rst.value = 0    
 
-    # DELAY_CYCLES = 29
+    # Manual timing
+    await ClockCycles(dut.clk, 3, False)
 
-    N_SAMPLES = 1
+    print(convert_fp24(0x430000))
 
     dut.ray_origin.value = make_fp24_vec3((0, 0, 0))
-    dut.ray_dir.value = make_fp24_vec3((0, 0, 1))
-    dut.sphere_center.value = make_fp24_vec3((0, 0, 5))
+    dut.ray_dir.value = make_fp24_vec3((0, 1, 0))
+
+    dut.sphere_center.value = make_fp24_vec3((0, 4, 0))
     dut.sphere_rad_sq.value = make_fp24(1)
     dut.sphere_rad_inv.value = make_fp24(1)
+    await ClockCycles(dut.clk, 1, False)
+    dut.sphere_center.value = make_fp24_vec3((0, 4, 1))
+    dut.sphere_rad_sq.value = make_fp24(0.25)
+    dut.sphere_rad_inv.value = make_fp24(2)
+    await ClockCycles(dut.clk, 1, False)
+    dut.sphere_center.value = make_fp24_vec3((0, 4, 0))
+    dut.sphere_rad_sq.value = make_fp24(1)
+    dut.sphere_rad_inv.value = make_fp24(1)
+    await ClockCycles(dut.clk, 30, False)
+    # dut._log.info(f"{convert_fp24_vec3(dut.hit_norm)}")
+    return 
+    num_points = 1_000
+    points = []
+    normalpoints = []
+    for i in range(num_points):
+        dut.ray_origin.value = make_fp24_vec3((0, 0, 0))
+        random_val = np.random.random((2,))
+        random_dir = np.array([random_val[0] - 0.5, 1, random_val[1] - 0.5])
+        dirvec = random_dir / np.linalg.vector_norm(random_dir)
+        dut.ray_dir.value = make_fp24_vec3(dirvec)
+        await ClockCycles(dut.clk, 30)
+        if (dut.hit.value):
+            # print(convert_fp24_vec3(dut.hit_pos.value))
+            points.append(convert_fp24_vec3(dut.hit_pos.value))
+            # print(convert_fp24_vec3(dut.hit_normal.value))
+            normalpoints.append(convert_fp24_vec3(dut.hit_norm.value))
+            # points.append(dirvec)
+        await ClockCycles(dut.clk, 1)
 
-    dut.sphere_valid.value = 1
-    await ClockCycles(dut.clk, 1)
-    dut.sphere_valid.value = 0
+    fig = plt.figure(figsize=(12, 12))
+    ax = fig.add_subplot(projection='3d')
+    ax.set_aspect('equal')
+    ax.set_xlim3d(-2, 2)
+    ax.set_ylim3d(-2, 5)
+    ax.set_zlim3d(-2, 2)
 
-    await ClockCycles(dut.clk, 100)
+    x_data, y_data, z_data = zip(*points)
 
-    # Extract answer
-    hit = dut.hit.value
-    hit_pos = convert_fp24_vec3(dut.hit_pos.value)
-    hit_dist_sq = convert_fp24(dut.hit_dist_sq.value)
-    hit_norm = convert_fp24_vec3(dut.hit_norm.value)
+    ax.scatter(x_data, y_data, z_data, s=2, alpha=1, color="blue")
+    x_data, y_data, z_data = zip(*normalpoints)
 
-    dut._log.info(f"""
-{hit=}
-{hit_pos=}
-{hit_dist_sq=}
-{hit_norm=}
-""")
+    ax.scatter(x_data, y_data, z_data, s=2, alpha=1, color="red")
+    plt.show()
 
 
 def runner():

@@ -127,16 +127,12 @@ module top_level(
   logic         camera_valid;
 
   // rtx requires a scene buffer
-  logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] scene_buf_obj_idx;
   object scene_buf_obj;
-  logic scene_buf_obj_last;
 
   scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
     .clk(clk),
     .rst(rst),
-    .obj_idx(scene_buf_obj_idx),
-    .obj(scene_buf_obj),
-    .obj_last(scene_buf_obj_last)
+    .obj(scene_buf_obj)
   );
 
   // uart flashing of scene buffer (among other things)
@@ -151,9 +147,7 @@ module top_level(
     .pixel_v(camera_v_count),
     .ray_done(camera_valid),
 
-    .obj_idx(scene_buf_obj_idx),
-    .obj(scene_buf_obj),
-    .obj_last(scene_buf_obj_last)
+    .obj(scene_buf_obj)
   );
 
   assign camera_pixel = {

@@ -14,9 +14,7 @@ module rtx #(
   output logic ray_done,          // i.e. pixel_color valid
 
   // scene buffer interface
-  output logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx,
-  input object obj,
-  input wire obj_last
+  input object obj
 );
   logic [10:0] pixel_h_caster;
   logic [9:0] pixel_v_caster;
@@ -71,9 +69,7 @@ module rtx #(
     .pixel_v_out(pixel_v),
 
     // Scene buffer interface
-    .obj_idx(obj_idx),
-    .obj(obj),
-    .obj_last(obj_last)
+    .obj(obj)
   );
 
   // Convert to 565 representation

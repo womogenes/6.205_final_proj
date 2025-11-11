@@ -6,13 +6,14 @@ from pathlib import Path
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import Timer, ClockCycles, RisingEdge, FallingEdge, ReadOnly
+from cocotb.triggers import Timer, ClockCycles, RisingEdge, FallingEdge, ReadOnly, with_timeout
 from cocotb.runner import get_runner
 
 from enum import Enum
 import random
 import ctypes
 import numpy as np
+import matplotlib.pyplot as plt
 
 from PIL import Image
 from tqdm import tqdm
@@ -28,18 +29,8 @@ HEIGHT = 18 * 1
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
-@cocotb.test()
-async def test_module(dut):
-    """cocotb test for the lazy mult module"""
-    dut._log.info("Starting...")
-    cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
-
-    dut._log.info("Holding reset...")
-    dut.rst.value = 1
-    await ClockCycles(dut.clk, 60)
-    dut.rst.value = 0
-
-    # Fake object
+async def scene_buffer(dut):
+    """fake scene buffer that cycles thru values"""
     mat0 = Material(
         color=(1, 1, 1),
         spec_color=(1, 1, 1),
@@ -53,31 +44,79 @@ async def test_module(dut):
             mat=mat0,
             trig=None,
             trig_norm=None,
-            sphere_center=(2, 0, 5),
-            sphere_rad=2.01,
+            sphere_center=(0, 4, 0),
+            sphere_rad=1,
         ),
         Object(
             is_trig=False,
             mat=mat0,
             trig=None,
             trig_norm=None,
-            sphere_center=(2, 0, 4),
-            sphere_rad=2.01,
+            sphere_center=(0, 4, 1),
+            sphere_rad=0.5,
         ),
     ]
+
+    # Manual timing
+    while True:
+        dut.obj.value = objs[0].pack_bits()[0]
+        await ClockCycles(dut.clk, 1)
+        dut.obj.value = objs[1].pack_bits()[0]
+        await ClockCycles(dut.clk, 1)
+
+@cocotb.test()
+async def test_module(dut):
+    """cocotb test for the lazy mult module"""
+    dut._log.info("Starting...")
+    cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
+    cocotb.start_soon(scene_buffer(dut))
+
+    dut._log.info("Holding reset...")
+    dut.rst.value = 1
+    await ClockCycles(dut.clk, 3)
+    dut.rst.value = 0
+
     
-    dut.ray_origin.value = make_fp24_vec3((0, 0, 0))
-    dut.ray_dir.value = make_fp24_vec3((0, 0, 1))
 
     # Manual timing
     await ClockCycles(dut.clk, 3)
-    dut.obj.value = objs[0].pack_bits()[0]
-    await ClockCycles(dut.clk, 1)
-    dut.obj.value = objs[1].pack_bits()[0]
-    dut.obj_last.value = 1
 
-    for _ in range(50):
+    num_points = 1_000
+    points = []
+    normalpoints = []
+    for i in range(num_points):
+        dut.ray_origin.value = make_fp24_vec3((0, 0, 0))
+        random_val = np.random.random((2,))
+        random_dir = np.array([random_val[0] - 0.5, 1, random_val[1] - 0.5])
+        dirvec = random_dir / np.linalg.vector_norm(random_dir)
+        dut.ray_dir.value = make_fp24_vec3(dirvec)
+        dut.ray_valid.value = 1
         await ClockCycles(dut.clk, 1)
+        dut.ray_valid.value = 0
+        await RisingEdge(dut.hit_valid)
+        if (dut.hit_any.value):
+            # print(convert_fp24_vec3(dut.hit_pos.value))
+            points.append(convert_fp24_vec3(dut.hit_pos.value))
+            # print(convert_fp24_vec3(dut.hit_normal.value))
+            normalpoints.append(convert_fp24_vec3(dut.hit_normal.value))
+            # points.append(dirvec)
+        await ClockCycles(dut.clk, 1)
+        
+
+    fig = plt.figure(figsize=(12, 12))
+    ax = fig.add_subplot(projection='3d')
+    ax.set_aspect('equal')
+    ax.set_xlim3d(-2, 2)
+    ax.set_ylim3d(0, 5)
+    ax.set_zlim3d(-2, 2)
+
+    x_data, y_data, z_data = zip(*points)
+
+    ax.scatter(x_data, y_data, z_data, s=2, alpha=1, color="blue")
+    x_data, y_data, z_data = zip(*normalpoints)
+
+    ax.scatter(x_data, y_data, z_data, s=2, alpha=1, color="red")
+    plt.show()
 
     return
 

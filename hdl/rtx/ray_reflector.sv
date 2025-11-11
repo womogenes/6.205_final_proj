@@ -104,6 +104,13 @@ module ray_reflector (
     .w(saved_ray_color),
     .prod(emitted_light)
   );
+  // assign new_income_light = {1'b0, new_dir.x.exp, new_dir.x.mant,
+  //                            1'b0, new_dir.y.exp, new_dir.y.mant,
+  //                            1'b0, new_dir.z.exp, new_dir.z.mant};
+
+  // assign new_income_light = {1'b0, saved_hit_normal.x.exp, saved_hit_normal.x.mant,
+  //                            1'b0, saved_hit_normal.y.exp, saved_hit_normal.y.mant,
+  //                            1'b0, saved_hit_normal.z.exp, saved_hit_normal.z.mant};
 
   fp24_vec3_add emit_adder (
     .clk(clk),

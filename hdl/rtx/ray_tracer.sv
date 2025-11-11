@@ -20,9 +20,7 @@ module ray_tracer #(
   output logic [9:0] pixel_v_out,
 
   // Interface to scene buffer
-  output logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx,
-  input object obj,
-  input wire obj_last
+  input object obj
 );
   typedef enum { IDLE, INTX, REFLECT } tracer_state;
 
@@ -111,7 +109,7 @@ module ray_tracer #(
             cur_income_light <= rflx_new_income_light;
             pixel_color <= rflx_new_income_light;
 
-            if (bounce_count >= MAX_BOUNCES - 1) begin
+            if (bounce_count == MAX_BOUNCES - 1) begin
               // Bounced max no. of times, exit loop
               state <= IDLE;
               ray_done <= 1'b1;
@@ -144,9 +142,7 @@ module ray_tracer #(
     .hit_valid(ray_done_intx),
 
     // Scene buffer interface
-    .obj_idx(obj_idx),
-    .obj(obj),
-    .obj_last(obj_last)
+    .obj(obj)
   );
 
   ray_reflector ray_reflect (
@@ -175,6 +171,7 @@ module ray_tracer #(
   // pipeline #(.WIDTH(10), .DEPTH(2)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
 
   // I think we can assume this because inputs should be held constant?
+  //TODO for now... optimize this
   assign pixel_h_out = pixel_h_in;
   assign pixel_v_out = pixel_v_in;
 endmodule

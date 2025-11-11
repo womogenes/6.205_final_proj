@@ -15,15 +15,11 @@ module sphere_intersector (
   input fp24_vec3 sphere_center,
   input fp24 sphere_rad_sq,
   input fp24 sphere_rad_inv,
-  input wire sphere_valid,
-  input wire obj_last_in,
 
   output logic hit,
   output fp24_vec3 hit_pos,
   output fp24 hit_dist_sq,
-  output fp24_vec3 hit_norm,
-  output logic hit_valid,
-  output logic obj_last_out
+  output fp24_vec3 hit_norm
 );
   fp24_vec3 L;                // ray_origin - sphere_center
   fp24 ray_dir_dot_L;         // ray_dir * L
@@ -79,7 +75,7 @@ module sphere_intersector (
 
   // result 26 cycles behind
   fp24_vec3_scale scale_ray_dir(.clk(clk), .v(ray_dir_piped), .s(x0), .scaled(ray_dir_by_x0));
-  pipeline #(.WIDTH(72), .DEPTH(VEC3_DOT_DELAY + 2 + QR_SOLVER_DELAY)) L_pipe (
+  pipeline #(.WIDTH(72), .DEPTH(VEC3_DOT_DELAY + 2 + QR_SOLVER_DELAY + 1)) L_pipe (
     .clk(clk),
     .in(L),
     .out(L_piped)
@@ -99,11 +95,6 @@ module sphere_intersector (
   fp24_vec3_scale scale_hit_norm(.clk(clk), .v(hit_norm_prenorm), .s(sphere_rad_inv_piped), .scaled(hit_norm));
   pipeline #(.WIDTH(1), .DEPTH(4)) hit_pipe (.clk(clk), .in(qr_solver.valid && ~x0[23]), .out(hit));
   pipeline #(.WIDTH(24), .DEPTH(4)) hit_dist_pipe (.clk(clk), .in(x0), .out(hit_dist_sq));
-
-  pipeline #(.WIDTH(1), .DEPTH(QR_STAGE_DELAY + 4)) valid_pipe (.clk(clk), .in(sphere_valid), .out(hit_valid));
-
-  // pipeline the obj_last signal all the way through
-  pipeline #(.WIDTH(1), .DEPTH(SPHERE_INTX_DELAY)) obj_last_pipe (.clk(clk), .in(obj_last_in), .out(obj_last_out));
 
 endmodule
 

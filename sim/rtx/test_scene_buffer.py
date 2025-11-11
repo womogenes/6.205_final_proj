@@ -35,10 +35,10 @@ async def test_module(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 10)
     dut.rst.value = 0
+    await ClockCycles(dut.clk, 10)
 
-    for i in range(2):
-        dut.obj_idx.value = i
-        await ClockCycles(dut.clk, 10)
+    for i in range(10):
+        await ClockCycles(dut.clk, 1)
 
         dut_sphere_rad_sq = convert_fp24(dut.sphere_rad_sq.value)
         dut_sphere_rad_inv = convert_fp24(dut.sphere_rad_inv.value)

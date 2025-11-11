@@ -6,6 +6,11 @@ parameter integer SCENE_BUFFER_DEPTH = 5;
 // ===== FP24 ADVANCED MATH OPS =====
 
 // fp24_inv_sqrt module delay counts
+// basic math operation delays
+parameter integer FP24_ADD_DELAY = 2;
+parameter integer FP24_MUL_DELAY = 1;
+
+// Math module delay counts
 parameter integer INV_SQRT_NR_STAGES = 2;
 parameter integer INV_SQRT_STAGE_DELAY = 5;
 parameter integer INV_SQRT_DELAY = INV_SQRT_NR_STAGES * INV_SQRT_STAGE_DELAY;

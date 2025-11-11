@@ -5,10 +5,8 @@ module scene_buffer #(
 ) (
   input wire clk,
   input wire rst,
-  input wire [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx,
 
   output object obj,
-  output logic obj_last,
 
   // TODO: remove debug signals
   output logic is_trig,            // 1 bit
@@ -26,12 +24,19 @@ module scene_buffer #(
   assign sphere_rad_sq = obj.sphere_rad_sq;
   assign sphere_rad_inv = obj.sphere_rad_inv;
 
-  // Tell outside world whether this object is the last one
-  pipeline #(.WIDTH(1), .DEPTH(2)) obj_last_pipe (
-    .clk(clk),
-    .in(obj_idx == SCENE_BUFFER_DEPTH - 1),
-    .out(obj_last)
-  );
+  logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx;
+
+  always_ff @(posedge clk) begin
+    if (rst) begin
+      obj_idx <= 0;
+    end else begin
+      if (obj_idx == SCENE_BUFFER_DEPTH - 1) begin
+        obj_idx <= 0;
+      end else begin
+        obj_idx <= obj_idx + 1;
+      end
+    end
+  end
 
   // Read out objects from memory
   xilinx_true_dual_port_read_first_2_clock_ram #(

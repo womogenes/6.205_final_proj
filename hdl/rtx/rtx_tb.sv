@@ -16,18 +16,14 @@ module rtx_tb #(
   output logic [9:0] pixel_v,
   output logic ray_done          // i.e. pixel_color valid
 );
-  logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx;
   object obj;
-  logic obj_last;
 
   // Initialize scene buffer
   // Bind inputs to ray tracer
   scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
     .clk(clk),
     .rst(rst),
-    .obj_idx(obj_idx),
-    .obj(obj),
-    .obj_last(obj_last)
+    .obj(obj)
   );
 
   rtx #(.WIDTH(WIDTH), .HEIGHT(HEIGHT)) my_rtx (
@@ -41,9 +37,7 @@ module rtx_tb #(
     .ray_done(ray_done),
 
     // Scene buffer wires
-    .obj_idx(obj_idx),
-    .obj(obj),
-    .obj_last(obj_last)
+    .obj(obj)
   );
 
 endmodule
