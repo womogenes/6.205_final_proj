@@ -11,8 +11,8 @@ module rtx_tb #(
   input wire rst,
   input camera cam,
 
-  input logic [10:0] pixel_h_in,
-  input logic [9:0] pixel_v_in,
+  input wire [10:0] pixel_h_in,
+  input wire [9:0] pixel_v_in,
 
   output logic [15:0] rtx_pixel,
   // output logic [10:0] pixel_h_out,
@@ -60,6 +60,7 @@ module rtx_tb #(
   );
 
   logic ray_done_tracer;
+  fp24_color pixel_color;
 
   ray_tracer #(
     .WIDTH(WIDTH),
