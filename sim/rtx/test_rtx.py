@@ -34,8 +34,6 @@ async def test_module(dut):
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 100)
-    dut.rst.value = 0
 
     dut.cam.value = pack_bits([
         (make_fp24_vec3((0, 0, 0)), 72),            # origin
@@ -43,6 +41,9 @@ async def test_module(dut):
         (make_fp24_vec3((1, 0, 0)), 72),            # right
         (make_fp24_vec3((0, 1, 0)), 72),            # up
     ])
+
+    await ClockCycles(dut.clk, 100)
+    dut.rst.value = 0
 
     img = Image.new("RGB", (WIDTH, HEIGHT))
 
