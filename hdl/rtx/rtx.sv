@@ -73,17 +73,17 @@ module rtx #(
   );
 
   // Convert to 565 representation
-  fp24_color pixel_color_clipped;
-  fp24_clip_upper #(.UPPER_BOUND(24'h3f0000)) r_min(.clk(clk), .a(pixel_color.r), .clipped(pixel_color_clipped.r));
-  fp24_clip_upper #(.UPPER_BOUND(24'h3f0000)) g_min(.clk(clk), .a(pixel_color.g), .clipped(pixel_color_clipped.g));
-  fp24_clip_upper #(.UPPER_BOUND(24'h3f0000)) b_min(.clk(clk), .a(pixel_color.b), .clipped(pixel_color_clipped.b));
+  // fp24_color pixel_color_clipped;
+  // fp24_clip_upper #(.UPPER_BOUND(24'h3f0000)) r_min(.clk(clk), .a(pixel_color.r), .clipped(pixel_color_clipped.r));
+  // fp24_clip_upper #(.UPPER_BOUND(24'h3f0000)) g_min(.clk(clk), .a(pixel_color.g), .clipped(pixel_color_clipped.g));
+  // fp24_clip_upper #(.UPPER_BOUND(24'h3f0000)) b_min(.clk(clk), .a(pixel_color.b), .clipped(pixel_color_clipped.b));
 
-  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) r_convert (.clk(clk), .x(pixel_color_clipped.r), .n(rtx_pixel[4:0]));
-  convert_fp24_uint #(.WIDTH(6), .FRAC(6)) g_convert (.clk(clk), .x(pixel_color_clipped.g), .n(rtx_pixel[10:5]));
-  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) b_convert (.clk(clk), .x(pixel_color_clipped.b), .n(rtx_pixel[15:11]));
+  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) r_convert (.clk(clk), .x(pixel_color.r), .n(rtx_pixel[4:0]));
+  convert_fp24_uint #(.WIDTH(6), .FRAC(6)) g_convert (.clk(clk), .x(pixel_color.g), .n(rtx_pixel[10:5]));
+  convert_fp24_uint #(.WIDTH(5), .FRAC(5)) b_convert (.clk(clk), .x(pixel_color.b), .n(rtx_pixel[15:11]));
 
   // Delay ray_done by 1 cycle for the conversion
-  pipeline #(.WIDTH(1), .DEPTH(2)) ray_done_pipe (.clk(clk), .in(tracer_ray_done), .out(ray_done));
+  pipeline #(.WIDTH(1), .DEPTH(1)) ray_done_pipe (.clk(clk), .in(tracer_ray_done), .out(ray_done));
 
 endmodule
 

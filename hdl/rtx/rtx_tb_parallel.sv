@@ -11,17 +11,17 @@ module rtx_tb #(
   input wire rst,
   input camera cam,
 
-  input wire [10:0] pixel_h_in,
-  input wire [9:0] pixel_v_in,
+  input logic [10:0] pixel_h_in,
+  input logic [9:0] pixel_v_in,
+  input logic new_ray,
 
   output logic [15:0] rtx_pixel,
-  // output logic [10:0] pixel_h_out,
-  // output logic [9:0] pixel_v_out,
-  output logic ray_done          // i.e. pixel_color valid
+  output logic ray_done,
+
+  // DEBUG: to be used only for testbench
+  input logic [47:0] lfsr_seed
 );
-  logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx;
   object obj;
-  logic obj_last;
 
   logic [10:0] pixel_h_caster;
   logic [9:0] pixel_v_caster;
@@ -34,9 +34,7 @@ module rtx_tb #(
   scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
     .clk(clk),
     .rst(rst),
-    .obj_idx(obj_idx),
-    .obj(obj),
-    .obj_last(obj_last)
+    .obj(obj)
   );
 
   ray_maker #(
@@ -53,6 +51,7 @@ module rtx_tb #(
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),
     .ray_valid(ray_valid_caster),
+    .new_ray(new_ray),
 
     // Outputs
     .pixel_h_out(pixel_h_caster),
@@ -74,7 +73,9 @@ module rtx_tb #(
     .pixel_v_in(pixel_v_caster),
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),
-    .ray_valid(1'b1),
+    .ray_valid(ray_valid_caster),
+    
+    .lfsr_seed(lfsr_seed),
 
     // Doubles as a "pixel valid" signal
     .ray_done(ray_done_tracer),
@@ -83,9 +84,7 @@ module rtx_tb #(
     // .pixel_v_out(pixel_v),
 
     // Scene buffer interface
-    .obj_idx(obj_idx),
-    .obj(obj),
-    .obj_last(obj_last)
+    .obj(obj)
   );
 
   // Convert to 565 representation

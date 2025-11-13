@@ -82,8 +82,8 @@ module sphere_intersector (
   );
 
   // result 28 cycles behind
-  fp24_vec3_add add_hit_pos(.clk(clk), .v(ray_dir_by_x0), .w(ray_origin_piped), .sum(hit_pos_prepiped));
-  fp24_vec3_add add_hit_norm_prenorm(.clk(clk), .v(ray_dir_by_x0), .w(L_piped), .sum(hit_norm_prenorm));
+  fp24_vec3_add add_hit_pos(.clk(clk), .v(ray_dir_by_x0), .w(ray_origin_piped), .is_sub(1'b0), .sum(hit_pos_prepiped));
+  fp24_vec3_add add_hit_norm_prenorm(.clk(clk), .v(ray_dir_by_x0), .w(L_piped), .is_sub(1'b0), .sum(hit_norm_prenorm));
   pipeline #(.WIDTH(24), .DEPTH(QR_STAGE_DELAY + 3)) sphere_rad_inv_pipe (
     .clk(clk),
     .in(sphere_rad_inv),

@@ -9,6 +9,8 @@ obj*/
 *.bit
 *.bin
 *.mem
+sim/*.png
+sim/*.log
 
 .claude/
 .vscode/
