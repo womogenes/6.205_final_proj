@@ -31,17 +31,15 @@ from utils import make_fp24_vec3, pack_bits
 from multiprocessing import Pool
 
 parser = ArgumentParser()
-parser.add_argument("--chunks", type=int, default=4 * os.cpu_count())
+parser.add_argument("--chunks", type=int, default=None)
 parser.add_argument("--scale", type=float, default=0.5)
 parser.add_argument("--frames", type=int, default=1)
 
 args = parser.parse_args()
 print(args)
 
-N_CHUNKS = args.chunks
-
-# Use environment variables if available (for worker processes), otherwise use parsed args
-if "TEST_WIDTH" in os.environ and "TEST_HEIGHT" in os.environ:
+# Use environment variables for worker processes
+if "TEST_WIDTH" in os.environ:
     WIDTH = int(os.environ["TEST_WIDTH"])
     HEIGHT = int(os.environ["TEST_HEIGHT"])
     N_FRAMES = int(os.environ["TEST_N_FRAMES"])
@@ -52,6 +50,7 @@ else:
     HEIGHT = int(18 * scale)
     N_FRAMES = args.frames
 
+N_CHUNKS = args.chunks or (4 * os.cpu_count() * N_FRAMES)
 TOTAL_PIXELS = WIDTH * HEIGHT
 
 # Round up on chunk size
@@ -188,7 +187,7 @@ def build_verilator():
         build_args=BUILD_TEST_ARGS,
         parameters=PARAMETERS,
         timescale=("1ns", "1ps"),
-        waves=False,
+        waves=True,
         build_dir=BUILD_DIR,
     )
 
@@ -213,11 +212,11 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
     runner.build(
         sources=SOURCES,
         hdl_toplevel=HDL_TOPLEVEL,
-        always=False,  # skip actual build, just initialize
+        always=False,
         build_args=BUILD_TEST_ARGS,
         parameters=PARAMETERS,
         timescale=("1ns", "1ps"),
-        waves=False,
+        waves=True,
         build_dir=BUILD_DIR,
     )
 
@@ -226,7 +225,7 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
         hdl_toplevel=HDL_TOPLEVEL,
         test_module=test_file,
         test_args=[],
-        waves=False,
+        waves=True,
     )
 
     return chunk_idx

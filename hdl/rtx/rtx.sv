@@ -69,7 +69,10 @@ module rtx #(
     .pixel_v_out(pixel_v),
 
     // Scene buffer interface
-    .obj(obj)
+    .obj(obj),
+
+    // SET SEED FOR LFSR HERE
+    .lfsr_seed(48'h1)
   );
 
   // Convert to 565 representation
