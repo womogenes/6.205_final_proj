@@ -25,7 +25,7 @@ from multiprocessing import Pool
 
 N_CHUNKS = 4 * os.cpu_count()
 
-scale = 10
+scale = 0.5
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
 N_FRAMES = 8
@@ -50,6 +50,47 @@ os.makedirs(CHUNKS_OUT_DIR, exist_ok=True)
 # Single shared build directory for all workers
 BUILD_DIR = proj_path / "sim" / "sim_build" / "rtx_parallel" / f"verilator_{WIDTH}x{HEIGHT}"
 os.makedirs(BUILD_DIR, exist_ok=True)
+
+# Common configuration for Verilator build and test
+SIM = os.getenv("SIM", "verilator")
+HDL_TOPLEVEL = "rtx_tb"
+
+sys.path.append(str(proj_path / "sim"))
+
+SOURCES = [
+    proj_path / "hdl" / "pipeline.sv",
+    proj_path / "hdl" / "constants.sv",
+    proj_path / "hdl" / "types" / "types.sv",
+    proj_path / "hdl" / "math" / "clz.sv",
+    proj_path / "hdl" / "math" / "fp24_shift.sv",
+    proj_path / "hdl" / "math" / "fp24_add.sv",
+    proj_path / "hdl" / "math" / "fp24_clip.sv",
+    proj_path / "hdl" / "math" / "fp24_mul.sv",
+    proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
+    proj_path / "hdl" / "math" / "fp24_sqrt.sv",
+    proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
+    proj_path / "hdl" / "math" / "fp24_convert.sv",
+    proj_path / "hdl" / "rng" / "prng_sphere.sv",
+    proj_path / "hdl" / "math" / "quadratic_solver.sv",
+    proj_path / "hdl" / "math" / "sphere_intersector.sv",
+    proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
+    proj_path / "hdl" / "rtx" / "ray_maker.sv",
+    proj_path / "hdl" / "rtx" / "ray_caster.sv",
+    proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
+    proj_path / "hdl" / "rtx" / "scene_buffer.sv",
+    proj_path / "hdl" / "rtx" / "ray_intersector.sv",
+    proj_path / "hdl" / "rtx" / "ray_reflector.sv",
+    proj_path / "hdl" / "rtx" / "ray_tracer.sv",
+    proj_path / "hdl" / "rtx" / "rtx.sv",
+    proj_path / "hdl" / "rtx" / "rtx_tb_parallel.sv",
+]
+
+BUILD_TEST_ARGS = ["-Wno-WIDTHEXPAND", "-Wno-MULTIDRIVEN", "-Wno-WIDTHTRUNC", "-Wno-TIMESCALEMOD", "-Wno-PINMISSING"]
+
+PARAMETERS = {
+    "WIDTH": WIDTH,
+    "HEIGHT": HEIGHT,
+}
 
 
 @cocotb.test()
@@ -113,56 +154,16 @@ def build_verilator():
     """Build Verilator executable once (called from main process)."""
     print(f"Building Verilator for {WIDTH}x{HEIGHT}...")
 
-    sim = os.getenv("SIM", "verilator")
-
-    sources = [
-        proj_path / "hdl" / "pipeline.sv",
-        proj_path / "hdl" / "constants.sv",
-        proj_path / "hdl" / "types" / "types.sv",
-        proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_clip.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
-        proj_path / "hdl" / "math" / "fp24_convert.sv",
-        proj_path / "hdl" / "rng" / "prng_sphere.sv",
-        proj_path / "hdl" / "math" / "quadratic_solver.sv",
-        proj_path / "hdl" / "math" / "sphere_intersector.sv",
-        proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
-        proj_path / "hdl" / "rtx" / "ray_maker.sv",
-        proj_path / "hdl" / "rtx" / "ray_caster.sv",
-        proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
-        proj_path / "hdl" / "rtx" / "scene_buffer.sv",
-        proj_path / "hdl" / "rtx" / "ray_intersector.sv",
-        proj_path / "hdl" / "rtx" / "ray_reflector.sv",
-        proj_path / "hdl" / "rtx" / "ray_tracer.sv",
-        proj_path / "hdl" / "rtx" / "rtx.sv",
-        proj_path / "hdl" / "rtx" / "rtx_tb_parallel.sv",
-    ]
-
-    build_test_args = ["-Wno-WIDTHEXPAND", "-Wno-MULTIDRIVEN", "-Wno-WIDTHTRUNC", "-Wno-TIMESCALEMOD", "-Wno-PINMISSING"]
-
     # Copy scene buffer to build dir
     shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), BUILD_DIR / "scene_buffer.mem")
 
-    parameters = {
-        "WIDTH": WIDTH,
-        "HEIGHT": HEIGHT,
-    }
-
-    sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "rtx_tb"
-
-    runner = get_runner(sim)
+    runner = get_runner(SIM)
     runner.build(
-        sources=sources,
-        hdl_toplevel=hdl_toplevel,
+        sources=SOURCES,
+        hdl_toplevel=HDL_TOPLEVEL,
         always=False,  # skip if already built
-        build_args=build_test_args,
-        parameters=parameters,
+        build_args=BUILD_TEST_ARGS,
+        parameters=PARAMETERS,
         timescale=("1ns", "1ps"),
         waves=False,
         build_dir=BUILD_DIR,
@@ -179,53 +180,14 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
     os.environ["PIXEL_END_IDX"] = str(pixel_end_idx)
     os.environ["CHUNK_IDX"] = str(chunk_idx)
 
-    sim = os.getenv("SIM", "verilator")
-    sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "rtx_tb"
-
-    sources = [
-        proj_path / "hdl" / "pipeline.sv",
-        proj_path / "hdl" / "constants.sv",
-        proj_path / "hdl" / "types" / "types.sv",
-        proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_clip.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
-        proj_path / "hdl" / "math" / "fp24_convert.sv",
-        proj_path / "hdl" / "rng" / "prng_sphere.sv",
-        proj_path / "hdl" / "math" / "quadratic_solver.sv",
-        proj_path / "hdl" / "math" / "sphere_intersector.sv",
-        proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
-        proj_path / "hdl" / "rtx" / "ray_maker.sv",
-        proj_path / "hdl" / "rtx" / "ray_caster.sv",
-        proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
-        proj_path / "hdl" / "rtx" / "scene_buffer.sv",
-        proj_path / "hdl" / "rtx" / "ray_intersector.sv",
-        proj_path / "hdl" / "rtx" / "ray_reflector.sv",
-        proj_path / "hdl" / "rtx" / "ray_tracer.sv",
-        proj_path / "hdl" / "rtx" / "rtx.sv",
-        proj_path / "hdl" / "rtx" / "rtx_tb_parallel.sv",
-    ]
-
-    build_test_args = ["-Wno-WIDTHEXPAND", "-Wno-MULTIDRIVEN", "-Wno-WIDTHTRUNC", "-Wno-TIMESCALEMOD", "-Wno-PINMISSING"]
-
-    parameters = {
-        "WIDTH": WIDTH,
-        "HEIGHT": HEIGHT,
-    }
-
     # Get runner and initialize (build will be skipped since already built)
-    runner = get_runner(sim)
+    runner = get_runner(SIM)
     runner.build(
-        sources=sources,
-        hdl_toplevel=hdl_toplevel,
+        sources=SOURCES,
+        hdl_toplevel=HDL_TOPLEVEL,
         always=False,  # skip actual build, just initialize
-        build_args=build_test_args,
-        parameters=parameters,
+        build_args=BUILD_TEST_ARGS,
+        parameters=PARAMETERS,
         timescale=("1ns", "1ps"),
         waves=False,
         build_dir=BUILD_DIR,
@@ -233,7 +195,7 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
 
     # Now run test
     runner.test(
-        hdl_toplevel=hdl_toplevel,
+        hdl_toplevel=HDL_TOPLEVEL,
         test_module=test_file,
         test_args=[],
         waves=False,
@@ -256,24 +218,24 @@ if __name__ == "__main__":
     print(f"Worker processes: {os.cpu_count()}")
     print()
 
-    # Step 1: Build Verilator once
+    # Build Verilator once
     build_start = time.time()
     build_verilator()
     build_time = time.time() - build_start
     print(f"Build time: {build_time:.1f}s\n")
 
-    # Step 2: Create tasks for parallel execution
+    # Create tasks for parallel execution
     tasks = [(chunk_idx, start_idx, end_idx)
              for chunk_idx, (start_idx, end_idx) in enumerate(CHUNK_RANGES)]
 
-    # Step 3: Run tests in parallel
+    # Run tests in parallel
     print("Starting parallel render...")
     render_start = time.time()
     with Pool(processes=os.cpu_count()) as pool:
         results = pool.map(worker, tasks)
     render_time = time.time() - render_start
 
-    # Step 4: Gather chunks and combine
+    # Gather chunks and combine
     print("\nCombining chunks...")
     pixel_chunks = []
     for chunk_idx in range(len(CHUNK_RANGES)):
