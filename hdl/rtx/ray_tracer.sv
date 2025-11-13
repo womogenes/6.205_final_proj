@@ -20,7 +20,10 @@ module ray_tracer #(
   output logic [9:0] pixel_v_out,
 
   // Interface to scene buffer
-  input object obj
+  input object obj,
+
+  // DEBUG: to be used only for testbench
+  input logic [47:0] lfsr_seed
 );
   typedef enum { IDLE, INTX, REFLECT } tracer_state;
 
@@ -71,7 +74,7 @@ module ray_tracer #(
             cur_ray_origin <= ray_origin;
             cur_ray_dir <= ray_dir;
             cur_income_light <= 0;                  // (0, 0, 0)
-            cur_ray_color <= 'h3f00003f00003f0000;  // (1, 1, 1)
+            cur_ray_color <= 72'h3f00003f00003f0000;  // (1, 1, 1)
 
             // Trigger the intersector
             ray_valid_intx <= 1'b1;
@@ -153,6 +156,8 @@ module ray_tracer #(
     .ray_dir(cur_ray_dir),
     .ray_color(cur_ray_color),
     .income_light(cur_income_light),
+
+    .lfsr_seed(lfsr_seed),
 
     .hit_pos(intx_hit_pos),
     .hit_normal(intx_hit_norm),

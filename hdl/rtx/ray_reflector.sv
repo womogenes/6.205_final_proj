@@ -21,7 +21,10 @@ module ray_reflector (
   output fp24_vec3 new_origin,
   output fp24_color new_color,
   output fp24_color new_income_light,
-  output logic reflect_done
+  output logic reflect_done,
+
+  // DEBUG: to be uxed only for testbench
+  input logic [47:0] lfsr_seed
 );
   fp24_vec3 saved_ray_dir;
   fp24_color saved_ray_color;
@@ -62,7 +65,7 @@ module ray_reflector (
   prng_sphere_lfsr prng_sphere (
     .clk(clk),
     .rst(rst),
-    .seed(48'h123456789abc),
+    .seed(lfsr_seed),
     .rng_vec(rng_vec)
   );
 
@@ -116,6 +119,7 @@ module ray_reflector (
     .clk(clk),
     .rst(rst),
     .v(emitted_light),
+    .is_sub(1'b0),
     .w(saved_income_light),
     .sum(new_income_light)
   );
