@@ -84,6 +84,25 @@ Vec3 norm_vec3(Vec3 v) {
   return mul_vec3f(v, 1 / sqrtf(mag_sq));
 }
 
+float lerp(float a, float b, float t) {
+  return a * (1 - t) + b * t;
+}
+
+Vec3 lerp_vec3(Vec3 a, Vec3 b, float t) {
+  return (Vec3){
+    .x = lerp(a.x, b.x, t),
+    .y = lerp(a.y, b.y, t),
+    .z = lerp(a.z, b.z, t),
+  };
+}
+Color lerp_color(Color a, Color b, float t) {
+  return (Color){
+    .r = lerp(a.r, b.r, t),
+    .g = lerp(a.g, b.g, t),
+    .b = lerp(a.b, b.b, t),
+  };
+}
+
 float dot_vec3(Vec3 a, Vec3 b) {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
