@@ -3,86 +3,175 @@
 #include "types.h"
 
 const float sqrt3 = 1.73;
+const int ROOM_HEIGHT = 6;
+const int ROOM_DEPTH = 12;
+const int ROOM_WIDTH = 12;
 
 const Object SCENE_BUFFER[] = {
-  // Red sphere
+  // Light
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {1, 0.3, 0.3},
+      .color = {0.8, 0.8, 0.8},
+      .spec_color = {1.0, 1.0, 1.0},
+      .emit_color = {15, 15, 15},
+      .smoothness = 0.5f,
+      .specular_prob = 0.0f,
+    },
+    .sphere_center = {0, ROOM_HEIGHT / 2 + 9.85, ROOM_DEPTH / 2},
+    .sphere_rad = 10,
+  },
+  // Ground
+  (Object){
+    .is_trig = 0,
+    .mat = (Material){
+      .color = {0.3, 1.0, 0.3},
       .spec_color = {1.0, 1.0, 1.0},
       .emit_color = {0.0, 0.0, 0.0},
       .smoothness = 0.5f,
-      .specular_prob = 1.0f,
+      .specular_prob = 0.0f,
     },
-    .sphere_center = {-2, 0, 4},
-    .sphere_rad_sq = 1 * 1,
+    .sphere_center = {0, -100000, 0},
+    .sphere_rad = 100000 - ROOM_HEIGHT / 2,
   },
-  // Green sphere
+  // Ceiling
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {0.3, 1, 0.3},
+      .color = {1.0, 1.0, 1.0},
+      .spec_color = {0.0, 0.0, 0.0},
+      .emit_color = {0.6, 0.6, 0.6},
+      .smoothness = 0.5f,
+      .specular_prob = 0.0f,
+    },
+    .sphere_center = {0, 100000, 0},
+    .sphere_rad = 100000 - ROOM_HEIGHT / 2,
+  },
+  // Back wall
+  (Object){
+    .is_trig = 0,
+    .mat = (Material){
+      .color = {0.8, 0.8, 0.8},
       .spec_color = {1.0, 1.0, 1.0},
       .emit_color = {0.0, 0.0, 0.0},
-      .smoothness = 1.0f,
-      .specular_prob = 1.0f,
+      .smoothness = 0.5f,
+      .specular_prob = 0.0f,
     },
-    .sphere_center = {0, 0, 4},
-    .sphere_rad_sq = 1 * 1,
+    .sphere_center = {0, 0, 100000},
+    .sphere_rad = 100000 - ROOM_DEPTH,
   },
-  // Blue sphere
+  // Front wall
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {0.3, 0.3, 1},
+      .color = {1.0, 1.0, 1.0},
+      .spec_color = {1.0, 1.0, 1.0},
+      .emit_color = {0.0, 0.0, 0.0},
+      .smoothness = 0.5f,
+      .specular_prob = 0.0f,
+    },
+    .sphere_center = {0, 0, -100000},
+    .sphere_rad = 100000 - ROOM_DEPTH,
+  },
+  // Left wall
+  (Object){
+    .is_trig = 0,
+    .mat = (Material){
+      .color = {1.0, 0.3, 0.3},
+      .spec_color = {1.0, 1.0, 1.0},
+      .emit_color = {0.0, 0.0, 0.0},
+      .smoothness = 0.5f,
+      .specular_prob = 0.0f,
+    },
+    .sphere_center = {-100000, 0, 0},
+    .sphere_rad = 100000 - ROOM_WIDTH / 2,
+  },
+  // Right wall
+  (Object){
+    .is_trig = 0,
+    .mat = (Material){
+      .color = {0.3, 0.3, 1.0},
+      .spec_color = {1.0, 1.0, 1.0},
+      .emit_color = {0.0, 0.0, 0.0},
+      .smoothness = 0.5f,
+      .specular_prob = 0.0f,
+    },
+    .sphere_center = {100000, 0, 0},
+    .sphere_rad = 100000 - ROOM_WIDTH / 2,
+  },
+  // Shiny balls
+  (Object){
+    .is_trig = 0,
+    .mat = (Material){
+      .color = {1.0, 1.0, 1.0},
       .spec_color = {1.0, 1.0, 1.0},
       .emit_color = {0.0, 0.0, 0.0},
       .smoothness = 0.0f,
       .specular_prob = 0.0f,
     },
-    .sphere_center = {2, 0, 4},
-    .sphere_rad_sq = 1 * 1,
+    .sphere_center = {-4, 0, ROOM_DEPTH / 2},
+    .sphere_rad = 0.8,
   },
-  // Green sphere, behind
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {0.3, 1, 0.3},
+      .color = {1.0, 1.0, 1.0},
       .spec_color = {1.0, 1.0, 1.0},
       .emit_color = {0.0, 0.0, 0.0},
-      .smoothness = 0.0f,
-      .specular_prob = 0.0f,
+      .smoothness = 0.2f,
+      .specular_prob = 1.0f,
     },
-    .sphere_center = {0, 0, 0.9},
-    .sphere_rad_sq = 1 * 1,
+    .sphere_center = {-4, 0, ROOM_DEPTH / 2},
+    .sphere_rad = 0.8,
   },
-  // Skylight
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {0.5, 1.0, 0.5},
+      .color = {1.0, 1.0, 1.0},
       .spec_color = {1.0, 1.0, 1.0},
-      .emit_color = {1, 1, 1},
-      .smoothness = 0.5f,
-      .specular_prob = 0.0f,
+      .emit_color = {0.0, 0.0, 0.0},
+      .smoothness = 0.4f,
+      .specular_prob = 1.0f,
     },
-    .sphere_center = {0, 500, 0},
-    .sphere_rad_sq = 200 * 200,
+    .sphere_center = {-2, 0, ROOM_DEPTH / 2},
+    .sphere_rad = 0.8,
   },
-  // "Ground"
   (Object){
     .is_trig = 0,
     .mat = (Material){
-      .color = {0.85, 0.8, 1.0},
+      .color = {1.0, 1.0, 1.0},
       .spec_color = {1.0, 1.0, 1.0},
-      .emit_color = {0.1, 0.1, 0.1},
+      .emit_color = {0.0, 0.0, 0.0},
+      .smoothness = 0.6f,
+      .specular_prob = 1.0f,
+    },
+    .sphere_center = {-0, 0, ROOM_DEPTH / 2},
+    .sphere_rad = 0.8,
+  },
+  (Object){
+    .is_trig = 0,
+    .mat = (Material){
+      .color = {1.0, 1.0, 1.0},
+      .spec_color = {1.0, 1.0, 1.0},
+      .emit_color = {0.0, 0.0, 0.0},
+      .smoothness = 0.8f,
+      .specular_prob = 1.0f,
+    },
+    .sphere_center = {2, 0, ROOM_DEPTH / 2},
+    .sphere_rad = 0.8,
+  },
+  (Object){
+    .is_trig = 0,
+    .mat = (Material){
+      .color = {1.0, 1.0, 1.0},
+      .spec_color = {1.0, 1.0, 1.0},
+      .emit_color = {0.0, 0.0, 0.0},
       .smoothness = 1.0f,
-      .specular_prob = 0.1f,
+      .specular_prob = 1.0f,
     },
-    .sphere_center = {0, -2000, 5},
-    .sphere_rad_sq = 1999 * 1999,
-  },
+    .sphere_center = {4, 0, ROOM_DEPTH / 2},
+    .sphere_rad = 0.8,
+  }
 };
 
 const int SCENE_BUFFER_LEN = sizeof(SCENE_BUFFER) / sizeof(SCENE_BUFFER[0]);

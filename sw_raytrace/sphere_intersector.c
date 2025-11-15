@@ -32,11 +32,11 @@ void sphere_intersector(Vec3 ray_dir, Vec3 ray_origin, Object* sphere, SphereInt
   // Sphere: (P - sphere_center)^2 = radius^2
 
   Vec3 center = sphere->sphere_center;
-  float radius_sq = sphere->sphere_rad_sq;
+  float radius = sphere->sphere_rad;
 
   Vec3 L = sub_vec3(ray_origin, center);
   float b = 2 * dot_vec3(ray_dir, L);
-  float c = dot_vec3(L, L) - radius_sq;
+  float c = dot_vec3(L, L) - radius * radius;
 
   float t0, t1;
   result->hit = solve_quadratic(b, c, &t0, &t1);
@@ -52,7 +52,8 @@ void sphere_intersector(Vec3 ray_dir, Vec3 ray_origin, Object* sphere, SphereInt
   Vec3 ray_dir_scaled = mul_vec3f(ray_dir, t0);
   Vec3 hit_pos = add_vec3(ray_origin, ray_dir_scaled);
   result->hit_pos = hit_pos;
-  result->hit_norm = norm_vec3(
-    add_vec3(ray_dir_scaled, L)
+  result->hit_norm = mul_vec3f(
+    add_vec3(ray_dir_scaled, L),
+    1 / radius
   );
 }

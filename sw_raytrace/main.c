@@ -14,8 +14,8 @@ float fb_float[HEIGHT][WIDTH][3];
 
 int main() {
   Camera cam = (Camera){
-    .origin  = {0, 0, 0},
-    .forward = {0, 0, WIDTH / 2},
+    .origin  = {0, 0, -10},
+    .forward = {0, 0, WIDTH / 2 * 2.28},
     .right = {WIDTH / 2, 0, 0},
     .up = {0, HEIGHT / 2, 0},
   };
@@ -23,8 +23,7 @@ int main() {
   RayTracerParams params;
   RayTracerResult result;
 
-  // float t = 0.80;
-  const int N_FRAMES = 60;
+  const int N_FRAMES = 300;
   const int mask_565 = 0;
 
   for (int frame_idx = 0; frame_idx < N_FRAMES; frame_idx++) {
