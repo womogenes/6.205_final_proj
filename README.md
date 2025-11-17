@@ -16,6 +16,7 @@ We use 24-bit floating point for most operations. We call this data type `fp24`,
 We anticipate getting cooked by LUT usage at some point, so here are some areas for optimization:
 
 - `fp24_inv_sqrt`: we can save ~250 LUTs per stage cut. This does change the cycle count of everything.
+- `lerp`: since the value of `t` is only ever `mat.smoothness` or `1`, we can assume the value of `t` is always `1 - math.smoothness` or `0` and these are precomputable.
 
 ## BELOW: CPU stuff that we don't really use anymore
 
