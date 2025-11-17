@@ -35,9 +35,9 @@ async def test_module(dut):
     DELAY_CYCLES = 8
 
     # Generate inputs
-    N_SAMPLES = 1
-    A = np.exp2(np.random.rand(N_SAMPLES, 3) * 63 - 31)
-    B = np.exp2(np.random.rand(N_SAMPLES, 3) * 63 - 31)
+    N_SAMPLES = 1000
+    A = np.exp2(np.random.rand(N_SAMPLES, 3) * 31 - 16)
+    B = np.exp2(np.random.rand(N_SAMPLES, 3) * 31 - 16)
 
     # N_SAMPLES = 1
     # A = [(1/np.sqrt(2), -1/np.sqrt(2), 0)]
