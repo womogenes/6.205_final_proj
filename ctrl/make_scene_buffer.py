@@ -14,14 +14,14 @@ class Material:
         color: tuple[float],
         emit_color: tuple[float],
         spec_color: tuple[float] = (0, 0, 0),
-        smooth: float = 0,
-        specular: float = 0,
+        smoothness: float = 0,
+        specular_prob: float = 0,
     ):
-        self.color = color              # 72
-        self.spec_color = spec_color    # 72
-        self.emit_color = emit_color    # 72
-        self.smooth = smooth            # 24
-        self.specular = specular        # 24
+        self.color = color                  # 72
+        self.spec_color = spec_color        # 72
+        self.emit_color = emit_color        # 72
+        self.smoothness = smoothness        # 24
+        self.specular_prob = specular_prob  # 24
 
     def pack_bits(self):
         # Pack properties into bit fields
@@ -29,8 +29,8 @@ class Material:
             (make_fp24_vec3(self.color), 72),
             (make_fp24_vec3(self.emit_color), 72),
             (make_fp24_vec3(self.spec_color), 72),
-            (make_fp24(self.smooth), 24),
-            (make_fp24(self.specular), 24),
+            (make_fp24(self.smoothness), 24),
+            (make_fp24(self.specular_prob), 8),
         ]
         return pack_bits(fields, msb=True), sum([width for _, width in fields])
     

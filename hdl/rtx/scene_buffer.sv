@@ -40,7 +40,7 @@ module scene_buffer #(
 
   // Read out objects from memory
   xilinx_true_dual_port_read_first_2_clock_ram #(
-    .RAM_WIDTH(SCENE_BUFFER_WIDTH),
+    .RAM_WIDTH($bits(object)),
     .RAM_DEPTH(SCENE_BUFFER_DEPTH),
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
     .INIT_FILE(INIT_FILE)

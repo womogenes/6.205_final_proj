@@ -42,22 +42,19 @@ typedef struct packed {
 
 // ===== OBJECTS =====
 typedef struct packed {
-  fp24_color color;          // 72 bits
-  fp24_color emit_color;     // 72 bits
-  fp24_color spec_color;     // 72 bits
-  fp24 smooth;              // 24 bits
-  fp24 specular;            // 24 bits
+  fp24_color color;           // 72 bits
+  fp24_color emit_color;      // 72 bits
+  fp24_color spec_color;      // 72 bits
+  fp24 smoothness;            // 24 bits
+  logic [7:0] specular_prob;  // 8 bits
 } material;
 
 typedef struct packed {
   logic is_trig;            // 1 bit
-  material mat;             // 264 bits
+  material mat;             // [several] bits
   fp24_vec3 [2:0] trig;     // 216 bits
   fp24_vec3 trig_norm;      // 72 bits
   fp24_vec3 sphere_center;  // 72 bits
   fp24 sphere_rad_sq;       // 24 bits
   fp24 sphere_rad_inv;      // 24 bits
 } object;
-
-// Scene buffer width calculated as sum of bit-widths of `object` fields
-parameter integer SCENE_BUFFER_WIDTH = 673;
