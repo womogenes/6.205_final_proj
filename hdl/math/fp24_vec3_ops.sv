@@ -54,6 +54,21 @@ module fp24_vec3_scale (
 endmodule
 
 /*
+  Shift each component of a vec3 by some integer amount
+  Purely combinational
+*/
+module fp24_vec3_shift #(
+  parameter integer SHIFT_AMT
+) (
+  input fp24_vec3 v,
+  output fp24_vec3 shifted
+);
+  fp24_shift #(.SHIFT_AMT(SHIFT_AMT)) shift_x (.a(v.x), .shifted(shifted.x));
+  fp24_shift #(.SHIFT_AMT(SHIFT_AMT)) shift_y (.a(v.y), .shifted(shifted.y));
+  fp24_shift #(.SHIFT_AMT(SHIFT_AMT)) shift_z (.a(v.z), .shifted(shifted.z));
+endmodule
+
+/*
   Dot product of two vec3s
 
   Timing:
