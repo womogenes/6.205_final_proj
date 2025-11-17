@@ -23,6 +23,7 @@ parameter integer VEC3_MUL_DELAY = FP24_MUL_DELAY;  // 1
 parameter integer VEC3_DOT_DELAY = 5;
 parameter integer VEC3_SCALE_DELAY = FP24_MUL_DELAY;
 parameter integer VEC3_NORM_DELAY = VEC3_DOT_DELAY + INV_SQRT_DELAY + 1;  // 16
+parameter integer VEC3_LERP_DELAY = VEC3_SCALE_DELAY + VEC3_ADD_DELAY;
 
 // ===== RAYTRACER CONFIG PARAMS =====
 parameter integer MAX_BOUNCES = 3;

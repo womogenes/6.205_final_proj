@@ -3,6 +3,9 @@
 
   Timing: 2 cycles
 */
+
+`default_nettype none
+
 module fp24_vec3_add (
   input wire clk,
   input wire rst,
@@ -136,3 +139,32 @@ module fp24_vec3_normalize (
   // 1 cycle
   fp24_vec3_scale scale_a_norm(.clk(clk), .v(v_piped), .s(mag_inv), .scaled(normed));
 endmodule
+
+/*
+  Lerp between two fp24_vec3s. Requires both t and one_sub_t for efficiency.
+
+  Timing:
+    3 cycles: scale (1) + add (2)
+*/
+module fp24_vec3_lerp (
+  input wire clk,
+  input wire rst,
+
+  input fp24_vec3 v,
+  input fp24_vec3 w,
+  input fp24 t,
+  input fp24 one_sub_t,
+
+  output fp24_vec3 lerped
+);
+  fp24_vec3 v_scaled, w_scaled;
+
+  // Calculate v * (1-t) and w * t
+  fp24_vec3_scale v_scaler(.clk(clk), .rst(rst), .v(v), .s(one_sub_t), .scaled(v_scaled));
+  fp24_vec3_scale w_scaler(.clk(clk), .rst(rst), .v(w), .s(t), .scaled(w_scaled));
+
+  // Add them together
+  fp24_vec3_add adder(.clk(clk), .rst(rst), .v(v_scaled), .w(w_scaled), .is_sub(0), .sum(lerped));
+endmodule
+
+`default_nettype wire
