@@ -75,7 +75,7 @@ os.makedirs(BUILD_DIR, exist_ok=True)
 
 # Common configuration for Verilator build and test
 SIM = os.getenv("SIM", "verilator")
-HDL_TOPLEVEL = "rtx_tb"
+HDL_TOPLEVEL = "rtx_tb_parallel"
 
 sys.path.append(str(proj_path / "sim"))
 

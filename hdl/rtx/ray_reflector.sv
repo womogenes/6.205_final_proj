@@ -24,7 +24,7 @@ module ray_reflector (
   output logic reflect_done,
 
   // DEBUG: to be uxed only for testbench
-  input logic [47:0] lfsr_seed
+  input wire [47:0] lfsr_seed
 );
   fp24_vec3 saved_ray_dir;
   fp24_color saved_ray_color;
