@@ -15,8 +15,8 @@ import ctypes
 import numpy as np
 import matplotlib.pyplot as plt
 
-sys.path.append(Path(__file__).resolve().parent.parent.parent.parent._str)
-from sim.utils import convert_fp24_vec3, convert_fp24
+sys.path.append(Path(__file__).resolve().parent.parent._str)
+from utils import convert_fp24_vec3, convert_fp24
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -65,15 +65,15 @@ def runner():
 
     hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
     sim = os.getenv("SIM", "icarus")
-    proj_path = Path(__file__).resolve().parent.parent.parent.parent
+    proj_path = Path(__file__).resolve().parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types"/ "types.sv",
-        proj_path / "hdl" / "pipeline.sv"
+        proj_path / "hdl" / "pipeline.sv",
+        *glob.glob(f'{proj_path}/hdl/math/*.sv', recursive=True),
+        *glob.glob(f'{proj_path}/hdl/rng/*.sv', recursive=True),
     ]
-    verilog_files = glob.glob(f'{proj_path}/hdl/math/*.sv', recursive=True)
-    sources.extend(verilog_files)
     build_test_args = ["-Wall"]
 
     # values for parameters defined earlier in the code.
