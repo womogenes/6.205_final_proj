@@ -11,15 +11,15 @@ module rtx_tb #(
   input wire rst,
   input camera cam,
 
-  input logic [10:0] pixel_h_in,
-  input logic [9:0] pixel_v_in,
-  input logic new_ray,
+  input wire [10:0] pixel_h_in,
+  input wire [9:0] pixel_v_in,
+  input wire new_ray,
 
   output logic [15:0] rtx_pixel,
   output logic ray_done,
 
   // DEBUG: to be used only for testbench
-  input logic [47:0] lfsr_seed
+  input wire [47:0] lfsr_seed
 );
   object obj;
 

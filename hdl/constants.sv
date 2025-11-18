@@ -1,7 +1,7 @@
 // Constants for now are defined above their modules
 // e.g. inv_sqrt delay is defined in fp24_inv_sqrt.sv
 
-parameter integer SCENE_BUFFER_DEPTH = 5;
+parameter integer SCENE_BUFFER_DEPTH = 13;
 
 // ===== FP24 MATH OPS =====
  
@@ -26,4 +26,4 @@ parameter integer VEC3_NORM_DELAY = VEC3_DOT_DELAY + INV_SQRT_DELAY + 1;  // 16
 parameter integer VEC3_LERP_DELAY = VEC3_SCALE_DELAY + VEC3_ADD_DELAY;
 
 // ===== RAYTRACER CONFIG PARAMS =====
-parameter integer MAX_BOUNCES = 3;
+parameter integer MAX_BOUNCES = 10;

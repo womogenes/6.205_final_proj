@@ -24,7 +24,7 @@ module ray_reflector (
   output logic reflect_done,
 
   // DEBUG: to be uxed only for testbench
-  input logic [47:0] lfsr_seed
+  input wire [47:0] lfsr_seed
 );
   // Pipelining go brr
   pipeline #(.WIDTH(1), .DEPTH(37)) done_pipe (

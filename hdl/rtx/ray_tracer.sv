@@ -23,7 +23,7 @@ module ray_tracer #(
   input object obj,
 
   // DEBUG: to be used only for testbench
-  input logic [47:0] lfsr_seed
+  input wire [47:0] lfsr_seed
 );
   typedef enum { IDLE, INTX, REFLECT } tracer_state;
 
