@@ -14,14 +14,14 @@ class Material:
         color: tuple[float],
         emit_color: tuple[float],
         spec_color: tuple[float] = (0, 0, 0),
-        smooth: float = 0,
-        specular: float = 0,
+        smoothness: float = 0,
+        specular_prob: float = 0,
     ):
-        self.color = color              # 72
-        self.spec_color = spec_color    # 72
-        self.emit_color = emit_color    # 72
-        self.smooth = smooth            # 24
-        self.specular = specular        # 24
+        self.color = color                              # 72
+        self.spec_color = spec_color                    # 72
+        self.emit_color = emit_color                    # 72
+        self.smoothness = smoothness                    # 24
+        self.specular_prob = int(specular_prob * 255)   # 8
 
     def pack_bits(self):
         # Pack properties into bit fields
@@ -29,8 +29,8 @@ class Material:
             (make_fp24_vec3(self.color), 72),
             (make_fp24_vec3(self.emit_color), 72),
             (make_fp24_vec3(self.spec_color), 72),
-            (make_fp24(self.smooth), 24),
-            (make_fp24(self.specular), 24),
+            (make_fp24(self.smoothness), 24),
+            (self.specular_prob, 8),
         ]
         return pack_bits(fields, msb=True), sum([width for _, width in fields])
     
@@ -67,21 +67,172 @@ class Object:
 
 
 if __name__ == "__main__":
-    mat0 = Material(color=(1, 0.3, 0.3), emit_color=(0.1, 0.1, 0.1))
-    mat1 = Material(color=(0.3, 1, 0.3), emit_color=(0.1, 0.1, 0.1))
-    mat2 = Material(color=(0.3, 0.3, 1), emit_color=(0.1, 0.1, 0.1))
-    mat3 = Material(color=(0.5, 1, 0.5), emit_color=(1, 1, 1))
-    mat4 = Material(color=(0.85, 0.8, 1), emit_color=(0.1, 0.1, 0.1))
+    ROOM_HEIGHT = 6
+    ROOM_DEPTH = 12
+    ROOM_WIDTH = 12
+    INF = 100
 
     objs = [
-        Object(mat=mat0, sphere_center=(-2, 1, 7), sphere_rad=2),
-        Object(mat=mat1, sphere_center=(0, 0, 5), sphere_rad=1),
-        Object(mat=mat2, sphere_center=(1, -0.5, 4), sphere_rad=0.5),
-        Object(mat=mat3, sphere_center=(0, 500, 0), sphere_rad=450),
-        Object(mat=mat4, sphere_center=(0, -200, 5), sphere_rad=199),
+        # Light
+        Object(
+            mat=Material(
+                color=(0.8, 0.8, 0.8),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(15, 15, 15),
+                smoothness=0.5,
+                specular_prob=0.0,
+            ),
+            sphere_center=(0, ROOM_HEIGHT / 2 + 9.85, ROOM_DEPTH / 2),
+            sphere_rad=10,
+        ),
+
+        # Ground
+        Object(
+            mat=Material(
+                color=(0.3, 1.0, 0.3),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=0.5,
+                specular_prob=0.0,
+            ),
+            sphere_center=(0, -INF, 0),
+            sphere_rad=INF - ROOM_HEIGHT / 2,
+        ),
+
+        # Ceiling
+        Object(
+            mat=Material(
+                color=(1.0, 1.0, 1.0),
+                spec_color=(0.0, 0.0, 0.0),
+                emit_color=(0.6, 0.6, 0.6),
+                smoothness=0.5,
+                specular_prob=0.0,
+            ),
+            sphere_center=(0, INF, 0),
+            sphere_rad=INF - ROOM_HEIGHT / 2,
+        ),
+
+        # Back wall
+        Object(
+            mat=Material(
+                color=(0.8, 0.8, 0.8),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=0.999,
+                specular_prob=0.0,
+            ),
+            sphere_center=(0, 0, INF),
+            sphere_rad=INF - ROOM_DEPTH,
+        ),
+
+        # Front wall
+        Object(
+            mat=Material(
+                color=(1.0, 1.0, 1.0),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=0.999,
+                specular_prob=0.0,
+            ),
+            sphere_center=(0, 0, -INF),
+            sphere_rad=INF - ROOM_DEPTH,
+        ),
+
+        # Left wall
+        Object(
+            mat=Material(
+                color=(1.0, 0.3, 0.3),
+                spec_color=(1.0, 0.3, 0.3),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=1.0,
+                specular_prob=0.0,
+            ),
+            sphere_center=(-INF, 0, 0),
+            sphere_rad=INF - ROOM_WIDTH / 2,
+        ),
+
+        # Right wall
+        Object(
+            mat=Material(
+                color=(0.3, 0.3, 1.0),
+                spec_color=(0.3, 0.3, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=1.0,
+                specular_prob=0.0,
+            ),
+            sphere_center=(INF, 0, 0),
+            sphere_rad=INF - ROOM_WIDTH / 2,
+        ),
+
+        # Shiny balls group, matching C version
+        Object(
+            mat=Material(
+                color=(1.0, 1.0, 1.0),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=0.0,
+                specular_prob=0.0,
+            ),
+            sphere_center=(-4, 0, ROOM_DEPTH / 2),
+            sphere_rad=0.8,
+        ),
+        Object(
+            mat=Material(
+                color=(1.0, 1.0, 1.0),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=0.2,
+                specular_prob=1.0,
+            ),
+            sphere_center=(-4, 0, ROOM_DEPTH / 2),
+            sphere_rad=0.8,
+        ),
+        Object(
+            mat=Material(
+                color=(1.0, 1.0, 1.0),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=0.4,
+                specular_prob=1.0,
+            ),
+            sphere_center=(-2, 0, ROOM_DEPTH / 2),
+            sphere_rad=0.8,
+        ),
+        Object(
+            mat=Material(
+                color=(1.0, 1.0, 1.0),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=0.6,
+                specular_prob=1.0,
+            ),
+            sphere_center=(0, 0, ROOM_DEPTH / 2),
+            sphere_rad=0.8,
+        ),
+        Object(
+            mat=Material(
+                color=(1.0, 1.0, 1.0),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=0.8,
+                specular_prob=1.0,
+            ),
+            sphere_center=(2, 0, ROOM_DEPTH / 2),
+            sphere_rad=0.8,
+        ),
+        Object(
+            mat=Material(
+                color=(1.0, 1.0, 1.0),
+                spec_color=(1.0, 1.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                smoothness=1.0,
+                specular_prob=1.0,
+            ),
+            sphere_center=(4, 0, ROOM_DEPTH / 2),
+            sphere_rad=0.8,
+        ),
     ]
 
-    # Dump to hex file
     with open(str(proj_path / "data" / "scene_buffer.mem"), "w") as fout:
         for obj in objs:
             bits, width = obj.pack_bits()

@@ -6,7 +6,7 @@
 #include "ray_intersector.c"
 #include "ray_reflector.c"
 
-#define MAX_BOUNCES 5
+#define MAX_BOUNCES 10
 
 void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
   Vec3 ray_pos = params->ray_origin;
@@ -35,7 +35,7 @@ void ray_tracer(RayTracerParams* params, RayTracerResult* result) {
 
     if (!hit_result.any_hit) {
       // Ray flew off into the distance, add ambient light
-      Color ambient = (Color){0.1, 0.1, 0.1};
+      Color ambient = (Color){0, 0, 0};
       income_light = add_vec3c(income_light, mul_vec3c(ambient, ray_color));
       break;
     }

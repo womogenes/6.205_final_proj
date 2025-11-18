@@ -54,19 +54,23 @@ module fp24_mul (
       exp_prod = exp_a + exp_b + overflow;
       // NOTE: we don't need this if all our numbers are in range
       // so small basically zero
-      // if (exp_prod < 63) begin
-      //   exp_prod = 0;
-      //   frac_prod = 0;
+      if (exp_prod < 63) begin
+        exp_prod = 0;
+        frac_prod = 0;
       // end else if (exp_prod > 190) begin
       //   exp_prod = -1;
       //   frac_prod = 0;
-      // end else begin
+      end else begin
         exp_prod = exp_prod - 63;
-      // end
+      end
     end
   end
 
   always_ff @(posedge clk) begin
-    prod <= {is_zero ? 1'b0 : sign_prod, exp_prod[6:0], overflow ? frac_prod[32:17] : frac_prod[31:16]};
+    prod <= {
+      is_zero ? 1'b0 : sign_prod,
+      exp_prod[6:0],
+      overflow ? frac_prod[32:17] : frac_prod[31:16]
+    };
   end
 endmodule

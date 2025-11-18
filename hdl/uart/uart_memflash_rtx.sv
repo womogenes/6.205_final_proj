@@ -13,8 +13,8 @@ module uart_memflash_rtx (
   output logic [FLASH_OBJ_WIDTH-1:0] flash_obj_data,
   output logic flash_wen
 );
-  localparam integer FLASH_OBJ_BYTES = $ceil(SCENE_BUFFER_WIDTH / 8);
-  localparam integer FLASH_OBJ_WIDTH = $ceil(SCENE_BUFFER_WIDTH / 8) * 8;
+  localparam integer FLASH_OBJ_BYTES = $ceil($bits(object) / 8);
+  localparam integer FLASH_OBJ_WIDTH = $ceil($bits(object) / 8) * 8;
 
   // Goal: allow writing words to consecutive memory addresses
   /*

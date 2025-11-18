@@ -19,7 +19,7 @@ module rtx_tb_parallel #(
   output logic ray_done,
 
   // DEBUG: to be used only for testbench
-  input wire [47:0] lfsr_seed
+  input wire [95:0] lfsr_seed
 );
   object obj;
 

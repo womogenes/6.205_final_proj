@@ -92,7 +92,9 @@ SOURCES = [
     proj_path / "hdl" / "math" / "fp24_sqrt.sv",
     proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
     proj_path / "hdl" / "math" / "fp24_convert.sv",
+    proj_path / "hdl" / "math" / "specular_reflect.sv",
     proj_path / "hdl" / "rng" / "prng_sphere.sv",
+    proj_path / "hdl" / "rng" / "prng8.sv",
     proj_path / "hdl" / "math" / "quadratic_solver.sv",
     proj_path / "hdl" / "math" / "sphere_intersector.sv",
     proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
@@ -128,14 +130,14 @@ async def test_module(dut):
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
     # dut._log.info("Holding reset...")
-    dut.lfsr_seed.value = int.from_bytes(os.urandom(6))
+    dut.lfsr_seed.value = int.from_bytes(os.urandom(12))
     dut.rst.value = 1
     await ClockCycles(dut.clk, 100)
     dut.rst.value = 0
 
     dut.cam.value = pack_bits([
-        (make_fp24_vec3((0, 0, 0)), 72),            # origin
-        (make_fp24_vec3((0, 0, WIDTH / 2)), 72),    # forward
+        (make_fp24_vec3((0, 0, -10)), 72),            # origin
+        (make_fp24_vec3((0, 0, WIDTH / 2 * 2.28)), 72),    # forward
         (make_fp24_vec3((1, 0, 0)), 72),            # right
         (make_fp24_vec3((0, 1, 0)), 72),            # up
     ])

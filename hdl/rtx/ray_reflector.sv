@@ -23,105 +23,212 @@ module ray_reflector (
   output fp24_color new_income_light,
   output logic reflect_done,
 
-  // DEBUG: to be uxed only for testbench
-  input wire [47:0] lfsr_seed
+  // DEBUG: to be used only for testbench
+  input wire [95:0] lfsr_seed
 );
-  fp24_vec3 saved_ray_dir;
-  fp24_color saved_ray_color;
-  fp24_color saved_income_light;
-  fp24_vec3 saved_hit_pos;
-  fp24_vec3 saved_hit_normal;
-  material saved_hit_mat;
-  logic [$clog2(RAY_RFLX_DELAY + 1)-1:0] valid_counter;
+  // Pipelining go brr
+  pipeline #(.WIDTH(1), .DEPTH(37)) done_pipe (
+    .clk(clk),
+    .in(hit_valid),
+    .out(reflect_done)
+  );
 
-  always_ff @(posedge clk) begin
-    if (rst) begin
-      saved_ray_dir <= 0;
-      saved_ray_color <= 0;
-      saved_income_light <= 0;
-      saved_hit_pos <= 0;
-      saved_hit_normal <= 0;
-      saved_hit_mat <= 0;
-      valid_counter <= 0;
+  // ===== BRANCH 0: specular_amt =====
+  fp24 spec_amt;
+  logic [7:0] rng_specular;
+  prng8 rng8 (
+    .clk(clk),
+    .rst(rst),
+    .seed(lfsr_seed[47:0]),
+    .rng(rng_specular)
+  );
+  logic is_specular;
+  assign is_specular = rng_specular < hit_mat.specular_prob;
+
+  always_comb begin
+    if (rng_specular < hit_mat.specular_prob) begin
+      spec_amt = hit_mat.smoothness;
     end else begin
-      if (hit_valid) begin
-        saved_ray_dir <= ray_dir;
-        saved_ray_color <= ray_color;
-        saved_income_light <= income_light;
-        saved_hit_pos <= hit_pos;
-        saved_hit_normal <= hit_normal;
-        saved_hit_mat <= hit_mat;
-        valid_counter <= 0;
-      end else begin
-        if (valid_counter < RAY_RFLX_DELAY + 1) begin
-          valid_counter <= valid_counter + 1;
-        end
-      end
+      spec_amt = 0;
     end
   end
-  assign reflect_done = valid_counter == RAY_RFLX_DELAY;
 
+  logic [7:0] hit_mat_specular_prob;
+  assign hit_mat_specular_prob = hit_mat.specular_prob;
+
+  // Calculate (1 - specular_amt)
+  fp24 one_sub_spec_amt;
+  fp24_add sub_spec_amt (
+    .clk(clk),
+    .a(24'h3f0000),
+    .b(spec_amt),
+    .is_sub(1'b1),
+    .sum(one_sub_spec_amt)
+  );
+
+  // Pipeline t, 1-t for direction calculation
+  fp24 spec_amt_piped_dir;
+  fp24 one_sub_spec_amt_piped_dir;
+  pipeline #(.WIDTH(24), .DEPTH(18)) spec_amt_pipe (
+    .clk(clk),
+    .in(spec_amt),
+    .out(spec_amt_piped_dir)
+  );
+  pipeline #(.WIDTH(28), .DEPTH(16)) one_sub_spec_amt_pipe (
+    .clk(clk),
+    .in(one_sub_spec_amt),
+    .out(one_sub_spec_amt_piped_dir)
+  );
+
+  // ===== BRANCH 1: RAY DIRECTION =====
+
+  // Diffuse direction
+  // 18 cycles behind
   fp24_vec3 rng_vec;
   prng_sphere_lfsr prng_sphere (
     .clk(clk),
     .rst(rst),
-    .seed(lfsr_seed),
+    .seed(lfsr_seed[95:48]),
     .rng_vec(rng_vec)
   );
-
   fp24_vec3 rng_added;
   fp24_vec3_add diffuse_adder (
     .clk(clk),
     .rst(rst),
     .v(rng_vec),
-    .w(saved_hit_normal),
+    .w(hit_normal),
     .is_sub(1'b0),
     .sum(rng_added)
   );
-
-  fp24_vec3 rng_normed;
+  fp24_vec3 diffuse_dir;
   fp24_vec3_normalize diffuse_normalizer (
     .clk(clk),
     .rst(rst),
     .v(rng_added),
-    .normed(rng_normed)
+    .normed(diffuse_dir)
   );
 
-  // TODO: change when specular reflections implemented
-  assign new_dir = rng_normed;
-  assign new_origin = saved_hit_pos;
-  
-  fp24_vec3_mul color_multiplier (
+  // Specular direction
+  fp24_vec3 specular_dir;
+  specular_reflect spec_reflector (
     .clk(clk),
     .rst(rst),
-    .v(saved_hit_mat.color),
-    .w(saved_ray_color),
-    .prod(new_color)
+    .in_dir(ray_dir),
+    .normal(hit_normal),
+    .out_dir(specular_dir)
   );
 
-  fp24_color emitted_light;
-  fp24_vec3_mul emit_multiplier (
+  // Delay the specular direction
+  // 18 cycles behind
+  fp24_vec3 specular_dir_piped;
+  pipeline #(.WIDTH(72), .DEPTH(10)) spec_dir_pipe (
     .clk(clk),
-    .rst(rst),
-    .v(saved_hit_mat.emit_color),
-    .w(saved_ray_color),
-    .prod(emitted_light)
+    .in(specular_dir),
+    .out(specular_dir_piped)
   );
-  // assign new_income_light = {1'b0, new_dir.x.exp, new_dir.x.mant,
-  //                            1'b0, new_dir.y.exp, new_dir.y.mant,
-  //                            1'b0, new_dir.z.exp, new_dir.z.mant};
 
-  // assign new_income_light = {1'b0, saved_hit_normal.x.exp, saved_hit_normal.x.mant,
-  //                            1'b0, saved_hit_normal.y.exp, saved_hit_normal.y.mant,
-  //                            1'b0, saved_hit_normal.z.exp, saved_hit_normal.z.mant};
-
-  fp24_vec3_add emit_adder (
+  // Lerp from specular dir to diffuse dir
+  fp24_vec3 new_ray_dir_prenorm;
+  fp24_vec3_lerp lerp_dir (
     .clk(clk),
     .rst(rst),
-    .v(emitted_light),
+    .v(diffuse_dir),
+    .w(specular_dir_piped),
+    .t(spec_amt_piped_dir),
+    .one_sub_t(one_sub_spec_amt_piped_dir),
+    .lerped(new_ray_dir_prenorm)
+  );
+
+  // Normalize new dir
+  fp24_vec3_normalize norm_dir (
+    .clk(clk),
+    .v(new_ray_dir_prenorm),
+    .normed(new_dir)
+  );
+
+  // Pipeline the origin
+  pipeline #(.WIDTH(72), .DEPTH(37)) origin_pipe (
+    .clk(clk),
+    .in(hit_pos),
+    .out(new_origin)
+  );
+
+  // ===== BRANCH 2: NEW COLOR =====
+
+  // Calculate additional incoming light
+  // 1 cycle behind
+  fp24_color extra_income_light;
+  fp24_vec3_mul mul_extra_income_light (
+    .clk(clk),
+    .v(ray_color),
+    .w(hit_mat.emit_color),
+    .prod(extra_income_light)
+  );
+
+  // Calculate new incoming light
+  // 3 cycles behind
+  // Requires big pipeline ahead of it to delay accordingly
+  fp24_color new_income_light_unpiped;
+  fp24_vec3_add add_new_income_light (
+    .clk(clk),
+    .rst(rst),
+    .v(extra_income_light),
+    .w(income_light),
     .is_sub(1'b0),
-    .w(saved_income_light),
-    .sum(new_income_light)
+    .sum(new_income_light_unpiped)
+  );
+  pipeline #(.WIDTH(72), .DEPTH(34)) new_income_light_pipe (
+    .clk(clk),
+    .in(new_income_light_unpiped),
+    .out(new_income_light)
+  );
+
+  // Calculate new ray color
+  // Lerp between ray color and specular color
+  fp24_color true_mat_color;
+  fp24_color mat_color_piped;
+  fp24_color mat_spec_color_piped;
+
+  pipeline #(.WIDTH(72), .DEPTH(2)) mat_color_pipe (
+    .clk(clk),
+    .in(hit_mat.color),
+    .out(mat_color_piped)
+  );
+  pipeline #(.WIDTH(72), .DEPTH(2)) mat_spec_color_pipe (
+    .clk(clk),
+    .in(hit_mat.spec_color),
+    .out(mat_spec_color_piped)
+  );
+
+  fp24_vec3_lerp lerp_true_mat_color (
+    .clk(clk),
+    .rst(rst),
+    .v(mat_color_piped),
+    .w(mat_spec_color_piped),
+    .t(spec_amt_pipe.pipe[1]),
+    .one_sub_t(one_sub_spec_amt),
+    .lerped(true_mat_color)
+  );
+
+  // Combine ray_color and true_mat_color to get new ray color
+  fp24_color ray_color_piped;
+  pipeline #(.WIDTH(72), .DEPTH(5)) ray_color_pipe (
+    .clk(clk),
+    .in(ray_color),
+    .out(ray_color_piped)
+  );
+  fp24_color new_color_unpiped;
+  fp24_vec3_mul mul_new_ray_color (
+    .clk(clk),
+    .rst(rst),
+    .v(ray_color_piped),
+    .w(true_mat_color),
+    .prod(new_color_unpiped)
+  );
+  pipeline #(.WIDTH(72), .DEPTH(31)) new_ray_color_pipe (
+    .clk(clk),
+    .in(new_color_unpiped),
+    .out(new_color)
   );
   
 endmodule

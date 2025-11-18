@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define HD 0
+#define HD 1
 
 #if HD
   #define WIDTH 1280
@@ -25,8 +25,8 @@ typedef struct {
   Color color;
   Color spec_color;   // specular color
   Color emit_color;   // emission color
-  float smooth;
-  float specular;
+  float specular_prob;
+  float smoothness;
 } Material;
 
 typedef struct {
@@ -88,7 +88,7 @@ typedef struct {
   Vec3 trig[3];
   Vec3 trig_norm;
   Vec3 sphere_center;
-  float sphere_rad_sq;
+  float sphere_rad;
 } Object;
 
 #endif

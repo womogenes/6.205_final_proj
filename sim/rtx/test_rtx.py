@@ -13,6 +13,8 @@ from enum import Enum
 import random
 import ctypes
 import numpy as np
+import glob
+from argparse import ArgumentParser
 
 from PIL import Image
 from tqdm import tqdm
@@ -20,7 +22,16 @@ from tqdm import tqdm
 sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp24_vec3
 
-scale = 0.5
+parser = ArgumentParser()
+parser.add_argument("--scale", type=float)
+args = parser.parse_args()
+
+if "SCALE" in os.environ:
+    scale = float(os.environ["SCALE"])
+else:
+    scale = args.scale
+    os.environ["SCALE"] = str(scale)
+
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
 
@@ -54,6 +65,9 @@ async def test_module(dut):
             ((color8 >> 11) & 0b11111) << 3
         )
 
+    dut._log.info(f"{WIDTH=}, {HEIGHT=}")
+    dut._log.info(f"{scale=}")
+
     for _ in tqdm(range(WIDTH * HEIGHT), ncols=80, gui=False):
     # for _ in range(WIDTH * HEIGHT):
         await RisingEdge(dut.ray_done)
@@ -84,18 +98,8 @@ def runner():
         proj_path / "hdl" / "pipeline.sv",
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
-        proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_clip.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
-        proj_path / "hdl" / "math" / "fp24_convert.sv",
-        proj_path / "hdl" / "rng" / "prng_sphere.sv",
-        proj_path / "hdl" / "math" / "quadratic_solver.sv",
-        proj_path / "hdl" / "math" / "sphere_intersector.sv",
+        *glob.glob(f"{proj_path}/hdl/math/*.sv", recursive=True),
+        *glob.glob(f"{proj_path}/hdl/rng/*.sv", recursive=True),
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
         proj_path / "hdl" / "rtx" / "ray_maker.sv",
         proj_path / "hdl" / "rtx" / "ray_caster.sv",
