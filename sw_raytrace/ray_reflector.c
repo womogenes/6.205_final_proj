@@ -38,8 +38,8 @@ void ray_reflector(
   Color mat_color = lerp_color(mat->color, mat->spec_color, specular_amt);
   Vec3 new_ray_dir = lerp_vec3(diffuse_dir, specular_dir, specular_amt);
   
-  Color new_income_light = mul_vec3c(mat->emit_color, *ray_color);
-  *income_light = add_vec3c(new_income_light, *income_light);
+  Color extra_income_light = mul_vec3c(mat->emit_color, *ray_color);
+  *income_light = add_vec3c(extra_income_light, *income_light);
   *ray_color = mul_vec3c(*ray_color, mat_color);
 
   *ray_dir = new_ray_dir;

@@ -17,11 +17,11 @@ class Material:
         smoothness: float = 0,
         specular_prob: float = 0,
     ):
-        self.color = color                  # 72
-        self.spec_color = spec_color        # 72
-        self.emit_color = emit_color        # 72
-        self.smoothness = smoothness        # 24
-        self.specular_prob = specular_prob  # 24
+        self.color = color                              # 72
+        self.spec_color = spec_color                    # 72
+        self.emit_color = emit_color                    # 72
+        self.smoothness = smoothness                    # 24
+        self.specular_prob = int(specular_prob * 255)   # 8
 
     def pack_bits(self):
         # Pack properties into bit fields
@@ -30,7 +30,7 @@ class Material:
             (make_fp24_vec3(self.emit_color), 72),
             (make_fp24_vec3(self.spec_color), 72),
             (make_fp24(self.smoothness), 24),
-            (make_fp24(self.specular_prob), 8),
+            (self.specular_prob, 8),
         ]
         return pack_bits(fields, msb=True), sum([width for _, width in fields])
     
@@ -67,11 +67,41 @@ class Object:
 
 
 if __name__ == "__main__":
-    mat0 = Material(color=(1, 0.3, 0.3), emit_color=(0.1, 0.1, 0.1))
-    mat1 = Material(color=(0.3, 1, 0.3), emit_color=(0.1, 0.1, 0.1))
-    mat2 = Material(color=(0.3, 0.3, 1), emit_color=(0.1, 0.1, 0.1))
-    mat3 = Material(color=(0.5, 1, 0.5), emit_color=(1, 1, 1))
-    mat4 = Material(color=(0.85, 0.8, 1), emit_color=(0.1, 0.1, 0.1))
+    mat0 = Material(
+        color=(1, 0.3, 0.3),
+        spec_color=(1, 1, 1),
+        emit_color=(0.1, 0.1, 0.1),
+        specular_prob=1,
+        smoothness=1,
+    )
+    mat1 = Material(
+        color=(0.3, 1, 0.3),
+        spec_color=(1, 1, 1),
+        emit_color=(0.1, 0.1, 0.1),
+        specular_prob=1,
+        smoothness=1,
+    )
+    mat2 = Material(
+        color=(0.3, 0.3, 1),
+        spec_color=(1, 1, 1),
+        emit_color=(0.1, 0.1, 0.1),
+        specular_prob=1,
+        smoothness=1,
+    )
+    mat3 = Material(
+        color=(0.5, 1, 0.5),
+        spec_color=(1, 1, 1),
+        emit_color=(1, 1, 1),
+        specular_prob=1,
+        smoothness=1,
+    )
+    mat4 = Material(
+        color=(0.85, 0.8, 1),
+        spec_color=(1, 1, 1),
+        emit_color=(0.1, 0.1, 0.1),
+        specular_prob=1,
+        smoothness=1,
+    )
 
     objs = [
         Object(mat=mat0, sphere_center=(-2, 1, 7), sphere_rad=2),

@@ -27,6 +27,11 @@ module ray_reflector (
   input logic [47:0] lfsr_seed
 );
   // Pipelining go brr
+  pipeline #(.WIDTH(1), .DEPTH(37)) done_pipe (
+    .clk(clk),
+    .in(hit_valid),
+    .out(reflect_done)
+  );
 
   // ===== BRANCH 0: specular_amt =====
   fp24 spec_amt;
@@ -37,15 +42,18 @@ module ray_reflector (
     .seed(lfsr_seed),
     .rng(rng_specular)
   );
+  logic is_specular;
+  assign is_specular = rng_specular < hit_mat.specular_prob;
+
   always_comb begin
     if (rng_specular < hit_mat.specular_prob) begin
       spec_amt = hit_mat.smoothness;
     end else begin
-      // spec_amt = 0;
+      spec_amt = 0;
     end
   end
 
-  fp24 hit_mat_specular_prob;
+  logic [7:0] hit_mat_specular_prob;
   assign hit_mat_specular_prob = hit_mat.specular_prob;
 
   // Calculate (1 - specular_amt)
@@ -80,7 +88,7 @@ module ray_reflector (
   prng_sphere_lfsr prng_sphere (
     .clk(clk),
     .rst(rst),
-    .seed(lfsr_seed),
+    .seed(~lfsr_seed),
     .rng_vec(rng_vec)
   );
   fp24_vec3 rng_added;
@@ -124,8 +132,8 @@ module ray_reflector (
   fp24_vec3_lerp lerp_dir (
     .clk(clk),
     .rst(rst),
-    .v(specular_dir_piped),
-    .w(diffuse_dir),
+    .v(diffuse_dir),
+    .w(specular_dir_piped),
     .t(spec_amt_piped_dir),
     .one_sub_t(one_sub_spec_amt_piped_dir),
     .lerped(new_ray_dir_prenorm)
