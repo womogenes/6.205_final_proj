@@ -45,15 +45,17 @@ async def test_module(dut):
 
     # Camera data
     cam_data = 0x012345_abcdef_678900
-    for i in range(12):
+    for i in range(9):
         # lsb-first
         await send_byte((cam_data >> (i * 8)) & 0xFF)
+
+    await ClockCycles(dut.clk, 100)
 
 
 def runner():
     """Module tester."""
 
-    module_name = "uart_memflash"
+    module_name = "uart_memflash_rtx"
 
     hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
     sim = os.getenv("SIM", "icarus")
