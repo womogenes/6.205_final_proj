@@ -16,7 +16,7 @@ module ray_intersector (
   output logic hit_valid,
 
   // Scene buffer interface
-  input logic [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
   input object obj
 );
   // BILL READ THIS SHIT SO I DONT HAVE TO EXPLAIN

@@ -14,7 +14,7 @@ module rtx #(
   output logic ray_done,          // i.e. pixel_color valid
 
   // scene buffer interface
-  input logic [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
   input object obj
 );
   logic [10:0] pixel_h_caster;

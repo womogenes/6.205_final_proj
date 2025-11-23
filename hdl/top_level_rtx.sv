@@ -154,13 +154,16 @@ module top_level (
   );
 
   assign led[15] = uart_flash_active;
-  assign led[14:7] = uart_flash_cmd;
+  assign led[13:6] = uart_flash_cmd;
   // =========================
 
 
   // rtx requires an external scene buffer
   logic [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] scene_buf_depth;
   object scene_buf_obj;
+
+  // TODO: use uart to flash this
+  assign scene_buf_depth = sw[8:1];
 
   scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
     .clk(clk_rtx),

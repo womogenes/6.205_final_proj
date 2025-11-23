@@ -10,7 +10,7 @@ module rtx_tb #(
   input wire clk,
   input wire rst,
   input camera cam,
-  input logic [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
 
   output logic [15:0] rtx_pixel,
   output logic [10:0] pixel_h,
