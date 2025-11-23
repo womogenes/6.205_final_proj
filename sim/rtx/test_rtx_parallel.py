@@ -11,7 +11,7 @@ import os
 import sys
 import shutil
 from pathlib import Path
-from argparse import ArgumentParser
+from argparse import ArgumentParser, BooleanOptionalAction
 
 import cocotb
 from cocotb.clock import Clock
@@ -34,6 +34,7 @@ parser = ArgumentParser()
 parser.add_argument("--chunks", type=int, default=None)
 parser.add_argument("--scale", type=float, default=0.5)
 parser.add_argument("--frames", type=int, default=1)
+parser.add_argument("--waves", action=BooleanOptionalAction)
 
 args = parser.parse_args()
 print(args)
@@ -64,6 +65,10 @@ NUM_CHUNKS_ACTUAL = len(CHUNK_RANGES)
 test_file = os.path.basename(__file__).replace(".py", "")
 
 proj_path = Path(__file__).resolve().parent.parent.parent
+SCENE_BUF_MEM_PATH = str(proj_path / "data" / "scene_buffer.mem")
+
+with open(SCENE_BUF_MEM_PATH, "r") as fin:
+    NUM_OBJS = fin.read().strip().count("\n") + 1
 
 # Location to store chunk .npy files
 CHUNKS_OUT_DIR = proj_path / "sim" / "sim_build" / "rtx_parallel" / "chunks"
@@ -132,8 +137,6 @@ async def test_module(dut):
     # dut._log.info("Holding reset...")
     dut.lfsr_seed.value = int.from_bytes(os.urandom(12))
     dut.rst.value = 1
-    await ClockCycles(dut.clk, 100)
-    dut.rst.value = 0
 
     dut.cam.value = pack_bits([
         (make_fp24_vec3((0, 0, -10)), 72),            # origin
@@ -141,6 +144,10 @@ async def test_module(dut):
         (make_fp24_vec3((1, 0, 0)), 72),            # right
         (make_fp24_vec3((0, 1, 0)), 72),            # up
     ])
+    dut.num_objs.value = NUM_OBJS
+
+    await ClockCycles(dut.clk, 100)
+    dut.rst.value = 0
 
     def unpack_color8(color8):
         return (
@@ -169,6 +176,7 @@ async def test_module(dut):
         dut.new_ray.value = 0
 
         await RisingEdge(dut.ray_done)
+        # await ClockCycles(dut.clk, 1000)
 
         pixel_color = unpack_color8(dut.rtx_pixel.value.integer)
 
@@ -186,7 +194,7 @@ def build_verilator():
     print(f"Building Verilator for {WIDTH}x{HEIGHT}...")
 
     # Copy scene buffer to build dir
-    shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), BUILD_DIR / "scene_buffer.mem")
+    shutil.copy(SCENE_BUF_MEM_PATH, BUILD_DIR / "scene_buffer.mem")
 
     runner = get_runner(SIM)
     runner.build(
@@ -196,7 +204,7 @@ def build_verilator():
         build_args=BUILD_TEST_ARGS,
         parameters=PARAMETERS,
         timescale=("1ns", "1ps"),
-        waves=False,
+        waves=args.waves,
         build_dir=BUILD_DIR,
     )
 
@@ -225,7 +233,7 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
         build_args=BUILD_TEST_ARGS,
         parameters=PARAMETERS,
         timescale=("1ns", "1ps"),
-        waves=False,
+        waves=args.waves,
         build_dir=BUILD_DIR,
     )
 
@@ -234,7 +242,7 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
         hdl_toplevel=HDL_TOPLEVEL,
         test_module=test_file,
         test_args=[],
-        waves=False,
+        waves=args.waves,
     )
 
     return chunk_idx

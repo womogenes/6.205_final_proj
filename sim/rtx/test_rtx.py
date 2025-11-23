@@ -23,7 +23,7 @@ sys.path.append(Path(__file__).resolve().parent.parent._str)
 from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp24_vec3
 
 parser = ArgumentParser()
-parser.add_argument("--scale", type=float)
+parser.add_argument("--scale", type=float, default=0.5)
 args = parser.parse_args()
 
 if "SCALE" in os.environ:
@@ -34,6 +34,12 @@ else:
 
 WIDTH = int(32 * scale)
 HEIGHT = int(18 * scale)
+
+proj_path = Path(__file__).resolve().parent.parent.parent
+SCENE_BUF_MEM_PATH = str(proj_path / "data" / "scene_buffer.mem")
+
+with open(SCENE_BUF_MEM_PATH, "r") as fin:
+    NUM_OBJS = fin.read().strip().count("\n") + 1
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -52,6 +58,7 @@ async def test_module(dut):
         (make_fp24_vec3((1, 0, 0)), 72),            # right
         (make_fp24_vec3((0, 1, 0)), 72),            # up
     ])
+    dut.num_objs.value = NUM_OBJS
 
     await ClockCycles(dut.clk, 100)
     dut.rst.value = 0
@@ -71,7 +78,6 @@ async def test_module(dut):
     for _ in tqdm(range(WIDTH * HEIGHT), ncols=80, gui=False):
     # for _ in range(WIDTH * HEIGHT):
         await RisingEdge(dut.ray_done)
-        # await ClockCycles(dut.clk, 100)
 
         pixel_h = dut.pixel_h.value.integer
         pixel_v = dut.pixel_v.value.integer
@@ -92,7 +98,7 @@ def runner():
 
     hdl_toplevel_lang = os.getenv("HDL_TOPLEVEL_LANG", "verilog")
     sim = os.getenv("SIM", "icarus")
-    proj_path = Path(__file__).resolve().parent.parent.parent
+
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
         proj_path / "hdl" / "pipeline.sv",
@@ -116,7 +122,7 @@ def runner():
     build_test_args = ["-Wall"]
 
     build_dir = proj_path / "sim" / "sim_build"
-    shutil.copy(str(proj_path / "data" / "scene_buffer.mem"), build_dir / "scene_buffer.mem")
+    shutil.copy(SCENE_BUF_MEM_PATH, build_dir / "scene_buffer.mem")
 
     # values for parameters defined earlier in the code.
     parameters = {

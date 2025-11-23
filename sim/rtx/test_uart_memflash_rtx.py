@@ -51,6 +51,8 @@ async def test_module(dut):
 
     await ClockCycles(dut.clk, 100)
 
+    # Send an object (not as many bytes)
+
 
 def runner():
     """Module tester."""

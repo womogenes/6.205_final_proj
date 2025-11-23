@@ -5,7 +5,7 @@ module scene_buffer #(
 ) (
   input wire clk,
   input wire rst,
-  input wire [$clog(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
 
   output object obj,
 

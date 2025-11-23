@@ -32,7 +32,8 @@ module uart_memflash_rtx (
   typedef enum {
     IDLE,
     DATA_CAM,
-    DATA_OBJ
+    DATA_OBJ,
+    DATA_NUM_OBJS
   } flash_state;
 
   flash_state state;
