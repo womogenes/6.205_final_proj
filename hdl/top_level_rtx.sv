@@ -163,7 +163,7 @@ module top_level (
   object scene_buf_obj;
 
   // TODO: use uart to flash this
-  assign scene_buf_depth = sw[8:1];
+  assign scene_buf_depth = sw[9:2];
 
   scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
     .clk(clk_rtx),
@@ -203,6 +203,7 @@ module top_level (
     .pixel_v(rtx_v_count),
     .ray_done(rtx_valid),
 
+    .num_objs(scene_buf_depth),
     .obj(scene_buf_obj)
   );
 
