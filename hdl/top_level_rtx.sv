@@ -368,14 +368,20 @@ module top_level (
   logic v_sync_buffered;
   logic h_sync_buffered;
   logic active_draw_buffered;
-  pipeline #(
-    .WIDTH(3),
-    .DEPTH(2)
-  ) vid_control_buffer (
-    .clk(clk_pixel),
-    .in({v_sync, h_sync, active_draw_hdmi}),
-    .out({v_sync_buffered, h_sync_buffered, active_draw_buffered})
-  );
+
+  // NOTE: the pipeline was causing issues with right halfof screen
+  //   turns out zero cycles is the correct delay
+  // pipeline #(
+  //   .WIDTH(3),
+  //   .DEPTH(0)
+  // ) vid_control_buffer (
+  //   .clk(clk_pixel),
+  //   .in({v_sync, h_sync, active_draw_hdmi}),
+  //   .out({v_sync_buffered, h_sync_buffered, active_draw_buffered})
+  // );
+  assign v_sync_buffered = v_sync;
+  assign h_sync_buffered = h_sync;
+  assign active_draw_buffered = active_draw_hdmi;
  
   logic [9:0] tmds_10b [0:2]; // output of each TMDS encoder!
   logic tmds_signal [2:0]; // output of each TMDS serializer!
