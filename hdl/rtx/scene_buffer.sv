@@ -5,6 +5,7 @@ module scene_buffer #(
 ) (
   input wire clk,
   input wire rst,
+  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
 
   output object obj,
 
@@ -24,13 +25,13 @@ module scene_buffer #(
   assign sphere_rad_sq = obj.sphere_rad_sq;
   assign sphere_rad_inv = obj.sphere_rad_inv;
 
-  logic [$clog2(SCENE_BUFFER_DEPTH)-1:0] obj_idx;
+  logic [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] obj_idx;
 
   always_ff @(posedge clk) begin
     if (rst) begin
       obj_idx <= 0;
     end else begin
-      if (obj_idx == SCENE_BUFFER_DEPTH - 1) begin
+      if (obj_idx >= num_objs - 1) begin
         obj_idx <= 0;
       end else begin
         obj_idx <= obj_idx + 1;
@@ -41,7 +42,7 @@ module scene_buffer #(
   // Read out objects from memory
   xilinx_true_dual_port_read_first_2_clock_ram #(
     .RAM_WIDTH($bits(object)),
-    .RAM_DEPTH(SCENE_BUFFER_DEPTH),
+    .RAM_DEPTH(MAX_SCENE_BUF_DEPTH),
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"),
     .INIT_FILE(INIT_FILE)
   ) scene_buf_mem (

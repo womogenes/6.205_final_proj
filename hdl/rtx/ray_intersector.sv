@@ -16,6 +16,7 @@ module ray_intersector (
   output logic hit_valid,
 
   // Scene buffer interface
+  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
   input object obj
 );
   // BILL READ THIS SHIT SO I DONT HAVE TO EXPLAIN
@@ -24,8 +25,8 @@ module ray_intersector (
 
   // since we are looping thru all objects synchronization doesnt matter as long as
   // we check all of them
-  logic [$clog2(SCENE_BUFFER_DEPTH + 1)-1:0] pre_obj_count;
-  logic [$clog2(SCENE_BUFFER_DEPTH + 1)-1:0] post_obj_count;
+  logic [$clog2(MAX_SCENE_BUF_DEPTH + 1)-1:0] pre_obj_count;
+  logic [$clog2(MAX_SCENE_BUF_DEPTH + 1)-1:0] post_obj_count;
   logic busy;
   logic last_obj;
 
@@ -36,10 +37,11 @@ module ray_intersector (
   ) ray_valid_pipe (
     .clk(clk), 
     .in(ray_valid),
-    .out(ray_valid_piped));
+    .out(ray_valid_piped)
+  );
 
-  assign busy = pre_obj_count < SCENE_BUFFER_DEPTH;
-  assign last_obj = post_obj_count == SCENE_BUFFER_DEPTH - 1;
+  assign busy = pre_obj_count < num_objs;
+  assign last_obj = post_obj_count == num_objs - 1;
 
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -48,19 +50,20 @@ module ray_intersector (
       hit_any <= 1'b0;
       hit_dist_sq <= 1'b0;
       
-      pre_obj_count <= SCENE_BUFFER_DEPTH;
-      post_obj_count <= SCENE_BUFFER_DEPTH;
+      pre_obj_count <= num_objs;
+      post_obj_count <= num_objs;
 
       hit_mat <= 0;
       hit_pos <= 0;
       hit_normal <= 0;
       hit_dist_sq <= 0;
+      
     end else begin
       // count input objects
       if (ray_valid) begin
         pre_obj_count <= 0;
       end else begin
-        if (pre_obj_count < SCENE_BUFFER_DEPTH) begin
+        if (pre_obj_count < num_objs) begin
           pre_obj_count <= pre_obj_count + 1;
         end
       end
@@ -69,7 +72,7 @@ module ray_intersector (
       if (ray_valid_piped) begin
         post_obj_count <= 0;
       end else begin
-        if (post_obj_count < SCENE_BUFFER_DEPTH) begin
+        if (post_obj_count < num_objs) begin
           post_obj_count <= post_obj_count + 1;
         end
       end
@@ -86,8 +89,10 @@ module ray_intersector (
           hit_any <= 1'b0;
         end
       end else begin
-        if (sphere_intx_hit && 
-            (hit_any == 0 || fp24_greater(hit_dist_sq, sphere_intx_hit_dist_sq))) begin
+        if (
+          sphere_intx_hit && 
+          (hit_any == 0 || fp24_greater(hit_dist_sq, sphere_intx_hit_dist_sq))
+        ) begin
           hit_mat <= sphere_intx_mat;
           hit_pos <= sphere_intx_hit_pos;
           hit_normal <= sphere_intx_hit_norm;
@@ -95,7 +100,6 @@ module ray_intersector (
           hit_any <= 1'b1;
         end
       end
-      
 
       hit_valid <= last_obj;
     end
@@ -120,10 +124,11 @@ module ray_intersector (
   ) mat_pipe (
     .clk(clk), 
     .in(obj.mat), 
-    .out(sphere_intx_mat));
+    .out(sphere_intx_mat)
+  );
 
   // The actual intersector logic
-  sphere_intersector sphere_intx(
+  sphere_intersector sphere_intx (
     .clk(clk),
     .rst(rst),
 

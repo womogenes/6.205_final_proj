@@ -14,6 +14,7 @@ module rtx #(
   output logic ray_done,          // i.e. pixel_color valid
 
   // scene buffer interface
+  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
   input object obj
 );
   logic [10:0] pixel_h_caster;
@@ -69,6 +70,7 @@ module rtx #(
     .pixel_v_out(pixel_v),
 
     // Scene buffer interface
+    .num_objs(num_objs),
     .obj(obj),
 
     // SET SEED FOR LFSR HERE

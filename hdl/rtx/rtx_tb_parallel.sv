@@ -10,6 +10,7 @@ module rtx_tb_parallel #(
   input wire clk,
   input wire rst,
   input camera cam,
+  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
 
   input wire [10:0] pixel_h_in,
   input wire [9:0] pixel_v_in,
@@ -34,6 +35,7 @@ module rtx_tb_parallel #(
   scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
     .clk(clk),
     .rst(rst),
+    .num_objs(num_objs),
     .obj(obj)
   );
 
@@ -84,6 +86,7 @@ module rtx_tb_parallel #(
     // .pixel_v_out(pixel_v),
 
     // Scene buffer interface
+    .num_objs(num_objs),
     .obj(obj)
   );
 

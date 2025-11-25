@@ -20,6 +20,7 @@ module ray_tracer #(
   output logic [9:0] pixel_v_out,
 
   // Interface to scene buffer
+  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
   input object obj,
 
   // DEBUG: to be used only for testbench
@@ -63,6 +64,9 @@ module ray_tracer #(
 
     end else begin
       // three-state FSM wahoo
+      // TODO: remove the FSM and if the intersector is not busy, select between
+      //   new ray and the reflector output
+
       case (state)
         IDLE: begin
           ray_valid_intx <= 1'b0;   // redundant i think but to be safe
@@ -145,6 +149,7 @@ module ray_tracer #(
     .hit_valid(ray_done_intx),
 
     // Scene buffer interface
+    .num_objs(num_objs),
     .obj(obj)
   );
 
@@ -176,7 +181,7 @@ module ray_tracer #(
   // pipeline #(.WIDTH(10), .DEPTH(2)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
 
   // I think we can assume this because inputs should be held constant?
-  //TODO for now... optimize this
+  // TODO: optimize this
   assign pixel_h_out = pixel_h_in;
   assign pixel_v_out = pixel_v_in;
 endmodule

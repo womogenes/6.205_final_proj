@@ -154,15 +154,21 @@ module top_level (
   );
 
   assign led[15] = uart_flash_active;
+  assign led[13:6] = uart_flash_cmd;
   // =========================
 
 
   // rtx requires an external scene buffer
+  logic [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] scene_buf_depth;
   object scene_buf_obj;
+
+  // TODO: use uart to flash this
+  assign scene_buf_depth = sw[9:2];
 
   scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
     .clk(clk_rtx),
     .rst(sys_rst),
+    .num_objs(scene_buf_depth),
     .obj(scene_buf_obj)
   );
 
@@ -178,11 +184,11 @@ module top_level (
       cam.up <= {24'h000000, 24'h3f0000, 24'h000000};       // (0, 1, 0)
 
     end else if (uart_flash_wen) begin
-      case (uart_flash_cmd[1:0])
-        2'b00: cam.origin <= uart_flash_cam_data;
-        2'b01: cam.forward <= uart_flash_cam_data;
-        2'b10: cam.right <= uart_flash_cam_data;
-        2'b11: cam.up <= uart_flash_cam_data;
+      casez (uart_flash_cmd[1:0])
+        2'b1?????00: cam.origin <= uart_flash_cam_data;
+        2'b1?????01: cam.forward <= uart_flash_cam_data;
+        2'b1?????10: cam.right <= uart_flash_cam_data;
+        2'b1?????11: cam.up <= uart_flash_cam_data;
       endcase
     end
   end
@@ -197,6 +203,7 @@ module top_level (
     .pixel_v(rtx_v_count),
     .ray_done(rtx_valid),
 
+    .num_objs(scene_buf_depth),
     .obj(scene_buf_obj)
   );
 
