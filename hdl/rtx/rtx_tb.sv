@@ -11,6 +11,7 @@ module rtx_tb #(
   input wire rst,
   input camera cam,
   input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [7:0] max_bounces,
 
   output logic [15:0] rtx_pixel,
   output logic [10:0] pixel_h,
@@ -37,6 +38,9 @@ module rtx_tb #(
     .pixel_h(pixel_h),
     .pixel_v(pixel_v),
     .ray_done(ray_done),
+
+    // Max bounce limit
+    .max_bounces(max_bounces),
 
     // Scene buffer wires
     .num_objs(num_objs),

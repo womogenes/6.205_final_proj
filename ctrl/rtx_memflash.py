@@ -55,13 +55,13 @@ def send_program():
         print(f"{obj_num_bits=}, {obj_num_bytes=}")
         ser.write(obj_bits.to_bytes(obj_num_bytes, "little"))
 
-    # set_cam(
-    #     origin=(0, 0, -20),
-    #     forward=(0, 0, 1280 // 2  * 2.5),
-    #     right=(1, 0, 0),
-    #     up=(0, 1, 0),
-    # )
-    # return
+    set_cam(
+        origin=(4, 0, -20),
+        forward=(0, 0, 1280 // 2  * 12.5),
+        right=(1, 0, 0),
+        up=(0, 1, 0),
+    )
+    return
 
 
 if __name__ == "__main__":

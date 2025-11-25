@@ -23,6 +23,9 @@ module ray_tracer #(
   input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
   input object obj,
 
+  // Dynamic parameter: # of bounces
+  input wire [7:0] max_bounces,
+
   // DEBUG: to be used only for testbench
   input wire [95:0] lfsr_seed
 );
@@ -53,7 +56,7 @@ module ray_tracer #(
   fp24_vec3 rflx_new_color;
   fp24_vec3 rflx_new_income_light;
 
-  logic [$clog2(MAX_BOUNCES)-1:0] bounce_count;
+  logic [7:0] bounce_count;
 
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -116,7 +119,7 @@ module ray_tracer #(
             cur_income_light <= rflx_new_income_light;
             pixel_color <= rflx_new_income_light;
 
-            if (bounce_count == MAX_BOUNCES - 1) begin
+            if (bounce_count >= max_bounces - 1) begin
               // Bounced max no. of times, exit loop
               state <= IDLE;
               ray_done <= 1'b1;

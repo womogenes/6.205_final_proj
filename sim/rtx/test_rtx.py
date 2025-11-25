@@ -51,6 +51,7 @@ async def test_module(dut):
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
+    dut.max_bounces = 3
 
     dut.cam.value = pack_bits([
         (make_fp24_vec3((0, 0, 0)), 72),            # origin

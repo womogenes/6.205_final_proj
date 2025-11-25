@@ -13,6 +13,9 @@ module rtx #(
   output logic [9:0] pixel_v,
   output logic ray_done,          // i.e. pixel_color valid
 
+  // Dynamic parameter: # of bounces
+  input wire [7:0] max_bounces,
+
   // scene buffer interface
   input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
   input object obj
@@ -68,6 +71,9 @@ module rtx #(
     .pixel_color(pixel_color),
     .pixel_h_out(pixel_h),
     .pixel_v_out(pixel_v),
+    
+    // Dynamic parameter: # of bounces
+    .max_bounces(max_bounces),
 
     // Scene buffer interface
     .num_objs(num_objs),

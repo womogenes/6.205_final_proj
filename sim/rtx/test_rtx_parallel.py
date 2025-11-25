@@ -145,6 +145,7 @@ async def test_module(dut):
         (make_fp24_vec3((0, 1, 0)), 72),            # up
     ])
     dut.num_objs.value = NUM_OBJS
+    dut.max_bounces.value = 3
 
     await ClockCycles(dut.clk, 100)
     dut.rst.value = 0
