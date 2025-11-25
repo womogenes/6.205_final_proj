@@ -122,6 +122,7 @@ module top_level (
   logic uart_flash_active;
   logic [7:0] uart_flash_cmd;
   logic [71:0] uart_flash_cam_data;
+  logic [$bits(object)-1:0] uart_flash_obj_data;
   logic uart_flash_wen;
 
   logic uart_rx_buf0, uart_rx_buf1;
@@ -150,6 +151,7 @@ module top_level (
     .flash_active(uart_flash_active),
     .flash_cmd(uart_flash_cmd),
     .flash_cam_data(uart_flash_cam_data),
+    .flash_obj_data(uart_flash_obj_data),
     .flash_wen(uart_flash_wen)
   );
 
@@ -157,10 +159,21 @@ module top_level (
   assign led[13:6] = uart_flash_cmd;
   // =========================
 
-
   // rtx requires an external scene buffer
   logic [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] scene_buf_depth;
   object scene_buf_obj;
+
+  // Scene buffer object overwriting
+  logic flash_obj_wen;
+  logic [OBJ_IDX_WIDTH-1:0] flash_obj_idx;
+  logic [$bits(object)-1:0] flash_obj_data;
+
+  // Scene buffer uart flashing logic
+  always_comb begin
+    flash_obj_wen = uart_flash_wen && (~uart_flash_cmd[7]);
+    flash_obj_idx = uart_flash_cmd[6:0];
+    flash_obj_data = uart_flash_obj_data;
+  end
 
   // TODO: use uart to flash this
   assign scene_buf_depth = sw[9:2];
@@ -169,12 +182,16 @@ module top_level (
     .clk(clk_rtx),
     .rst(sys_rst),
     .num_objs(scene_buf_depth),
-    .obj(scene_buf_obj)
+    .obj(scene_buf_obj),
+
+    // Reprogram scene buffer with UART
+    .flash_obj_wen(flash_obj_wen),
+    .flash_obj_idx(flash_obj_idx),
+    .flash_obj_data(flash_obj_data)
   );
 
   // rtx requires external camera
   camera cam;
-
   always_ff @(posedge clk_rtx) begin
     // Initialize camera
     if (sys_rst) begin
@@ -184,11 +201,11 @@ module top_level (
       cam.up <= {24'h000000, 24'h3f0000, 24'h000000};       // (0, 1, 0)
 
     end else if (uart_flash_wen) begin
-      casez (uart_flash_cmd[1:0])
-        2'b1?????00: cam.origin <= uart_flash_cam_data;
-        2'b1?????01: cam.forward <= uart_flash_cam_data;
-        2'b1?????10: cam.right <= uart_flash_cam_data;
-        2'b1?????11: cam.up <= uart_flash_cam_data;
+      casez (uart_flash_cmd)
+        8'b1?????00: cam.origin <= uart_flash_cam_data;
+        8'b1?????01: cam.forward <= uart_flash_cam_data;
+        8'b1?????10: cam.right <= uart_flash_cam_data;
+        8'b1?????11: cam.up <= uart_flash_cam_data;
       endcase
     end
   end

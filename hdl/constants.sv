@@ -2,6 +2,7 @@
 // e.g. inv_sqrt delay is defined in fp24_inv_sqrt.sv
 
 parameter integer MAX_SCENE_BUF_DEPTH = 256;
+parameter integer OBJ_IDX_WIDTH = $clog2(MAX_SCENE_BUF_DEPTH);
 
 // ===== FP24 MATH OPS =====
  

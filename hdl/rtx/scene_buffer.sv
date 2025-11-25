@@ -5,7 +5,12 @@ module scene_buffer #(
 ) (
   input wire clk,
   input wire rst,
-  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [OBJ_IDX_WIDTH-1:0] num_objs,
+
+  // Object overwrite flashing
+  input wire flash_obj_wen,
+  input wire [OBJ_IDX_WIDTH-1:0] flash_obj_idx,
+  input wire [$bits(object)-1:0] flash_obj_data,
 
   output object obj,
 
@@ -47,10 +52,10 @@ module scene_buffer #(
     .INIT_FILE(INIT_FILE)
   ) scene_buf_mem (
     // Reprogramming write
-    .addra(),
+    .addra(flash_obj_idx),
     .clka(clk),
-    .wea(1'b0),
-    .dina(),
+    .wea(flash_obj_wen),
+    .dina(flash_obj_data),
     .ena(1'b1),
     .regcea(1'b1),
     .rsta(rst),
