@@ -1,7 +1,7 @@
 // Constants for now are defined above their modules
 // e.g. inv_sqrt delay is defined in fp24_inv_sqrt.sv
 
-parameter integer MAX_NUM_OBJS = 256;
+parameter integer MAX_NUM_OBJS = 257;
 parameter integer OBJ_IDX_WIDTH = $clog2(MAX_NUM_OBJS);
 
 // ===== FP24 MATH OPS =====

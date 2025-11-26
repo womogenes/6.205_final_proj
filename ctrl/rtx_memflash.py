@@ -25,7 +25,7 @@ BAUD = 115200  # Make sure this matches your UART receiver
 def send_program():
     ser = serial.Serial(SERIAL_PORTNAME, BAUD)
 
-    # for i in range(1):
+    # for i in range(100):
     #     ser.write((0).to_bytes(1))
     #     input(i+1)
     # return
@@ -55,12 +55,25 @@ def send_program():
         print(f"{obj_num_bits=}, {obj_num_bytes=}")
         ser.write(obj_bits.to_bytes(obj_num_bytes, "little"))
 
+    def set_max_bounces(max_bounces: int):
+        ser.write((0x85).to_bytes(1))
+        ser.write(max_bounces.to_bytes(1))
+
+    def set_num_objs(num_objs: int):
+        # assume MAX_NUM_OBJS is 256, so this is just one byte
+        ser.write((0x84).to_bytes(1))
+        ser.write(num_objs.to_bytes(2))
+
     set_cam(
-        origin=(4, 0, -20),
-        forward=(0, 0, 1280 // 2  * 12.5),
-        right=(1, 0, 0),
-        up=(0, 1, 0),
+        origin=(0, 0, -20),
+        forward=(0, 0, 1280 // 2 * 30),
+        right=(10, 0, 0),
+        up=(0, 10, 0),
     )
+
+    set_max_bounces(5)
+    # set_num_objs(2)
+
     return
 
 

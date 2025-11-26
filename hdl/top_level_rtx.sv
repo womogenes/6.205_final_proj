@@ -123,6 +123,8 @@ module top_level (
   logic [7:0] uart_flash_cmd;
   logic [71:0] uart_flash_cam_data;
   logic [$bits(object)-1:0] uart_flash_obj_data;
+  logic [$clog2(MAX_NUM_OBJS)-1:0] uart_flash_num_objs_data;
+  logic [7:0] uart_flash_max_bounces_data;
   logic uart_flash_wen;
 
   logic uart_rx_buf0, uart_rx_buf1;
@@ -152,6 +154,8 @@ module top_level (
     .flash_cmd(uart_flash_cmd),
     .flash_cam_data(uart_flash_cam_data),
     .flash_obj_data(uart_flash_obj_data),
+    .flash_num_objs_data(uart_flash_num_objs_data),
+    .flash_max_bounces_data(uart_flash_max_bounces_data),
     .flash_wen(uart_flash_wen)
   );
 
@@ -160,7 +164,7 @@ module top_level (
   // =========================
 
   // rtx requires an external scene buffer
-  logic [$clog2(MAX_NUM_OBJS)-1:0] scene_buf_depth;
+  logic [$clog2(MAX_NUM_OBJS)-1:0] num_objs;
   object scene_buf_obj;
 
   // Scene buffer object overwriting
@@ -175,13 +179,10 @@ module top_level (
     flash_obj_data = uart_flash_obj_data;
   end
 
-  // TODO: use uart to flash this
-  assign scene_buf_depth = sw[9:2];
-
   scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
     .clk(clk_rtx),
     .rst(sys_rst),
-    .num_objs(scene_buf_depth),
+    .num_objs(num_objs),
     .obj(scene_buf_obj),
 
     // Reprogram scene buffer with UART
@@ -189,6 +190,9 @@ module top_level (
     .flash_obj_idx(flash_obj_idx),
     .flash_obj_data(flash_obj_data)
   );
+
+  // max bounces is dynamic now
+  logic [7:0] max_bounces;
 
   // rtx requires external camera
   camera cam;
@@ -200,12 +204,18 @@ module top_level (
       cam.right <= {24'h3f0000, 24'h000000, 24'h000000};    // (1, 0, 0)
       cam.up <= {24'h000000, 24'h3f0000, 24'h000000};       // (0, 1, 0)
 
+      // half-sensible defaults
+      num_objs <= 16;
+      max_bounces <= 3;
+
     end else if (uart_flash_wen) begin
       casez (uart_flash_cmd)
-        8'b1?????00: cam.origin <= uart_flash_cam_data;
-        8'b1?????01: cam.forward <= uart_flash_cam_data;
-        8'b1?????10: cam.right <= uart_flash_cam_data;
-        8'b1?????11: cam.up <= uart_flash_cam_data;
+        8'b1????000: cam.origin <= uart_flash_cam_data;
+        8'b1????001: cam.forward <= uart_flash_cam_data;
+        8'b1????010: cam.right <= uart_flash_cam_data;
+        8'b1????011: cam.up <= uart_flash_cam_data;
+        8'b1????100: num_objs <= uart_flash_num_objs_data;
+        8'b1????101: max_bounces <= uart_flash_max_bounces_data;
       endcase
     end
   end
@@ -220,7 +230,9 @@ module top_level (
     .pixel_v(rtx_v_count),
     .ray_done(rtx_valid),
 
-    .num_objs(scene_buf_depth),
+    .max_bounces(max_bounces),
+
+    .num_objs(num_objs),
     .obj(scene_buf_obj)
   );
 
