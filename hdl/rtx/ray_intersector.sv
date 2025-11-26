@@ -16,7 +16,7 @@ module ray_intersector (
   output logic hit_valid,
 
   // Scene buffer interface
-  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [$clog2(MAX_NUM_OBJS)-1:0] num_objs,
   input object obj
 );
   // BILL READ THIS SHIT SO I DONT HAVE TO EXPLAIN
@@ -25,8 +25,8 @@ module ray_intersector (
 
   // since we are looping thru all objects synchronization doesnt matter as long as
   // we check all of them
-  logic [$clog2(MAX_SCENE_BUF_DEPTH + 1)-1:0] pre_obj_count;
-  logic [$clog2(MAX_SCENE_BUF_DEPTH + 1)-1:0] post_obj_count;
+  logic [$clog2(MAX_NUM_OBJS + 1)-1:0] pre_obj_count;
+  logic [$clog2(MAX_NUM_OBJS + 1)-1:0] post_obj_count;
   logic busy;
   logic last_obj;
 

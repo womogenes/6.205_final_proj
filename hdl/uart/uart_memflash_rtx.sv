@@ -11,6 +11,7 @@ module uart_memflash_rtx (
   output logic [7:0] flash_cmd,
   output logic [71:0] flash_cam_data,
   output logic [OBJ_WIDTH-1:0] flash_obj_data,
+  output logic [$clog2(MAX_NUM_OBJS-1)-1:0] flash_num_objs_data,
   output logic flash_wen
 );
   localparam integer OBJ_BYTES = ($bits(object) + 7) / 8;
@@ -33,7 +34,8 @@ module uart_memflash_rtx (
     IDLE,
     DATA_CAM,
     DATA_OBJ,
-    DATA_NUM_OBJS
+    DATA_NUM_OBJS,
+    DATA_MAX_BOUNCES
   } flash_state;
 
   flash_state state;
@@ -98,6 +100,11 @@ module uart_memflash_rtx (
             end else begin
               flash_obj_byte_idx <= flash_obj_byte_idx + 1;
             end
+          end
+        end
+        DATA_NUM_OBJS: begin
+          if (uart_rx_valid) begin
+            
           end
         end
       endcase

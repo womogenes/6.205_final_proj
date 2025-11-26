@@ -20,7 +20,7 @@ module ray_tracer #(
   output logic [9:0] pixel_v_out,
 
   // Interface to scene buffer
-  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [$clog2(MAX_NUM_OBJS)-1:0] num_objs,
   input object obj,
 
   // Dynamic parameter: # of bounces

@@ -160,7 +160,7 @@ module top_level (
   // =========================
 
   // rtx requires an external scene buffer
-  logic [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] scene_buf_depth;
+  logic [$clog2(MAX_NUM_OBJS)-1:0] scene_buf_depth;
   object scene_buf_obj;
 
   // Scene buffer object overwriting

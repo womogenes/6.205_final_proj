@@ -10,7 +10,7 @@ module rtx_tb_parallel #(
   input wire clk,
   input wire rst,
   input camera cam,
-  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [$clog2(MAX_NUM_OBJS)-1:0] num_objs,
   input wire [7:0] max_bounces,
 
   input wire [10:0] pixel_h_in,
