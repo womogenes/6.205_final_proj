@@ -11,7 +11,7 @@ module uart_memflash_rtx (
   output logic [7:0] flash_cmd,
   output logic [71:0] flash_cam_data,
   output logic [OBJ_WIDTH-1:0] flash_obj_data,
-  output logic [NUM_OBJS_WIDTH:0] flash_num_objs_data,
+  output logic [NUM_OBJS_WIDTH-1:0] flash_num_objs_data,
   output logic [7:0] flash_max_bounces_data,
   output logic flash_wen
 );

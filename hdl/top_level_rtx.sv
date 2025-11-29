@@ -160,7 +160,6 @@ module top_level (
   );
 
   assign led[15] = uart_flash_active;
-  assign led[13:6] = uart_flash_cmd;
   // =========================
 
   // rtx requires an external scene buffer
@@ -219,6 +218,8 @@ module top_level (
       endcase
     end
   end
+
+  assign led[13:0] = num_objs;
 
   rtx my_rtx(
     .clk(clk_rtx),
