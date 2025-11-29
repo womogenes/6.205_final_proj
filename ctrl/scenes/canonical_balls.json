@@ -1,0 +1,21 @@
+{
+  "camera": {
+    "origin": [0, 0, 0],
+    "forward": [0, 0, 1280],
+    "up": [0, 1, 0],
+    "right": [1, 0, 0]
+  },
+  "objects": [
+    {
+      "is_trig": 0,
+      "sphere_center": [0, -200, 5],
+      "sphere_rad": 199,
+      "material": {
+        "color": [1, 0.3, 0.3],
+        "emit_color": [0.1, 0.1, 0.1],
+        "smoothness": 1.0,
+        "specular_prob": 0.0
+      }
+    }
+  ]
+}

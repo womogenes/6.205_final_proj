@@ -12,17 +12,27 @@ from make_scene_buffer import Material, Object
 import wave
 import serial
 import sys
+import json
 
 from tqdm import tqdm
 
 from struct import unpack
 import time
 
+from argparse import ArgumentParser
+
+parser = ArgumentParser()
+parser.add_argument("scene", nargs="?", type=str)
+
+args = parser.parse_args()
+print(args.scene)
+
 # Communication Parameters
 SERIAL_PORTNAME = "/dev/ttyUSB1"  # CHANGE ME to match your system's serial port name!
 BAUD = 115200  # Make sure this matches your UART receiver
 
-def send_program():
+
+if __name__ == "__main__":
     ser = serial.Serial(SERIAL_PORTNAME, BAUD)
 
     # for i in range(100):
@@ -60,22 +70,29 @@ def send_program():
         ser.write(max_bounces.to_bytes(1, "little"))
 
     def set_num_objs(num_objs: int):
-        # assume MAX_NUM_OBJS is 256, so this is just one byte
+        assert num_objs > 0, "Cannot set zero objects"
         ser.write((0x84).to_bytes(1, "little"))
         ser.write(num_objs.to_bytes(2, "little"))
 
+    with open(args.scene) as fin:
+        scene = json.load(fin)
+
     set_cam(
-        origin=(0, 0, -20),
-        forward=(0, 0, 1280 // 2 * 30),
-        right=(10, 0, 0),
-        up=(0, 10, 0),
+        origin=scene["camera"]["origin"],
+        forward=scene["camera"]["forward"],
+        right=scene["camera"]["right"],
+        up=scene["camera"]["up"],
     )
 
+    # Flash objects
+    objs = scene["objects"]
+    for idx, obj in enumerate(objs):
+        obj["mat"] = Material(**obj["material"])
+        del obj["material"]
+        print(f"flashing {idx}, {obj}")
+        set_obj(idx, Object(**obj))
+
+    set_num_objs(len(objs))
+
     set_max_bounces(5)
-    set_num_objs(2)
-
-    return
-
-
-if __name__ == "__main__":
-    send_program()
+    # set_num_objs(2)
