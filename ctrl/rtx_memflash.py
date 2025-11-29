@@ -56,13 +56,13 @@ def send_program():
         ser.write(obj_bits.to_bytes(obj_num_bytes, "little"))
 
     def set_max_bounces(max_bounces: int):
-        ser.write((0x85).to_bytes(1))
-        ser.write(max_bounces.to_bytes(1))
+        ser.write((0x85).to_bytes(1, "little"))
+        ser.write(max_bounces.to_bytes(1, "little"))
 
     def set_num_objs(num_objs: int):
         # assume MAX_NUM_OBJS is 256, so this is just one byte
-        ser.write((0x84).to_bytes(1))
-        ser.write(num_objs.to_bytes(2))
+        ser.write((0x84).to_bytes(1, "little"))
+        ser.write(num_objs.to_bytes(2, "little"))
 
     set_cam(
         origin=(0, 0, -20),
@@ -72,7 +72,7 @@ def send_program():
     )
 
     set_max_bounces(5)
-    # set_num_objs(2)
+    set_num_objs(2)
 
     return
 
