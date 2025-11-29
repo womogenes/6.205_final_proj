@@ -94,5 +94,4 @@ if __name__ == "__main__":
 
     set_num_objs(len(objs))
 
-    set_max_bounces(5)
-    # set_num_objs(2)
+    set_max_bounces(int(scene["max_bounces"]))
