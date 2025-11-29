@@ -18,6 +18,13 @@ We anticipate getting cooked by LUT usage at some point, so here are some areas 
 - `fp24_inv_sqrt`: we can save ~250 LUTs per stage cut. This does change the cycle count of everything.
 - `lerp`: since the value of `t` is only ever `mat.smoothness` or `1`, we can assume the value of `t` is always `1 - math.smoothness` or `0` and these are precomputable.
 
+## Scene flashing
+
+1. Make a scene in `ctrl/scenes` (example: `ctrl/scenes/canonical_balls.json`)
+2. Run `python flash_scene.py <scene.json>`
+
+Note: untested with triangles
+
 ## BELOW: CPU stuff that we don't really use anymore
 
 ### Memory

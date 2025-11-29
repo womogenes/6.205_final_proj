@@ -11,10 +11,14 @@ module uart_memflash_rtx (
   output logic [7:0] flash_cmd,
   output logic [71:0] flash_cam_data,
   output logic [OBJ_WIDTH-1:0] flash_obj_data,
+  output logic [NUM_OBJS_WIDTH-1:0] flash_num_objs_data,
+  output logic [7:0] flash_max_bounces_data,
   output logic flash_wen
 );
-  localparam integer OBJ_BYTES = $ceil($bits(object) / 8);
-  localparam integer OBJ_WIDTH = $ceil($bits(object) / 8) * 8;
+  localparam integer OBJ_BYTES = ($bits(object) + 7) / 8;
+  localparam integer OBJ_WIDTH = OBJ_BYTES * 8;
+  localparam integer NUM_OBJS_BYTES = (OBJ_IDX_WIDTH + 7) / 8;
+  localparam integer NUM_OBJS_WIDTH = NUM_OBJS_BYTES * 8;
 
   // Goal: allow writing words to consecutive memory addresses
   /*
@@ -33,12 +37,14 @@ module uart_memflash_rtx (
     IDLE,
     DATA_CAM,
     DATA_OBJ,
-    DATA_NUM_OBJS
+    DATA_NUM_OBJS,
+    DATA_MAX_BOUNCES
   } flash_state;
 
   flash_state state;
-  logic [3:0] flash_cam_byte_idx;                     // 9 bytes for 72-bit cam vector
-  logic [$clog2(OBJ_BYTES)-1:0] flash_obj_byte_idx;   // N/8 bytes
+  logic [3:0] flash_cam_byte_idx;                                 // 9 bytes for 72-bit cam vector
+  logic [$clog2(OBJ_BYTES)-1:0] flash_obj_byte_idx;               // N/8 bytes
+  logic [$clog2(NUM_OBJS_BYTES)-1:0] flash_num_objs_byte_idx;  // probably 1, if we have <= 256 objects
   
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -52,14 +58,18 @@ module uart_memflash_rtx (
           flash_wen <= 1'b0;
 
           if (uart_rx_valid) begin
-            if (uart_rx_byte[7] == 1'b1) begin
-              state <= DATA_CAM;
-            end else begin
-              state <= DATA_OBJ;
-            end
+            casez (uart_rx_byte)
+              8'b1????0??: state <= DATA_CAM;
+              8'b0???????: state <= DATA_OBJ;
+              8'b1????100: state <= DATA_NUM_OBJS;
+              8'b1????101: state <= DATA_MAX_BOUNCES;
+            endcase
+
             flash_active <= 1'b1;
             flash_cmd <= uart_rx_byte;
             flash_cam_byte_idx <= 0;
+            flash_obj_byte_idx <= 0;
+            flash_num_objs_byte_idx <= 0;
 
           end else begin
             flash_active <= 1'b0;
@@ -98,6 +108,26 @@ module uart_memflash_rtx (
             end else begin
               flash_obj_byte_idx <= flash_obj_byte_idx + 1;
             end
+          end
+        end
+        DATA_NUM_OBJS: begin
+          if (uart_rx_valid) begin
+            flash_num_objs_data <= {uart_rx_byte, flash_num_objs_data[NUM_OBJS_WIDTH-1:8]};
+
+            if (flash_num_objs_byte_idx == NUM_OBJS_BYTES - 1) begin
+              flash_num_objs_byte_idx <= 0;
+              flash_wen <= 1'b1;
+              state <= IDLE;
+            end else begin
+              flash_num_objs_byte_idx <= flash_num_objs_byte_idx + 1;
+            end
+          end
+        end
+        DATA_MAX_BOUNCES: begin
+          if (uart_rx_valid) begin
+            flash_max_bounces_data <= uart_rx_byte;
+            flash_wen <= 1'b1;
+            state <= IDLE;
           end
         end
       endcase

@@ -164,24 +164,13 @@ if __name__ == "__main__":
             sphere_rad=INF - ROOM_WIDTH / 2,
         ),
 
-        # Shiny balls group, matching C version
+        # Shiny balls
         Object(
             mat=Material(
                 color=(1.0, 1.0, 1.0),
                 spec_color=(1.0, 1.0, 1.0),
                 emit_color=(0.0, 0.0, 0.0),
-                smoothness=0.0,
-                specular_prob=0.0,
-            ),
-            sphere_center=(-4, 0, ROOM_DEPTH / 2),
-            sphere_rad=0.8,
-        ),
-        Object(
-            mat=Material(
-                color=(1.0, 1.0, 1.0),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=0.2,
+                smoothness=0,
                 specular_prob=1.0,
             ),
             sphere_center=(-4, 0, ROOM_DEPTH / 2),

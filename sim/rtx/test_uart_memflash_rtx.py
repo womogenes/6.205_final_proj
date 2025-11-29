@@ -51,7 +51,10 @@ async def test_module(dut):
 
     await ClockCycles(dut.clk, 100)
 
-    # Send an object (not as many bytes)
+    # Send object count
+    await send_byte(0x84)
+    await send_byte(12)
+    await send_byte(10)
 
 
 def runner():
@@ -64,6 +67,7 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "uart" / f"uart_memflash_rtx.sv"
     ]
     build_test_args = ["-Wall"]

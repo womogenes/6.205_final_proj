@@ -10,7 +10,8 @@ module rtx_tb_parallel #(
   input wire clk,
   input wire rst,
   input camera cam,
-  input wire [$clog2(MAX_SCENE_BUF_DEPTH)-1:0] num_objs,
+  input wire [$clog2(MAX_NUM_OBJS)-1:0] num_objs,
+  input wire [7:0] max_bounces,
 
   input wire [10:0] pixel_h_in,
   input wire [9:0] pixel_v_in,
@@ -84,6 +85,8 @@ module rtx_tb_parallel #(
     .pixel_color(pixel_color),
     // .pixel_h_out(pixel_h),
     // .pixel_v_out(pixel_v),
+
+    .max_bounces(max_bounces),
 
     // Scene buffer interface
     .num_objs(num_objs),
