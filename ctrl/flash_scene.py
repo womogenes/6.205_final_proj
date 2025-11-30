@@ -6,7 +6,7 @@ import sys
 proj_path = Path(__file__).parent.parent
 
 sys.path.append(str(proj_path / "sim"))
-from utils import make_fp, make_fp_vec3, pack_bits
+from utils import make_fp, make_fp_vec3, pack_bits, FP_VEC3_BITS
 from make_scene_buffer import Material, Object
 
 import wave
@@ -45,13 +45,13 @@ if __name__ == "__main__":
         right: tuple[float] = None,
         up: tuple[float] = None,
     ):
-        for cmd, vec in zip([0b1_00000_00, 0b1_00000_01, 0b1_00000_10, 0b1_00000_11], [origin, forward, right, up]):
+        for cmd, vec in zip([0b1_00000_00, 0b1_00000_01, 0b1_00000_10, 0b1_00000_11], [origin, right, forward, up]):
             if vec is None:
                 continue
-            
+
             ser.write((cmd).to_bytes(1, "little"))
             data = make_fp_vec3(vec)
-            ser.write(data.to_bytes(9, "little"))
+            ser.write(data.to_bytes((FP_VEC3_BITS + 7) // 8, "little"))
 
     def set_obj(obj_idx: int, obj: Object):
         obj_bits, obj_num_bits = obj.pack_bits()

@@ -15,7 +15,7 @@ module uart_memflash_rtx (
   output logic [7:0] flash_max_bounces_data,
   output logic flash_wen
 );
-  localparam integer CAM_BYTES = ((FP_VEC3_BITS * 3) + 7) / 8;
+  localparam integer CAM_BYTES = (FP_VEC3_BITS + 7) / 8;
   localparam integer CAM_WIDTH = CAM_BYTES * 8;
   localparam integer OBJ_BYTES = ($bits(object) + 7) / 8;
   localparam integer OBJ_WIDTH = OBJ_BYTES * 8;
