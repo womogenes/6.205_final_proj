@@ -31,6 +31,7 @@ Things to recompute:
 
 - Magic numbers `three` and `MAGIC_NUMBER` in `fp_inv_sqrt.sv`
 - Magic number `two` and `MAGIC_NUMBER` in `fp_inv.sv`
+- The value of 1 in `rtx/ray_reflector.sv`
 
 ## BELOW: CPU stuff that we don't really use anymore
 
