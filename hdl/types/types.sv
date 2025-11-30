@@ -8,9 +8,9 @@ parameter integer FULL_WIDTH = 32;
 
 typedef struct packed {
   logic sign;
-  logic [6:0] exp;
-  logic [15:0] mant;
-} fp24;
+  logic [FP_EXP_BITS-1:0] exp;
+  logic [FP_MANT_BITS-1:0] mant;
+} fp;
 
 // ===== COLORS =====
 typedef struct packed {
@@ -20,41 +20,41 @@ typedef struct packed {
 } color8;
 
 typedef struct packed {
-  fp24 r;
-  fp24 g;
-  fp24 b;
-} fp24_color;
+  fp r;
+  fp g;
+  fp b;
+} fp_color;
 
 // ===== VECTOR TYPES =====
 typedef struct packed {
-  fp24 x;
-  fp24 y;
-  fp24 z;
-} fp24_vec3;
+  fp x;
+  fp y;
+  fp z;
+} fp_vec3;
 
 // ===== CAMERA =====
 typedef struct packed {
-  fp24_vec3 origin;
-  fp24_vec3 forward;
-  fp24_vec3 right;
-  fp24_vec3 up;
+  fp_vec3 origin;
+  fp_vec3 forward;
+  fp_vec3 right;
+  fp_vec3 up;
 } camera;
 
 // ===== OBJECTS =====
 typedef struct packed {
-  fp24_color color;           // 72 bits
-  fp24_color emit_color;      // 72 bits
-  fp24_color spec_color;      // 72 bits
-  fp24 smoothness;            // 24 bits
+  fp_color color;           // 72 bits
+  fp_color emit_color;      // 72 bits
+  fp_color spec_color;      // 72 bits
+  fp smoothness;            // 24 bits
   logic [7:0] specular_prob;  // 8 bits
 } material;
 
 typedef struct packed {
   logic is_trig;            // 1 bit
   material mat;             // [several] bits
-  fp24_vec3 [2:0] trig;     // 216 bits
-  fp24_vec3 trig_norm;      // 72 bits
-  fp24_vec3 sphere_center;  // 72 bits
-  fp24 sphere_rad_sq;       // 24 bits
-  fp24 sphere_rad_inv;      // 24 bits
+  fp_vec3 [2:0] trig;     // 216 bits
+  fp_vec3 trig_norm;      // 72 bits
+  fp_vec3 sphere_center;  // 72 bits
+  fp sphere_rad_sq;       // 24 bits
+  fp sphere_rad_inv;      // 24 bits
 } object;

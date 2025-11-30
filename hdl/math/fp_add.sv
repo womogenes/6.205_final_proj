@@ -1,28 +1,28 @@
-// Hepler function: compare two fp24s
-function automatic fp24 fp24_greater(fp24 a, fp24 b);
+// Hepler function: compare two floats
+function automatic logic fp_greater(fp a, fp b);
   logic greater;
   greater = (a.exp > b.exp) || (a.exp == b.exp && a.mant > b.mant);
   return greater;
 endfunction
 
-// Addition for 24-bit floating point
-module fp24_add (
+// Addition for floating points
+module fp_add (
   input wire clk,
   input wire rst,
-  input fp24 a,
-  input fp24 b,
+  input fp a,
+  input fp b,
   input wire is_sub,
 
-  output fp24 sum
+  output fp sum
 );
   // Extract fields and swap if b > a
   logic swap;
-  assign swap = ~fp24_greater(a, b);
+  assign swap = ~fp_greater(a, b);
 
-  logic [6:0] exp_a, exp_b;
+  logic [FP_EXP_BITS-1:0] exp_a, exp_b;
   logic sign_a, sign_b;
-  logic [15:0] mant_a, mant_b;
-  logic [17:0] frac_a, frac_b;
+  logic [FP_MANT_BITS-1:0] mant_a, mant_b;
+  logic [FP_MANT_BITS+1:0] frac_a, frac_b;
 
   assign exp_a = swap ? b.exp : a.exp;
   assign exp_b = swap ? a.exp : b.exp;
@@ -38,16 +38,16 @@ module fp24_add (
   assign frac_b = {2'b01, mant_b};
 
   // Outputs
-  logic [6:0] exp_diff;
-  logic [17:0] frac_b_shift;
-  logic [16:0] frac_norm;
-  logic [6:0] exp_norm;
-  logic [4:0] shift;
+  logic [FP_EXP_BITS-1:0] exp_diff;
+  logic [FP_MANT_BITS+1:0] frac_b_shift;
+  logic [FP_MANT_BITS:0] frac_norm;
+  logic [FP_EXP_BITS-1:0] exp_norm;
+  logic [$clog2(FP_MANT_BITS+1):0] shift;
 
   // PIPELINE REGISTERS
   logic sign_a_buf;
-  logic [6:0] exp_a_buf;
-  logic [17:0] frac_sum_buf;
+  logic [FP_EXP_BITS-1:0] exp_a_buf;
+  logic [FP_MANT_BITS+1:0] frac_sum_buf;
   logic both_zero; // required to handle (0 - 0) edge case
 
   // Stage 1: compute exponent diff + shift
@@ -69,23 +69,23 @@ module fp24_add (
   // Stage 2: clz, assemble sum
 
   // Normalize result
-  clz #(.WIDTH(17)) clz_shift (.x(frac_sum_buf[16:0]), .count(shift));
+  clz #(.WIDTH(FP_MANT_BITS+1)) clz_shift (.x(frac_sum_buf[FP_MANT_BITS:0]), .count(shift));
 
   always_comb begin
-    if (frac_sum_buf[17]) begin
+    if (frac_sum_buf[FP_MANT_BITS+1]) begin
       // We overflowed!
-      frac_norm = frac_sum_buf[17:1];
+      frac_norm = frac_sum_buf[FP_MANT_BITS+1:1];
       exp_norm = exp_a_buf + 1;
       
     end else begin
       // Maybe underflowed, see `shift`
-      frac_norm = frac_sum_buf[16:0] << shift;
+      frac_norm = frac_sum_buf[FP_MANT_BITS:0] << shift;
       exp_norm = exp_a_buf - shift;
     end
   end
 
   // Stage 2 end: latch
   always_ff @(posedge clk) begin
-    sum <= both_zero ? 0 : {sign_a_buf, exp_norm, frac_norm[15:0]};
+    sum <= both_zero ? 0 : {sign_a_buf, exp_norm, frac_norm[FP_MANT_BITS-1:0]};
   end
 endmodule

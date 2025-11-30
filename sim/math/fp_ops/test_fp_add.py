@@ -14,7 +14,7 @@ import ctypes
 import numpy as np
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from utils import convert_fp24, make_fp24
+from utils import convert_fp, make_fp
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -31,21 +31,17 @@ async def test_module(dut):
 
     async def do_test(x: float, y: float, is_sub: bool):
         """
-        Do a single test on x + y using fp_24_add
+        Do a single test on x + y using fp_add
         """
-        x_f = make_fp24(x)
-        y_f = make_fp24(y)
+        x_f = make_fp(x)
+        y_f = make_fp(y)
 
         dut.a.value = x_f
         dut.b.value = y_f
         dut.is_sub.value = is_sub
         await ClockCycles(dut.clk, 3)
-        
-        return convert_fp24(dut.sum.value)
-    
-    res = await do_test(0, 0, 1)
-    print(res)
-    return
+
+        return convert_fp(dut.sum.value)
     
     # x = -38000
     # y = 39000
@@ -78,9 +74,10 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv"
+        proj_path / "hdl" / "math" / "fp_add.sv"
     ]
     build_test_args = ["-Wall"]
 
@@ -88,7 +85,7 @@ def runner():
     parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "fp24_add"
+    hdl_toplevel = "fp_add"
     
     runner = get_runner(sim)
     runner.build(
