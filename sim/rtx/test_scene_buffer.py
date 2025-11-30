@@ -18,7 +18,7 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24, convert_fp24_vec3
+from utils import convert_fp, make_fp, convert_fp_vec3
 
 WIDTH = 32 * 1
 HEIGHT = 18 * 1
@@ -40,12 +40,12 @@ async def test_module(dut):
     for i in range(10):
         await ClockCycles(dut.clk, 1)
 
-        dut_sphere_rad_sq = convert_fp24(dut.sphere_rad_sq.value)
-        dut_sphere_rad_inv = convert_fp24(dut.sphere_rad_inv.value)
+        dut_sphere_rad_sq = convert_fp(dut.sphere_rad_sq.value)
+        dut_sphere_rad_inv = convert_fp(dut.sphere_rad_inv.value)
         print("Sphere radius squared:", dut_sphere_rad_sq)
         print("Sphere radius inv:", dut_sphere_rad_inv)
         print(f"Sphere radius: {dut_sphere_rad_sq ** 0.5} ~ {1 / dut_sphere_rad_inv}")
-        print("Sphere center:", convert_fp24_vec3(dut.sphere_center.value))
+        print("Sphere center:", convert_fp_vec3(dut.sphere_center.value))
 
 
 def runner():

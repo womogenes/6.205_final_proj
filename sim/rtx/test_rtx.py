@@ -20,9 +20,7 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp, make_fp, convert_fp_vec3, pack_bits, make_fp_vec3
-
-FP_VEC3_BITS = 72
+from utils import convert_fp, make_fp, convert_fp_vec3, pack_bits, make_fp_vec3, FP_VEC3_BITS
 
 parser = ArgumentParser()
 parser.add_argument("--scale", type=float, default=0.5)

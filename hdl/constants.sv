@@ -5,9 +5,9 @@ parameter integer MAX_NUM_OBJS = 257;
 parameter integer OBJ_IDX_WIDTH = $clog2(MAX_NUM_OBJS);
 
 // ===== FP MATH OPS =====
-parameter integer FP_EXP_BITS = 7;
+parameter integer FP_EXP_BITS = 8;
 parameter integer FP_EXP_OFFSET = (1 << (FP_EXP_BITS - 1)) - 1;
-parameter integer FP_MANT_BITS = 16;
+parameter integer FP_MANT_BITS = 23;
 
 typedef struct packed {
   logic sign;

@@ -19,7 +19,7 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24, convert_fp24_vec3, make_fp24_vec3
+from utils import convert_fp, make_fp, convert_fp_vec3, make_fp_vec3
 
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent / "ctrl"))
 from make_scene_buffer import Material, Object
@@ -35,8 +35,8 @@ async def scene_buffer(dut):
         color=(1, 1, 1),
         spec_color=(1, 1, 1),
         emit_color=(1, 1, 1),
-        smooth=1,
-        specular=0,
+        smoothness=1,
+        specular_prob=0,
     )
     objs = [
         Object(
@@ -85,20 +85,20 @@ async def test_module(dut):
     points = []
     normalpoints = []
     for i in range(num_points):
-        dut.ray_origin.value = make_fp24_vec3((0, 0, 0))
+        dut.ray_origin.value = make_fp_vec3((0, 0, 0))
         random_val = np.random.random((2,))
         random_dir = np.array([random_val[0] - 0.5, 1, random_val[1] - 0.5])
         dirvec = random_dir / np.linalg.vector_norm(random_dir)
-        dut.ray_dir.value = make_fp24_vec3(dirvec)
+        dut.ray_dir.value = make_fp_vec3(dirvec)
         dut.ray_valid.value = 1
         await ClockCycles(dut.clk, 1)
         dut.ray_valid.value = 0
         await RisingEdge(dut.hit_valid)
         if (dut.hit_any.value):
-            # print(convert_fp24_vec3(dut.hit_pos.value))
-            points.append(convert_fp24_vec3(dut.hit_pos.value))
-            # print(convert_fp24_vec3(dut.hit_normal.value))
-            normalpoints.append(convert_fp24_vec3(dut.hit_normal.value))
+            # print(convert_fp_vec3(dut.hit_pos.value))
+            points.append(convert_fp_vec3(dut.hit_pos.value))
+            # print(convert_fp_vec3(dut.hit_normal.value))
+            normalpoints.append(convert_fp_vec3(dut.hit_normal.value))
             # points.append(dirvec)
         await ClockCycles(dut.clk, 1)
         
@@ -158,13 +158,13 @@ def runner():
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
-        proj_path / "hdl" / "math" / "fp24_convert.sv",
+        proj_path / "hdl" / "math" / "fp_shift.sv",
+        proj_path / "hdl" / "math" / "fp_add.sv",
+        proj_path / "hdl" / "math" / "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
+        proj_path / "hdl" / "math" / "fp_convert.sv",
         proj_path / "hdl" / "math" / "quadratic_solver.sv",
         proj_path / "hdl" / "math" / "sphere_intersector.sv",
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",

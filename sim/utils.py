@@ -56,7 +56,7 @@ def convert_fp(f: BinaryValue):
 
 def make_fp_vec3(vec3: tuple[float]):
     """
-    Convert (x, y, z) to packed 72-bit fp_vec3
+    Convert (x, y, z) to packed fp_vec3
     """
     x, y, z = vec3
     return pack_bits([
@@ -67,7 +67,7 @@ def make_fp_vec3(vec3: tuple[float]):
 
 def convert_fp_vec3(vec3: BinaryValue):
     """
-    Unpack 72-bit vec3 into tuple of 3 floats
+    Unpack vec3 into tuple of 3 floats
     """
     if isinstance(vec3, BinaryValue) and not vec3.is_resolvable:
         return (None, None, None)
