@@ -16,7 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24_vec3, convert_fp24
+from utils import convert_fp_vec3, convert_fp
 
 test_file = os.path.basename(__file__).replace(".py", "")
 

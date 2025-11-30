@@ -15,7 +15,7 @@ import random
 import ctypes
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24, convert_fp24_vec3
+from utils import convert_fp, make_fp, convert_fp_vec3
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
