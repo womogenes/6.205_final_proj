@@ -25,7 +25,6 @@ parser = ArgumentParser()
 parser.add_argument("scene", nargs="?", type=str)
 
 args = parser.parse_args()
-print(args.scene)
 
 # Communication Parameters
 SERIAL_PORTNAME = "/dev/ttyUSB1"  # CHANGE ME to match your system's serial port name!
@@ -50,19 +49,16 @@ if __name__ == "__main__":
             if vec is None:
                 continue
             
-            print(f"writing cmd: {cmd}, vec: {vec}")
             ser.write((cmd).to_bytes(1, "little"))
             data = make_fp24_vec3(vec)
             ser.write(data.to_bytes(9, "little"))
 
     def set_obj(obj_idx: int, obj: Object):
         obj_bits, obj_num_bits = obj.pack_bits()
-        print(f"{obj_idx=}")
         ser.write(obj_idx.to_bytes(1))
 
         obj_num_bytes = ((obj_num_bits + 7) // 8)
 
-        print(f"{obj_num_bits=}, {obj_num_bytes=}")
         ser.write(obj_bits.to_bytes(obj_num_bytes, "little"))
 
     def set_max_bounces(max_bounces: int):
@@ -89,7 +85,6 @@ if __name__ == "__main__":
     for idx, obj in enumerate(objs):
         obj["mat"] = Material(**obj["material"])
         del obj["material"]
-        print(f"flashing {idx}, {obj}")
         set_obj(idx, Object(**obj))
 
     set_num_objs(len(objs))
