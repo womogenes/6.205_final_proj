@@ -5,8 +5,8 @@ parameter integer MAX_NUM_OBJS = 257;
 parameter integer OBJ_IDX_WIDTH = $clog2(MAX_NUM_OBJS);
 
 // ===== FP MATH OPS =====
-parameter integer FP_EXP_BITS = 6;
-parameter integer FP_MANT_BITS = 13;
+parameter integer FP_EXP_BITS = 7;
+parameter integer FP_MANT_BITS = 16;
 
 parameter integer FP_BITS = 1 + FP_EXP_BITS + FP_MANT_BITS;
 parameter integer FP_VEC3_BITS = 3 * FP_BITS;
@@ -21,13 +21,12 @@ typedef struct packed {
 parameter fp FP_ZERO = {(FP_BITS){1'b0}};
 
 // ===== FP CONSTANTS =====
-parameter fp FP_HALF_SCREEN_WIDTH = 'h50800;
-parameter fp FP_ONE = 'h3e000;
-parameter fp FP_THREE = 'h41000;
-parameter fp FP_TWO = 'h40000;
-parameter fp FP_INV_SQRT_MAGIC_NUM = 'h5ccdd; // (1.5674% error)
-parameter fp FP_INV_MAGIC_NUM = 'h7bbe1; // (2.8912% error)
-
+parameter fp FP_HALF_SCREEN_WIDTH = 'h484000;
+parameter fp FP_ONE = 'h3f0000;
+parameter fp FP_THREE = 'h408000;
+parameter fp FP_TWO = 'h400000;
+parameter fp FP_INV_SQRT_MAGIC_NUM = 'h5e66e8; // (1.5672% error)
+parameter fp FP_INV_MAGIC_NUM = 'h7ddf0a; // (2.8912% error)
  
 // Basic math operation delays
 parameter integer FP_ADD_DELAY = 2;

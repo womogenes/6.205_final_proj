@@ -6,8 +6,8 @@ import ctypes
 import cocotb
 from cocotb.binary import BinaryValue
 
-FP_EXP_BITS = 6
-FP_MANT_BITS = 13
+FP_EXP_BITS = 7
+FP_MANT_BITS = 16
 
 FP_EXP_OFFSET = (2 ** (FP_EXP_BITS - 1)) - 1
 FP_BITS = 1 + FP_EXP_BITS + FP_MANT_BITS
