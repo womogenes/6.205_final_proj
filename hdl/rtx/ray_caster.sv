@@ -14,7 +14,9 @@ module ray_caster #(
   output logic [9:0] pixel_v,
   output fp_vec3 ray_origin,
   output fp_vec3 ray_dir,
-  output logic ray_valid
+  output logic ray_valid,
+
+  input logic [95:0] lfsr_seed
 );
   logic [10:0] pixel_h_rsg;
   logic [9:0] pixel_v_rsg;
@@ -74,7 +76,9 @@ module ray_caster #(
     .ray_valid(),
 
     .pixel_h_out(staging_pixel_h),
-    .pixel_v_out(staging_pixel_v)
+    .pixel_v_out(staging_pixel_v),
+
+    .lfsr_seed(lfsr_seed)
   );
 endmodule
 

@@ -6,7 +6,8 @@
 // TODO: add offset parameter to allow making fractions
 // (basically interprets n as fixed-width fraction)
 module make_fp #(
-  parameter integer WIDTH
+  parameter integer WIDTH,
+  parameter integer FRAC = 0
 ) (
   input wire clk,
   input wire rst,
@@ -31,7 +32,7 @@ module make_fp #(
 
   // Compute exponent as offset MSB position
   logic [FP_EXP_BITS-1:0] exp;
-  assign exp = log2_n + FP_EXP_OFFSET;
+  assign exp = log2_n + FP_EXP_OFFSET + FRAC;
 
   always_ff @(posedge clk) begin
     logic [FP_MANT_BITS-1:0] mant;

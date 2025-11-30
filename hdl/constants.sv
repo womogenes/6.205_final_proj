@@ -18,7 +18,7 @@ typedef struct packed {
   logic [FP_MANT_BITS-1:0] mant;
 } fp;
 
-parameter fp FP_ZERO = {(FP_BITS){1'b0}};
+parameter fp FP_ZER0 = {(FP_BITS){1'b0}};
 
 // ===== FP CONSTANTS =====
 parameter fp FP_HALF_SCREEN_WIDTH = 'h484000;

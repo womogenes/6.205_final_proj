@@ -22,7 +22,10 @@ module ray_maker #(
   output logic ray_valid,
 
   output logic [10:0] pixel_h_out,
-  output logic [9:0] pixel_v_out
+  output logic [9:0] pixel_v_out,
+
+  // DEBUG: to be used only for testbench
+  input wire [95:0] lfsr_seed
 );
   // Normalize by centering at zero
   logic signed [10:0] pixel_h_norm;
@@ -36,10 +39,24 @@ module ray_maker #(
   make_fp #(.WIDTH(11)) u_maker (.clk(clk), .n(pixel_h_norm), .x(u));
   make_fp #(.WIDTH(10)) v_maker (.clk(clk), .n(pixel_v_norm), .x(v));
 
+  // Add some noise to u and v
+  logic [7:0] noise_u_int8, noise_v_int8;
+  prng8 rng8_u (.clk(clk), .rst(rst), .seed(lfsr_seed[7:0]), .rng(noise_u_int8));
+  prng8 rng8_v (.clk(clk), .rst(rst), .seed(lfsr_seed[15:8]), .rng(noise_v_int8));
+
+  // TODO: make this more precise for DOF
+  fp noise_u, noise_v;
+  make_fp #(.WIDTH(8), .FRAC(-8)) noise_u_maker (.clk(clk), .n(noise_u_int8), .x(noise_u));
+  make_fp #(.WIDTH(8), .FRAC(-8)) noise_v_maker (.clk(clk), .n(noise_v_int8), .x(noise_v));
+
+  fp u_noisy, v_noisy;
+  fp_add add_u_noisy (.clk(clk), .a(u), .b(noise_u), .is_sub(1'b0), .sum(u_noisy));
+  fp_add add_v_noisy (.clk(clk), .a(v), .b(noise_v), .is_sub(1'b0), .sum(v_noisy));
+
   // Multiply by right and up vectors
   fp_vec3 right_scaled, up_scaled;
-  fp_vec3_scale scale_right(.clk(clk), .rst(rst), .v(cam.right), .s(u), .scaled(right_scaled));
-  fp_vec3_scale scale_up(.clk(clk), .rst(rst), .v(cam.up), .s(v), .scaled(up_scaled));
+  fp_vec3_scale scale_right(.clk(clk), .rst(rst), .v(cam.right), .s(u_noisy), .scaled(right_scaled));
+  fp_vec3_scale scale_up(.clk(clk), .rst(rst), .v(cam.up), .s(v_noisy), .scaled(up_scaled));
 
   // Add everything together
   // result 5 cycles behind
@@ -62,7 +79,7 @@ module ray_maker #(
   // TODO: do not hard-code this
   pipeline #(
     .WIDTH(1),
-    .DEPTH(1 + 1 + 2 + 2 + VEC3_NORM_DELAY)
+    .DEPTH(1 + 1 + 2 + 2 + 2 + VEC3_NORM_DELAY)
   ) valid_pipe (.clk(clk), .in(new_ray), .out(ray_valid));
 endmodule
 
