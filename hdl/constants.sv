@@ -8,6 +8,8 @@ parameter integer OBJ_IDX_WIDTH = $clog2(MAX_NUM_OBJS);
 parameter integer FP_EXP_BITS = 6;
 parameter integer FP_MANT_BITS = 13;
 
+parameter integer FP_BITS = 1 + FP_EXP_BITS + FP_MANT_BITS;
+parameter integer FP_VEC3_BITS = 3 * FP_BITS;
 parameter integer FP_EXP_OFFSET = (1 << (FP_EXP_BITS - 1)) - 1;
 
 typedef struct packed {
@@ -15,6 +17,8 @@ typedef struct packed {
   logic [FP_EXP_BITS-1:0] exp;
   logic [FP_MANT_BITS-1:0] mant;
 } fp;
+
+parameter fp FP_ZERO = {(FP_BITS){1'b0}};
 
 // ===== FP CONSTANTS =====
 parameter fp FP_HALF_SCREEN_WIDTH = 'h50800;
@@ -24,8 +28,6 @@ parameter fp FP_TWO = 'h40000;
 parameter fp FP_INV_SQRT_MAGIC_NUM = 'h5ccdd; // (1.5674% error)
 parameter fp FP_INV_MAGIC_NUM = 'h7bbe1; // (2.8912% error)
 
-parameter integer FP_BITS = 1 + FP_EXP_BITS + FP_MANT_BITS;
-parameter integer FP_VEC3_BITS = 3 * FP_BITS;
  
 // Basic math operation delays
 parameter integer FP_ADD_DELAY = 2;
