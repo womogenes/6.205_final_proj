@@ -16,7 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24_vec3, convert_fp24
+from utils import convert_fp_vec3, convert_fp
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -35,7 +35,7 @@ async def test_module(dut):
     num_points = 10_000
     points = []
     for i in range(num_points):
-        points.append(convert_fp24_vec3(dut.rng_vec.value))
+        points.append(convert_fp_vec3(dut.rng_vec.value))
         await ClockCycles(dut.clk, 1)
 
     x_data, y_data, z_data = zip(*points)
