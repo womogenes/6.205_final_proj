@@ -16,12 +16,12 @@ typedef struct packed {
 } fp;
 
 // ===== FP CONSTANTS =====
-parameter fp FP_HALF_SCREEN_WIDTH = 'h484000;
-parameter fp FP_ONE = 'h3f0000;
-parameter fp FP_THREE = 'h408000;
-parameter fp FP_TWO = 'h400000;
-parameter fp FP_INV_SQRT_MAGIC_NUM = 'h5e669c;
-parameter fp FP_INV_MAGIC_NUM = 'h7ddf0a;
+parameter fp FP_HALF_SCREEN_WIDTH = 'h44200000;
+parameter fp FP_ONE = 'h3f800000;
+parameter fp FP_THREE = 'h40400000;
+parameter fp FP_TWO = 'h40000000;
+parameter fp FP_INV_SQRT_MAGIC_NUM = 'h5f337425; // (1.5672% error)
+parameter fp FP_INV_MAGIC_NUM = 'h7eef8556; // (2.8912% error)
 
 parameter integer FP_BITS = 1 + FP_EXP_BITS + FP_MANT_BITS;
 parameter integer FP_VEC3_BITS = 3 * FP_BITS;

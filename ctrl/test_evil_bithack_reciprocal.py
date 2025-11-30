@@ -5,7 +5,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 sys.path.append(str(Path(__file__).parent.parent / "sim"))
-from utils import make_fp24, convert_fp24
+from utils import make_fp, convert_fp
 
 from tqdm import tqdm
 
@@ -13,7 +13,7 @@ def init_guess_inv(x: float, magic_const: int):
     """
     Return initial guess for 1/x using evil bithack
     """
-    f = make_fp24(x)
+    f = make_fp(x)
     
     # sign = f & (1 << 23)
     # exp = (f >> 16) & 0x7F
@@ -22,7 +22,7 @@ def init_guess_inv(x: float, magic_const: int):
     # f_inv = sign + (((125 - exp) & 0x7F) << 16) + ((magic_const - ((mant >> 0) & 0xFFFF)) & 0xFFFF)
 
     f_inv = (f & (1 << 23)) + (((magic_const & 0x7FFFFF) - f) & 0x7FFFFF)
-    return convert_fp24(f_inv)
+    return convert_fp(f_inv)
 
 
 if __name__ == "__main__":
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         return mean_rel_err
 
     magic_consts, scores = [], []
-    for magic_const in tqdm(np.linspace(8.2485e6, 8.2495e6, 1_000), ncols=80):
+    for magic_const in tqdm(np.linspace(0, 2**24, 1_000), ncols=80):
         magic_const = int(magic_const)
         magic_consts.append(magic_const)
         scores.append(min(10, get_score(magic_const)))
