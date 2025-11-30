@@ -15,14 +15,14 @@ import numpy as np
 import math
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from utils import convert_fp24, make_fp24, make_fp24_vec3, convert_fp24_vec3
+from utils import convert_fp, make_fp, make_fp_vec3, convert_fp_vec3
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
 @cocotb.test()
 async def test_module(dut):
     """
-    Test module: vec3 addition using fp24
+    Test module: vec3 addition using fp
     """
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
@@ -32,51 +32,41 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    DELAY_CYCLES = 3
+    DELAY_CYCLES = 2
 
     N_SAMPLES = 1000
 
     # Generate random (N, 3) tensors for inputs
     a_vecs = np.exp2(np.random.rand(N_SAMPLES, 3) * 63 - 31)
-    a_vecs_fp24 = list(map(make_fp24_vec3, a_vecs))
+    a_vecs_fp = list(map(make_fp_vec3, a_vecs))
 
     b_vecs = np.exp2(np.random.rand(N_SAMPLES, 3) * 63 - 31)
-    b_vecs_fp24 = list(map(make_fp24_vec3, b_vecs))
+    b_vecs_fp = list(map(make_fp_vec3, b_vecs))
 
-    t = np.random.rand(N_SAMPLES)
-    t_fp24 = list(map(make_fp24, t))
-    one_min_t_fp24 = list(map(make_fp24, 1 - t))
+    is_sub = np.random.rand(N_SAMPLES) < 0.5
 
     # Clock in one per cycle brrr
     dut_ans = []
     for i in range(N_SAMPLES):
-        a_fp24_vec3 = a_vecs_fp24[i]
-        b_fp24_vec3 = b_vecs_fp24[i]
+        a_fp_vec3 = a_vecs_fp[i]
+        b_fp_vec3 = b_vecs_fp[i]
 
-        dut.v.value = a_fp24_vec3
-        dut.w.value = b_fp24_vec3
-        dut.t.value = t_fp24[i]
-        dut.one_min_t.value = one_min_t_fp24[i]
+        dut.v.value = a_fp_vec3
+        dut.w.value = b_fp_vec3
+        dut.is_sub.value = bool(is_sub[i])
 
-        # await ClockCycles(dut.clk, 10)
-        await RisingEdge(dut.clk)
-        dut_ans.append(convert_fp24_vec3(dut.lerped.value))
+        await ClockCycles(dut.clk, 1)
+        # await RisingEdge(dut.clk)
+        dut_ans.append(convert_fp_vec3(dut.sum.value))
 
     for _ in range(DELAY_CYCLES):
         await ClockCycles(dut.clk, 1)
-        dut_ans.append(convert_fp24_vec3(dut.lerped.value))
+        dut_ans.append(convert_fp_vec3(dut.sum.value))
 
     # Get answers!
     await ClockCycles(dut.clk, DELAY_CYCLES * 2)
     dut_ans = np.array(dut_ans[DELAY_CYCLES:])
-
-    dut._log.info(f"{a_vecs=}")
-    dut._log.info(f"{b_vecs=}")
-    dut._log.info(f"{t=}")
-    dut._log.info(f"{(1-t)=}")
-    dut._log.info(f"{dut_ans=}")
-
-    exp_ans = a_vecs * (1 - t) + b_vecs * t
+    exp_ans = a_vecs + ((is_sub - 0.5) * -2)[:, None] * b_vecs
 
     rel_err = np.abs(dut_ans / exp_ans - 1)
     dut._log.info(f"mean relative error: {np.mean(rel_err) * 100:.6f}%")
@@ -94,11 +84,10 @@ def runner():
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_lerp.sv",
+        proj_path / "hdl" / "math" / "fp_shift.sv",
+        proj_path / "hdl" / "math" / "fp_add.sv",
+        proj_path / "hdl" / "math" / "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
     ]
     build_test_args = ["-Wall"]
 
@@ -106,7 +95,7 @@ def runner():
     parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "fp24_vec3_lerp"
+    hdl_toplevel = "fp_vec3_add"
     
     runner = get_runner(sim)
     runner.build(
