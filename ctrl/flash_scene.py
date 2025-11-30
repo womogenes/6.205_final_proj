@@ -34,10 +34,12 @@ BAUD = 115200  # Make sure this matches your UART receiver
 if __name__ == "__main__":
     ser = serial.Serial(SERIAL_PORTNAME, BAUD)
 
+    # ser.write((0b10000000).to_bytes(1))
+    # print((FP_VEC3_BITS + 7) // 8)
     # for i in range(100):
     #     ser.write((0).to_bytes(1))
     #     input(i+1)
-    # return
+    # exit()
 
     def set_cam(
         origin: tuple[float] = None,
@@ -45,7 +47,7 @@ if __name__ == "__main__":
         right: tuple[float] = None,
         up: tuple[float] = None,
     ):
-        for cmd, vec in zip([0b1_00000_00, 0b1_00000_01, 0b1_00000_10, 0b1_00000_11], [origin, right, forward, up]):
+        for cmd, vec in zip([0b1_00000_00, 0b1_00000_01, 0b1_00000_10, 0b1_00000_11], [origin, forward, right, up]):
             if vec is None:
                 continue
 

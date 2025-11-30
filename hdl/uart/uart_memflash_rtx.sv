@@ -47,7 +47,7 @@ module uart_memflash_rtx (
 
   logic [7:0] flash_cam_byte_idx;                                 // "good enough, we're never gonna have that many bytes"
   logic [$clog2(OBJ_BYTES)-1:0] flash_obj_byte_idx;               // N/8 bytes
-  logic [$clog2(NUM_OBJS_BYTES)-1:0] flash_num_objs_byte_idx;  // probably 1, if we have <= 256 objects
+  logic [$clog2(NUM_OBJS_BYTES)-1:0] flash_num_objs_byte_idx;     // probably 1, if we have <= 256 objects
   
   always_ff @(posedge clk) begin
     if (rst) begin
