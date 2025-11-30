@@ -95,9 +95,9 @@ module rtx_tb_parallel #(
 
   // Convert to 565 representation
   // fp_color pixel_color_clipped;
-  // fp_clip_upper #(.UPPER_BOUND(24'h3f0000)) r_min(.clk(clk), .a(pixel_color.r), .clipped(pixel_color_clipped.r));
-  // fp_clip_upper #(.UPPER_BOUND(24'h3f0000)) g_min(.clk(clk), .a(pixel_color.g), .clipped(pixel_color_clipped.g));
-  // fp_clip_upper #(.UPPER_BOUND(24'h3f0000)) b_min(.clk(clk), .a(pixel_color.b), .clipped(pixel_color_clipped.b));
+  // fp_clip_upper #(.UPPER_BOUND(FP_ONE)) r_min(.clk(clk), .a(pixel_color.r), .clipped(pixel_color_clipped.r));
+  // fp_clip_upper #(.UPPER_BOUND(FP_ONE)) g_min(.clk(clk), .a(pixel_color.g), .clipped(pixel_color_clipped.g));
+  // fp_clip_upper #(.UPPER_BOUND(FP_ONE)) b_min(.clk(clk), .a(pixel_color.b), .clipped(pixel_color_clipped.b));
 
   convert_fp_uint #(.WIDTH(5), .FRAC(5)) r_convert (.clk(clk), .x(pixel_color.r), .n(rtx_pixel[4:0]));
   convert_fp_uint #(.WIDTH(6), .FRAC(6)) g_convert (.clk(clk), .x(pixel_color.g), .n(rtx_pixel[10:5]));

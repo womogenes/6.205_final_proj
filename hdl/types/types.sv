@@ -2,15 +2,8 @@ parameter integer FRAC_WIDTH = 16;
 parameter integer FULL_WIDTH = 32;
 
 // ===== NUMBERS + MATH =====
-// FIXED-POINT TYPES NOT USED
-// typedef logic signed [FULL_WIDTH-1:0] fixed;
-// typedef logic signed [FRAC_WIDTH:0] short;     // extra bit for two's complement
 
-typedef struct packed {
-  logic sign;
-  logic [FP_EXP_BITS-1:0] exp;
-  logic [FP_MANT_BITS-1:0] mant;
-} fp;
+// NOTE: declaration of fp moved to constants.sv because dependencies
 
 // ===== COLORS =====
 typedef struct packed {

@@ -25,7 +25,7 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import make_fp_vec3, pack_bits
+from utils import make_fp_vec3, pack_bits, FP_BITS, FP_VEC3_BITS
 
 # MULTIPROCESSING GO BRRR
 from multiprocessing import Pool
@@ -38,9 +38,6 @@ parser.add_argument("--waves", action=BooleanOptionalAction)
 
 args = parser.parse_args()
 print(args)
-
-FP_BITS = 24
-FP_VEC3_BITS = FP_BITS * 3
 
 # Use environment variables for worker processes
 if "TEST_WIDTH" in os.environ:

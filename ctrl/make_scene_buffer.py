@@ -6,10 +6,7 @@ import sys
 proj_path = Path(__file__).parent.parent
 
 sys.path.append(str(proj_path / "sim"))
-from utils import make_fp, make_fp_vec3, pack_bits
-
-FP_BITS = 24
-FP_VEC3_BITS = FP_BITS * 3
+from utils import make_fp, make_fp_vec3, pack_bits, FP_BITS, FP_VEC3_BITS
 
 class Material:
     def __init__(

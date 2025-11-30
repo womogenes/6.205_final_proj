@@ -32,6 +32,8 @@ Things to recompute:
 - Magic numbers `three` and `MAGIC_NUMBER` in `fp_inv_sqrt.sv`
 - Magic number `two` and `MAGIC_NUMBER` in `fp_inv.sv`
 - The value of 1 in `rtx/ray_reflector.sv`
+- Initial camera values in `top_level_rtx.sv`
+- Initial value of `cur_ray_color` in `ray_tracer.sv`
 
 ## BELOW: CPU stuff that we don't really use anymore
 

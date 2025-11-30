@@ -198,10 +198,10 @@ module top_level (
   always_ff @(posedge clk_rtx) begin
     // Initialize camera
     if (sys_rst) begin
-      cam.origin <= 72'h0;
-      cam.forward <= {'h000000, 'h000000, 'h484000};  // (0, 0, 1280/2)
-      cam.right <= {'h3f0000, 'h000000, 'h000000};    // (1, 0, 0)
-      cam.up <= {'h000000, 'h3f0000, 'h000000};       // (0, 1, 0)
+      cam.origin <= 'h0;
+      cam.forward <= {'h000000, 'h000000, FP_HALF_SCREEN_WIDTH};  // (0, 0, 1280/2)
+      cam.right <= {FP_ONE, 'h000000, 'h000000};                  // (1, 0, 0)
+      cam.up <= {'h000000, FP_ONE, 'h000000};                     // (0, 1, 0)
 
       // half-sensible defaults
       num_objs <= 16;

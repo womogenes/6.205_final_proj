@@ -5,10 +5,23 @@ parameter integer MAX_NUM_OBJS = 257;
 parameter integer OBJ_IDX_WIDTH = $clog2(MAX_NUM_OBJS);
 
 // ===== FP MATH OPS =====
-
 parameter integer FP_EXP_BITS = 7;
 parameter integer FP_EXP_OFFSET = (1 << (FP_EXP_BITS - 1)) - 1;
 parameter integer FP_MANT_BITS = 16;
+
+typedef struct packed {
+  logic sign;
+  logic [FP_EXP_BITS-1:0] exp;
+  logic [FP_MANT_BITS-1:0] mant;
+} fp;
+
+// ===== FP CONSTANTS =====
+parameter fp FP_HALF_SCREEN_WIDTH = 'h484000;
+parameter fp FP_ONE = 'h3f0000;
+parameter fp FP_THREE = 'h408000;
+parameter fp FP_TWO = 'h400000;
+parameter fp FP_INV_SQRT_MAGIC_NUM = 'h5e669c;
+parameter fp FP_INV_MAGIC_NUM = 'h7ddf0a;
 
 parameter integer FP_BITS = 1 + FP_EXP_BITS + FP_MANT_BITS;
 parameter integer FP_VEC3_BITS = 3 * FP_BITS;

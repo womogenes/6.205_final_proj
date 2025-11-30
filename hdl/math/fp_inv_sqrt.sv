@@ -31,7 +31,7 @@ module fp_inv_sqrt_stage (
   output wire valid_out
 );
   // TODO: adjust magic constants
-  localparam fp three = 'h408000;
+  localparam fp three = FP_THREE;
 
   fp y_piped5;
 
@@ -85,7 +85,7 @@ module fp_inv_sqrt (
   output wire inv_sqrt_valid
 );
   // localparam fp half = {1'b0, 7'b011_1110, 16'b0};
-  localparam fp MAGIC_NUMBER = 'h5e669c;
+  localparam fp MAGIC_NUMBER = FP_INV_SQRT_MAGIC_NUM;
   localparam integer NR_STAGES = INV_SQRT_NR_STAGES;
 
   // fp half_x;

@@ -20,7 +20,7 @@ module fp_inv_stage (
 );
   // Iteration step is y * (2 - x * y)
   // https://marc-b-reynolds.github.io/math/2017/09/18/ModInverse.html
-  localparam fp two = 'h400000;
+  localparam fp two = FP_TWO;
 
   fp y_piped3;
 
@@ -54,15 +54,14 @@ module fp_inv (
   input fp x,
   output fp inv
 );
-  logic [FP_BITS-2:0] MAGIC_NUMBER = 'h7ddf0a;
+  logic [FP_BITS-2:0] MAGIC_NUMBER = FP_INV_MAGIC_NUM;
   localparam NR_STAGES = INV_NR_STAGES;
 
   fp [NR_STAGES:0] x_buffer;
   fp [NR_STAGES:0] y_buffer;
 
-  // To construct initial guess: negate exponent, flip all mantissa bits
   fp init_guess;
-  assign init_guess = {x[FP_BITS-1], MAGIC_NUMBER - x[FP_BITS-2:0]};
+  assign init_guess = MAGIC_NUMBER - x[FP_BITS-2:0];
 
   generate
     genvar i;

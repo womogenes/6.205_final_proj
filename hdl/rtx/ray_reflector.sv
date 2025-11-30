@@ -60,7 +60,7 @@ module ray_reflector (
   fp one_sub_spec_amt;
   fp_add sub_spec_amt (
     .clk(clk),
-    .a('h3f0000),
+    .a(FP_ONE),
     .b(spec_amt),
     .is_sub(1'b1),
     .sum(one_sub_spec_amt)

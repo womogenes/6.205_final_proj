@@ -74,7 +74,7 @@ module convert_fp_uint #(
 
     end else if (x.exp + FRAC > (WIDTH-1) + FP_EXP_OFFSET) begin
       // Magnitude is too large to fit in this integer, cooked
-      n <= 'hFF;
+      n <= {(WIDTH){1'b1}};
       
     end else begin
       // Shift mantissa by exponent
