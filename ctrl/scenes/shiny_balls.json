@@ -20,8 +20,8 @@
     },
     {
       "is_trig": 0,
-      "sphere_center": [0, -10000, 0],
-      "sphere_rad": 9997,
+      "sphere_center": [0, -1000, 0],
+      "sphere_rad": 997,
       "material": {
         "color": [0.3, 1.0, 0.3],
         "emit_color": [0.0, 0.0, 0.0],
@@ -31,8 +31,8 @@
     },
     {
       "is_trig": 0,
-      "sphere_center": [0, 10000, 0],
-      "sphere_rad": 9997,
+      "sphere_center": [0, 1000, 0],
+      "sphere_rad": 997,
       "material": {
         "color": [1.0, 1.0, 1.0],
         "emit_color": [0.6, 0.6, 0.6],
@@ -42,8 +42,8 @@
     },
     {
       "is_trig": 0,
-      "sphere_center": [0, 0, 10000],
-      "sphere_rad": 9988,
+      "sphere_center": [0, 0, 1000],
+      "sphere_rad": 988,
       "material": {
         "color": [0.8, 0.8, 0.8],
         "emit_color": [0.0, 0.0, 0.0],
@@ -53,8 +53,8 @@
     },
     {
       "is_trig": 0,
-      "sphere_center": [0, 0, -10000],
-      "sphere_rad": 9988,
+      "sphere_center": [0, 0, -1000],
+      "sphere_rad": 988,
       "material": {
         "color": [1.0, 1.0, 1.0],
         "emit_color": [0.0, 0.0, 0.0],
@@ -64,8 +64,8 @@
     },
     {
       "is_trig": 0,
-      "sphere_center": [-10000, 0, 0],
-      "sphere_rad": 9994,
+      "sphere_center": [-1000, 0, 0],
+      "sphere_rad": 994,
       "material": {
         "color": [1.0, 0.3, 0.3],
         "emit_color": [0.0, 0.0, 0.0],
@@ -75,8 +75,8 @@
     },
     {
       "is_trig": 0,
-      "sphere_center": [10000, 0, 0],
-      "sphere_rad": 9994,
+      "sphere_center": [1000, 0, 0],
+      "sphere_rad": 994,
       "material": {
         "color": [0.3, 0.3, 1.0],
         "emit_color": [0.0, 0.0, 0.0],
