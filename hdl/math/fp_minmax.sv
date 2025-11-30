@@ -1,19 +1,19 @@
-// Sort two fp24s
+// Sort two fps
 
 `default_nettype none
 
-module fp24_minmax (
+module fp_minmax (
   input wire clk,
   input wire rst,
   
-  input fp24 a,
-  input fp24 b,
+  input fp a,
+  input fp b,
 
-  output fp24 min,
-  output fp24 max
+  output fp min,
+  output fp max
 );
   logic greater;
-  assign greater = fp24_greater(a, b);
+  assign greater = fp_greater(a, b);
 
   always_ff @(posedge clk) begin
     min <= greater ? b : a;

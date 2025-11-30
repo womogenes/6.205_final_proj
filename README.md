@@ -25,6 +25,13 @@ We anticipate getting cooked by LUT usage at some point, so here are some areas 
 
 Note: untested with triangles
 
+## So you want to mess with floating point?
+
+Things to recompute:
+
+- Magic numbers `three` and `MAGIC_NUMBER` in `fp_inv_sqrt.sv`
+- Magic number `two` and `MAGIC_NUMBER` in `fp_inv.sv`
+
 ## BELOW: CPU stuff that we don't really use anymore
 
 ### Memory

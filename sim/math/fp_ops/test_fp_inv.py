@@ -17,14 +17,14 @@ import math
 import matplotlib.pyplot as plt
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from utils import convert_fp24, make_fp24, make_fp24_vec3, convert_fp24_vec3
+from utils import convert_fp, make_fp, make_fp_vec3, convert_fp_vec3
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
 @cocotb.test()
 async def test_module(dut):
     """
-    Test module: vec3 addition using fp24
+    Test module: vec3 addition using fp
     """
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
@@ -44,16 +44,16 @@ async def test_module(dut):
         # Clock in one per cycle brrr
         dut_ans = []
         for i in range(N_SAMPLES):
-            x = make_fp24(xs[i])
+            x = make_fp(xs[i])
 
             dut.x.value = x
 
             await ClockCycles(dut.clk, 1)
-            dut_ans.append(convert_fp24(dut.inv.value))
+            dut_ans.append(convert_fp(dut.inv.value))
 
         for _ in range(DELAY_CYCLES):
             await ClockCycles(dut.clk, 1)
-            dut_ans.append(convert_fp24(dut.inv.value))
+            dut_ans.append(convert_fp(dut.inv.value))
 
         # Get answers!
         await ClockCycles(dut.clk, DELAY_CYCLES * 2)
@@ -83,11 +83,11 @@ def runner():
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_inv.sv",
+        proj_path / "hdl" / "math" / "fp_shift.sv",
+        proj_path / "hdl" / "math" / "fp_add.sv",
+        proj_path / "hdl" / "math" / "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_inv.sv",
     ]
     build_test_args = ["-Wall"]
 
@@ -95,7 +95,7 @@ def runner():
     parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "fp24_inv"
+    hdl_toplevel = "fp_inv"
     
     runner = get_runner(sim)
     runner.build(
