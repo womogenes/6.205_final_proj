@@ -17,7 +17,7 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24, convert_fp24_vec3, make_fp24_vec3
+from utils import convert_fp, make_fp, convert_fp_vec3, make_fp_vec3
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -36,8 +36,8 @@ async def test_module(dut):
 
     # Generate inputs
     N_SAMPLES = 1000
-    A = np.exp2(np.random.rand(N_SAMPLES, 3) * 31 - 16)
-    B = np.exp2(np.random.rand(N_SAMPLES, 3) * 31 - 16)
+    A = np.exp2((np.random.rand(N_SAMPLES, 3) - 0.5) * 31)
+    B = np.exp2((np.random.rand(N_SAMPLES, 3) - 0.5) * 31)
 
     # N_SAMPLES = 1
     # A = [(1/np.sqrt(2), -1/np.sqrt(2), 0)]
@@ -47,13 +47,13 @@ async def test_module(dut):
     dut_ans = []
     for i in range(N_SAMPLES + DELAY_CYCLES):
         if i < N_SAMPLES:
-            dut.in_dir.value = make_fp24_vec3(A[i])
-            dut.normal.value = make_fp24_vec3(B[i])
+            dut.in_dir.value = make_fp_vec3(A[i])
+            dut.normal.value = make_fp_vec3(B[i])
 
         await ClockCycles(dut.clk, 1)
 
         if i >= DELAY_CYCLES:
-            dut_ans.append(convert_fp24_vec3(dut.out_dir.value.integer))
+            dut_ans.append(convert_fp_vec3(dut.out_dir.value.integer))
 
     # Get answers!
     await ClockCycles(dut.clk, DELAY_CYCLES * 2)
@@ -78,11 +78,11 @@ def runner():
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
+        proj_path / "hdl" / "math" / "fp_shift.sv",
+        proj_path / "hdl" / "math" / "fp_add.sv",
+        proj_path / "hdl" / "math" / "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
         proj_path / "hdl" / "math" / "specular_reflect.sv",
     ]
     build_test_args = ["-Wall"]
