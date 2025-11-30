@@ -3,15 +3,15 @@
 module ray_intersector (
   input wire clk,
   input wire rst,
-  input fp24_vec3 ray_origin,
-  input fp24_vec3 ray_dir,
+  input fp_vec3 ray_origin,
+  input fp_vec3 ray_dir,
   input wire ray_valid,         // single-cycle trigger
 
   // Running values
   output material hit_mat,
-  output fp24_vec3 hit_pos,
-  output fp24_vec3 hit_normal,
-  output fp24 hit_dist_sq,
+  output fp_vec3 hit_pos,
+  output fp_vec3 hit_normal,
+  output fp hit_dist_sq,
   output logic hit_any,
   output logic hit_valid,
 
@@ -91,7 +91,7 @@ module ray_intersector (
       end else begin
         if (
           sphere_intx_hit && 
-          (hit_any == 0 || fp24_greater(hit_dist_sq, sphere_intx_hit_dist_sq))
+          (hit_any == 0 || fp_greater(hit_dist_sq, sphere_intx_hit_dist_sq))
         ) begin
           hit_mat <= sphere_intx_mat;
           hit_pos <= sphere_intx_hit_pos;
@@ -111,9 +111,9 @@ module ray_intersector (
     - object material
   */
   logic sphere_intx_hit;
-  fp24_vec3 sphere_intx_hit_pos;
-  fp24 sphere_intx_hit_dist_sq;
-  fp24_vec3 sphere_intx_hit_norm;
+  fp_vec3 sphere_intx_hit_pos;
+  fp sphere_intx_hit_dist_sq;
+  fp_vec3 sphere_intx_hit_norm;
 
   // Pipelined hit material (for reflection)
   material sphere_intx_mat;

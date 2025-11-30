@@ -17,7 +17,7 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24, convert_fp24_vec3
+from utils import convert_fp, make_fp, convert_fp_vec3
 
 WIDTH = 32 * 1
 HEIGHT = 18 * 1
@@ -51,14 +51,14 @@ async def test_module(dut):
     for i in range(N_SAMPLES + DELAY_CYCLES):
         if i < N_SAMPLES:
             b, c = B[i], C[i]
-            dut.b.value = make_fp24(b)
-            dut.c.value = make_fp24(c)
+            dut.b.value = make_fp(b)
+            dut.c.value = make_fp(c)
 
         await ClockCycles(dut.clk, 1)
 
         if i >= DELAY_CYCLES:
             dut_valid.append(dut.valid.value.integer)
-            dut_x0.append(convert_fp24(dut.x0.value))
+            dut_x0.append(convert_fp(dut.x0.value))
 
     # Get answers!
     await ClockCycles(dut.clk, DELAY_CYCLES * 2)
@@ -101,12 +101,12 @@ def runner():
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_shift.sv",
+        proj_path / "hdl" / "math" / "fp_add.sv",
+        proj_path / "hdl" / "math" / "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_inv.sv",
+        proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_sqrt.sv",
         proj_path / "hdl" / "math" / "quadratic_solver.sv",
     ]
     build_test_args = ["-Wall"]

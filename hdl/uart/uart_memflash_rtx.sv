@@ -9,12 +9,14 @@ module uart_memflash_rtx (
 
   output logic flash_active,
   output logic [7:0] flash_cmd,
-  output logic [71:0] flash_cam_data,
+  output logic [CAM_WIDTH-1:0] flash_cam_data,
   output logic [OBJ_WIDTH-1:0] flash_obj_data,
   output logic [NUM_OBJS_WIDTH-1:0] flash_num_objs_data,
   output logic [7:0] flash_max_bounces_data,
   output logic flash_wen
 );
+  localparam integer CAM_BYTES = (FP_VEC3_BITS + 7) / 8;
+  localparam integer CAM_WIDTH = CAM_BYTES * 8;
   localparam integer OBJ_BYTES = ($bits(object) + 7) / 8;
   localparam integer OBJ_WIDTH = OBJ_BYTES * 8;
   localparam integer NUM_OBJS_BYTES = (OBJ_IDX_WIDTH + 7) / 8;
@@ -42,9 +44,10 @@ module uart_memflash_rtx (
   } flash_state;
 
   flash_state state;
-  logic [3:0] flash_cam_byte_idx;                                 // 9 bytes for 72-bit cam vector
+
+  logic [7:0] flash_cam_byte_idx;                                 // "good enough, we're never gonna have that many bytes"
   logic [$clog2(OBJ_BYTES)-1:0] flash_obj_byte_idx;               // N/8 bytes
-  logic [$clog2(NUM_OBJS_BYTES)-1:0] flash_num_objs_byte_idx;  // probably 1, if we have <= 256 objects
+  logic [$clog2(NUM_OBJS_BYTES)-1:0] flash_num_objs_byte_idx;     // probably 1, if we have <= 256 objects
   
   always_ff @(posedge clk) begin
     if (rst) begin
@@ -86,9 +89,9 @@ module uart_memflash_rtx (
           */
           if (uart_rx_valid) begin
             // UART bytes are transmitted *LSB*
-            flash_cam_data <= {uart_rx_byte, flash_cam_data[71:8]};
+            flash_cam_data <= {uart_rx_byte, flash_cam_data[CAM_WIDTH-1:8]};
 
-            if (flash_cam_byte_idx == 8) begin
+            if (flash_cam_byte_idx == CAM_BYTES - 1) begin
               flash_cam_byte_idx <= 0;
               flash_wen <= 1'b1;
               state <= IDLE;

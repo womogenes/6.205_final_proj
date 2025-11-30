@@ -12,15 +12,18 @@ from enum import Enum
 import random
 import ctypes
 import numpy as np
+import math
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from utils import convert_fp24, make_fp24
+from utils import convert_fp, make_fp, make_fp_vec3, convert_fp_vec3
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
 @cocotb.test()
 async def test_module(dut):
-    """cocotb test for the lazy mult module"""
+    """
+    Test module: vec3 addition using fp
+    """
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
@@ -28,22 +31,42 @@ async def test_module(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
-    
-    N_TESTS = 1000
 
-    for _ in range(N_TESTS):
-        n = (np.random.rand() - 0.5) * 300
-        dut.x.value = make_fp24(n)
+    DELAY_CYCLES = 1
 
-        await ClockCycles(dut.clk, 2)
-        dut_ans = dut.n.value.integer
-        exp_ans = min(255, max(0, abs(n)))
+    N_SAMPLES = 1000
 
-        assert exp_ans - dut_ans <= 1, f"Expected {exp_ans}, got {dut_ans}"
+    # Generate random (N, 3) tensors for inputs
+    a_vecs = np.exp2((np.random.rand(N_SAMPLES, 3) - 0.5) * 31)
+    a_vecs_fp = list(map(make_fp_vec3, a_vecs))
 
-        dut._log.info(f"{dut_ans=}, {exp_ans=}")
+    b = np.exp2((np.random.rand(N_SAMPLES) - 0.5) * 31)
+    s_fps = list(map(make_fp, b))
 
-    dut._log.info(f"")
+    # Clock in one per cycle brrr
+    dut_ans = []
+    for i in range(N_SAMPLES):
+        a_fp_vec3 = a_vecs_fp[i]
+        s_fp = s_fps[i]
+
+        dut.v.value = a_fp_vec3
+        dut.s.value = s_fp
+
+        await ClockCycles(dut.clk, 1)
+        # await RisingEdge(dut.clk)
+        dut_ans.append(convert_fp_vec3(dut.scaled.value))
+
+    for _ in range(DELAY_CYCLES):
+        await ClockCycles(dut.clk, 1)
+        dut_ans.append(convert_fp_vec3(dut.scaled.value))
+
+    # Get answers!
+    await ClockCycles(dut.clk, DELAY_CYCLES * 2)
+    dut_ans = np.array(dut_ans[DELAY_CYCLES:])
+    exp_ans = a_vecs * b[:, None]
+
+    rel_err = np.abs(dut_ans / exp_ans - 1)
+    dut._log.info(f"mean relative error: {np.mean(rel_err) * 100:.6f}%")
 
 
 def runner():
@@ -54,17 +77,22 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
+        proj_path / "hdl" / "pipeline.sv",
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_convert.sv"
+        proj_path / "hdl" / "math" / "fp_shift.sv",
+        proj_path / "hdl" / "math" / "fp_add.sv",
+        proj_path / "hdl" / "math" / "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
     ]
     build_test_args = ["-Wall"]
 
     # values for parameters defined earlier in the code.
-    parameters = {"WIDTH": 8}
+    parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "convert_fp24_uint"
+    hdl_toplevel = "fp_vec3_scale"
     
     runner = get_runner(sim)
     runner.build(

@@ -1,5 +1,5 @@
 {
-  "max_bounces": 6,
+  "max_bounces": 10,
   "camera": {
     "origin": [0, 0, -10],
     "forward": [0, 0, 1500],
@@ -9,85 +9,79 @@
   "objects": [
     {
       "is_trig": 0,
-      "sphere_center": [0, 12.85, 6],
-      "sphere_rad": 10,
-      "material": {
-        "color": [0.8, 0.8, 0.8],
-        "emit_color": [1, 1, 1],
-        "smoothness": 1.0,
-        "specular_prob": 0.0
-      }
-    },
-    {
-      "is_trig": 0,
-      "sphere_center": [0, -1000, 0],
-      "sphere_rad": 997,
-      "material": {
-        "color": [0.5, 1.0, 0.5],
-        "emit_color": [0.0, 0.0, 0.0],
-        "spec_color": [0.3, 1.0, 0.3],
-        "smoothness": 1.0,
-        "specular_prob": 0.0
-      }
-    },
-    {
-      "is_trig": 0,
-      "sphere_center": [0, 1000, 0],
-      "sphere_rad": 997,
+      "sphere_center": [0, 10, 6],
+      "sphere_rad": 7,
       "material": {
         "color": [1.0, 1.0, 1.0],
-        "emit_color": [0.6, 0.6, 0.6],
-        "spec_color": [1.0, 1.0, 1.0],
-        "smoothness": 1.0,
+        "emit_color": [0.5, 0.5, 0.5],
+        "smoothness": 0.5,
         "specular_prob": 0.0
       }
     },
     {
       "is_trig": 0,
-      "sphere_center": [0, 0, 1000],
-      "sphere_rad": 988,
+      "sphere_center": [0, 8.99, 6],
+      "sphere_rad": 6,
+      "material": {
+        "color": [0.8, 0.8, 0.8],
+        "emit_color": [15, 15, 15],
+        "smoothness": 0.5,
+        "specular_prob": 0.0
+      }
+    },
+    {
+      "is_trig": 0,
+      "sphere_center": [0, -10, 6],
+      "sphere_rad": 7,
+      "material": {
+        "color": [0.3, 1.0, 0.3],
+        "emit_color": [0.0, 0.0, 0.0],
+        "smoothness": 0.5,
+        "specular_prob": 0.0
+      }
+    },
+    {
+      "is_trig": 0,
+      "sphere_center": [0, 0, 20],
+      "sphere_rad": 8,
       "material": {
         "color": [0.8, 0.8, 0.8],
         "emit_color": [0.0, 0.0, 0.0],
-        "spec_color": [0.8, 0.8, 0.8],
-        "smoothness": 0.99,
-        "specular_prob": 0.9
+        "smoothness": 0.999,
+        "specular_prob": 0.0
       }
     },
     {
       "is_trig": 0,
-      "sphere_center": [0, 0, -1000],
-      "sphere_rad": 988,
+      "sphere_center": [0, 0, -20],
+      "sphere_rad": 8,
       "material": {
         "color": [1.0, 1.0, 1.0],
         "emit_color": [0.0, 0.0, 0.0],
-        "spec_color": [1.0, 1.0, 1.0],
-        "smoothness": 1.0,
-        "specular_prob": 1.0
+        "smoothness": 0.999,
+        "specular_prob": 0.0
       }
     },
     {
       "is_trig": 0,
-      "sphere_center": [-1000, 0, 0],
-      "sphere_rad": 994,
+      "sphere_center": [-10, 0, 6],
+      "sphere_rad": 4,
       "material": {
         "color": [1.0, 0.3, 0.3],
         "emit_color": [0.0, 0.0, 0.0],
-        "spec_color": [1.0, 0.5, 0.5],
-        "smoothness": 0.99,
-        "specular_prob": 0.99
+        "smoothness": 1.0,
+        "specular_prob": 0.0
       }
     },
     {
       "is_trig": 0,
-      "sphere_center": [1000, 0, 0],
-      "sphere_rad": 994,
+      "sphere_center": [10, 0, 6],
+      "sphere_rad": 4,
       "material": {
         "color": [0.3, 0.3, 1.0],
         "emit_color": [0.0, 0.0, 0.0],
-        "spec_color": [0.5, 0.5, 1.0],
-        "smoothness": 0.99,
-        "specular_prob": 0.99
+        "smoothness": 1.0,
+        "specular_prob": 0.0
       }
     },
     {

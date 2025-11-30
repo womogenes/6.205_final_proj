@@ -1,12 +1,12 @@
 `default_nettype none
 
-module fp24_shift #(
+module fp_shift #(
   parameter integer SHIFT_AMT = 0
 ) (
-  input fp24 a,
-  output fp24 shifted
+  input fp a,
+  output fp shifted
 );
-  // Divide a given fp24 value by a FIXED power of two by subtracting from exponent
+  // Divide a given fp value by a FIXED power of two by subtracting from exponent
   // Useful for dividing by 2 etc
   // Beware overflow?
 

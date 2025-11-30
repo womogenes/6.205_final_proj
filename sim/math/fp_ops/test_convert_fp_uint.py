@@ -12,20 +12,15 @@ from enum import Enum
 import random
 import ctypes
 import numpy as np
-import math
-
-import matplotlib.pyplot as plt
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from utils import convert_fp24, make_fp24, make_fp24_vec3, convert_fp24_vec3
+from utils import convert_fp, make_fp
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
 @cocotb.test()
 async def test_module(dut):
-    """
-    Test module: vec3 addition using fp24
-    """
+    """cocotb test for the lazy mult module"""
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
@@ -33,43 +28,23 @@ async def test_module(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
+    
+    N_TESTS = 1000
 
-    DELAY_CYCLES = 8
+    for _ in range(N_TESTS):
+        n = np.random.rand()
+        dut.x.value = make_fp(n)
 
-    N_SAMPLES = 1000
+        dut._log.info(f"{n=}, {convert_fp(make_fp(n))=}")
 
-    async def mean_rel_err(vec_scale: float):
-        xs = np.exp2((np.random.rand(N_SAMPLES) - 0.5) * 2 * vec_scale)
+        await ClockCycles(dut.clk, 2)
+        dut_ans = dut.n.value.integer
+        exp_ans = min(255, max(0, abs(n * 256)))
 
-        # Clock in one per cycle brrr
-        dut_ans = []
-        for i in range(N_SAMPLES):
-            x = make_fp24(xs[i])
+        assert abs(exp_ans - dut_ans) <= 1, f"Expected {exp_ans}, got {dut_ans}"
 
-            dut.x.value = x
+        dut._log.info(f"{dut_ans=}, {exp_ans=}")
 
-            await ClockCycles(dut.clk, 1)
-            dut_ans.append(convert_fp24(dut.inv.value))
-
-        for _ in range(DELAY_CYCLES):
-            await ClockCycles(dut.clk, 1)
-            dut_ans.append(convert_fp24(dut.inv.value))
-
-        # Get answers!
-        await ClockCycles(dut.clk, DELAY_CYCLES * 2)
-        dut_ans = np.array(dut_ans[DELAY_CYCLES:])
-        exp_ans = 1 / xs
-
-        dut._log.info(f"{dut_ans[0]=:.6f}, {exp_ans[0]=:.6f}")
-
-        rel_err = np.abs(dut_ans / exp_ans - 1)
-        dut._log.info(f"vector scale: {scale:>2}\tmean relative error: {np.mean(rel_err) * 100:.6f}%")
-
-        return np.mean(rel_err)
-
-    # for scale in range(1, 63):
-    scale = 32
-    await mean_rel_err(scale)
 
 def runner():
     """Module tester."""
@@ -79,23 +54,18 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
-        proj_path / "hdl" / "pipeline.sv",
-        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_inv.sv",
+        proj_path / "hdl" / "math" / "fp_convert.sv"
     ]
     build_test_args = ["-Wall"]
 
     # values for parameters defined earlier in the code.
-    parameters = {}
+    parameters = {"WIDTH": 8}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "fp24_inv"
+    hdl_toplevel = "convert_fp_uint"
     
     runner = get_runner(sim)
     runner.build(

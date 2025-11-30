@@ -6,7 +6,7 @@ import sys
 proj_path = Path(__file__).parent.parent
 
 sys.path.append(str(proj_path / "sim"))
-from utils import make_fp24, make_fp24_vec3, pack_bits
+from utils import make_fp, make_fp_vec3, pack_bits, FP_VEC3_BITS
 from make_scene_buffer import Material, Object
 
 import wave
@@ -34,10 +34,12 @@ BAUD = 115200  # Make sure this matches your UART receiver
 if __name__ == "__main__":
     ser = serial.Serial(SERIAL_PORTNAME, BAUD)
 
+    # ser.write((0b10000000).to_bytes(1))
+    # print((FP_VEC3_BITS + 7) // 8)
     # for i in range(100):
     #     ser.write((0).to_bytes(1))
     #     input(i+1)
-    # return
+    # exit()
 
     def set_cam(
         origin: tuple[float] = None,
@@ -48,10 +50,10 @@ if __name__ == "__main__":
         for cmd, vec in zip([0b1_00000_00, 0b1_00000_01, 0b1_00000_10, 0b1_00000_11], [origin, forward, right, up]):
             if vec is None:
                 continue
-            
+
             ser.write((cmd).to_bytes(1, "little"))
-            data = make_fp24_vec3(vec)
-            ser.write(data.to_bytes(9, "little"))
+            data = make_fp_vec3(vec)
+            ser.write(data.to_bytes((FP_VEC3_BITS + 7) // 8, "little"))
 
     def set_obj(obj_idx: int, obj: Object):
         obj_bits, obj_num_bits = obj.pack_bits()

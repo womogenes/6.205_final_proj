@@ -12,8 +12,8 @@ module ray_caster #(
 
   output logic [10:0] pixel_h,
   output logic [9:0] pixel_v,
-  output fp24_vec3 ray_origin,
-  output fp24_vec3 ray_dir,
+  output fp_vec3 ray_origin,
+  output fp_vec3 ray_dir,
   output logic ray_valid
 );
   logic [10:0] pixel_h_rsg;
@@ -34,8 +34,8 @@ module ray_caster #(
   // "staging" registers to hold stuff until we want to release it
   // `new_ray` triggers the staging release
   logic maker_new_ray;
-  fp24_vec3 staging_ray_origin;
-  fp24_vec3 staging_ray_dir;
+  fp_vec3 staging_ray_origin;
+  fp_vec3 staging_ray_dir;
   logic [10:0] staging_pixel_h;
   logic [9:0] staging_pixel_v;
 

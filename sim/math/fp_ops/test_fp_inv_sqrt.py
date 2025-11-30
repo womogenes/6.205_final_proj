@@ -15,7 +15,7 @@ import numpy as np
 import math
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from utils import convert_fp24, make_fp24
+from utils import convert_fp, make_fp
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -38,15 +38,15 @@ async def test_pipeline(dut):
 
     N_SAMPLES = 100
     x = np.exp2(np.random.rand(N_SAMPLES) * 63 - 31)
-    x_fp24 = list(map(make_fp24, x))
+    x_fp = list(map(make_fp, x))
 
     # Clock in one per cycle brrr
     dut_ans = []
     dut.x_valid.value = 1
     for i in range(N_SAMPLES):
-        dut.x.value = x_fp24[i]
+        dut.x.value = x_fp[i]
         await ClockCycles(dut.clk, 1)
-        dut_ans.append(convert_fp24(dut.inv_sqrt.value))
+        dut_ans.append(convert_fp(dut.inv_sqrt.value))
 
         # Output must be continually good to go
         if i >= DELAY_CYCLES:
@@ -58,7 +58,7 @@ async def test_pipeline(dut):
     for _ in range(DELAY_CYCLES):
         # assert dut.inv_sqrt_valid.value
         await ClockCycles(dut.clk, 1)
-        dut_ans.append(convert_fp24(dut.inv_sqrt.value))
+        dut_ans.append(convert_fp(dut.inv_sqrt.value))
 
     # Get answers!
     await ClockCycles(dut.clk, DELAY_CYCLES * 2)
@@ -71,7 +71,7 @@ async def test_pipeline(dut):
 
 @cocotb.test()
 async def test_module(dut):
-    """cocotb test for the fp24 inv sqrt module"""
+    """cocotb test for the fp inv sqrt module"""
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
@@ -82,9 +82,9 @@ async def test_module(dut):
 
     async def do_test(x: float):
         """
-        Do a single test on 1/sqrt(x) using fp_24_inv_sqrt
+        Do a single test on 1/sqrt(x) using fp_inv_sqrt
         """
-        x_f = make_fp24(x)
+        x_f = make_fp(x)
 
         # Clock in value for 1 cycle
         dut.x.value = x_f
@@ -94,7 +94,7 @@ async def test_module(dut):
 
         await RisingEdge(dut.inv_sqrt_valid)
 
-        res = convert_fp24(dut.inv_sqrt.value)
+        res = convert_fp(dut.inv_sqrt.value)
         await ClockCycles(dut.clk, 1)
         return res
     
@@ -103,13 +103,13 @@ async def test_module(dut):
     # res = await do_test(x, y, 0)
     # dut._log.info(f"{res=}, {x+y=}")
     # return
-    dut._log.info(f"{make_fp24(math.sqrt(2**63)):b}")
-    dut._log.info(f"{make_fp24(math.sqrt(2**63)):x}")
+    dut._log.info(f"{make_fp(math.sqrt(2**63)):b}")
+    dut._log.info(f"{make_fp(math.sqrt(2**63)):x}")
 
     # 0 1011110 0110_1010_0000_1010 = sqrt(2**63) = magic number
     # 0 1000001 0000_0000_0000_0000 = x = 4
     # 0 0111101 1110_1010_0000_1010 = magic number - (x >> 1)
-    # dut._log.info(f"half={make_fp24(0.5):x}")
+    # dut._log.info(f"half={make_fp(0.5):x}")
     
     n_tests = 1_000
     total_err = 0
@@ -147,10 +147,10 @@ def runner():
         proj_path / "hdl" / "pipeline.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv"
+        proj_path / "hdl" / "math" / "fp_shift.sv",
+        proj_path / "hdl" / "math" / "fp_add.sv",
+        proj_path / "hdl" / "math" / "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_inv_sqrt.sv"
 
     ]
     build_test_args = ["-Wall"]
@@ -159,7 +159,7 @@ def runner():
     parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "fp24_inv_sqrt"
+    hdl_toplevel = "fp_inv_sqrt"
     
     runner = get_runner(sim)
     runner.build(

@@ -121,7 +121,7 @@ module top_level (
   // ===== UART MEMFLASH =====
   logic uart_flash_active;
   logic [7:0] uart_flash_cmd;
-  logic [71:0] uart_flash_cam_data;
+  logic [FP_VEC3_BITS-1:0] uart_flash_cam_data;
   logic [$bits(object)-1:0] uart_flash_obj_data;
   logic [$clog2(MAX_NUM_OBJS)-1:0] uart_flash_num_objs_data;
   logic [7:0] uart_flash_max_bounces_data;
@@ -198,10 +198,10 @@ module top_level (
   always_ff @(posedge clk_rtx) begin
     // Initialize camera
     if (sys_rst) begin
-      cam.origin <= 72'h0;
-      cam.forward <= {24'h000000, 24'h000000, 24'h484000};  // (0, 0, 1280/2)
-      cam.right <= {24'h3f0000, 24'h000000, 24'h000000};    // (1, 0, 0)
-      cam.up <= {24'h000000, 24'h3f0000, 24'h000000};       // (0, 1, 0)
+      cam.origin <= 'h0;
+      cam.forward <= {FP_ZERO, FP_ZERO, FP_HALF_SCREEN_WIDTH};  // (0, 0, 1280/2)
+      cam.right <= {FP_ONE, FP_ZERO, FP_ZERO};                  // (1, 0, 0)
+      cam.up <= {FP_ZERO, FP_ONE, FP_ZERO};                     // (0, 1, 0)
 
       // half-sensible defaults
       num_objs <= 16;

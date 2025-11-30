@@ -14,7 +14,7 @@ import ctypes
 import numpy as np
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from utils import convert_fp24, make_fp24
+from utils import convert_fp, make_fp
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -28,22 +28,34 @@ async def test_module(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
+
+    async def do_test(x: float, y: float):
+        """
+        Do a single test on x * y using fp_mul
+        """
+        x_f = make_fp(x)
+        y_f = make_fp(y)
+
+        dut.a.value = x_f
+        dut.b.value = y_f
+        await ClockCycles(dut.clk, 3)
+
+        return convert_fp(dut.prod.value)
     
-    N_TESTS = 1000
+    n_tests = 1_000
+    total_err = 0
+    for _ in range(n_tests):
+        x = (random.random() - 0.5) * 200
+        y = (random.random() - 0.5) * 200
+        
+        exp_ans = x * y
+        dut_ans = await do_test(x, y)
 
-    for _ in range(N_TESTS):
-        n_bin = np.random.randint(0, 2**32)
-        dut.n.value = n_bin
+        dut._log.info(f"{x=:>10.3f} {y=:>10.3f} {exp_ans=:>10.3f} {dut_ans=:>10.3f} diff={exp_ans-dut_ans}")
 
-        await ClockCycles(dut.clk, 1)
-        dut_ans = convert_fp24(dut.x.value)
-        exp_ans = ctypes.c_int32(n_bin).value
+        total_err += abs(exp_ans - dut_ans)
 
-        assert abs(dut_ans / exp_ans- 1) < 0.01, f"Expected {exp_ans}, got {dut_ans}"
-
-        dut._log.info(f"{dut_ans=}, {exp_ans=}")
-
-    dut._log.info(f"")
+    dut._log.info(f"Mean error: {total_err / n_tests}")
 
 
 def runner():
@@ -54,17 +66,18 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_convert.sv"
+        proj_path / "hdl" / "math" / "fp_mul.sv"
     ]
     build_test_args = ["-Wall"]
 
     # values for parameters defined earlier in the code.
-    parameters = {"WIDTH": 32}
+    parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "make_fp24"
+    hdl_toplevel = "fp_mul"
     
     runner = get_runner(sim)
     runner.build(

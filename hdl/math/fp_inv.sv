@@ -1,44 +1,44 @@
 `default_nettype wire
 
 /*
-  fp24_inv_stage:
+  fp_inv_stage:
     iteratively improve guess for 1/x, using y as starting guess
 
   timing:
     3 cycle delay
 */
-module fp24_inv_stage (
+module fp_inv_stage (
   input wire clk,
   input wire rst,
 
-  input fp24 x,
-  input fp24 y,
+  input fp x,
+  input fp y,
   // No valid signals :)
 
-  output fp24 x_out,
-  output fp24 y_next
+  output fp x_out,
+  output fp y_next
 );
   // Iteration step is y * (2 - x * y)
   // https://marc-b-reynolds.github.io/math/2017/09/18/ModInverse.html
-  localparam fp24 two = 24'h400000;
+  localparam fp two = FP_TWO;
 
-  fp24 y_piped3;
+  fp y_piped3;
 
-  pipeline #(.WIDTH(24), .DEPTH(4)) x_pipe (.clk(clk), .in(x), .out(x_out));
-  pipeline #(.WIDTH(24), .DEPTH(3)) y_pipe (.clk(clk), .in(y), .out(y_piped3));
+  pipeline #(.WIDTH(FP_BITS), .DEPTH(4)) x_pipe (.clk(clk), .in(x), .out(x_out));
+  pipeline #(.WIDTH(FP_BITS), .DEPTH(3)) y_pipe (.clk(clk), .in(y), .out(y_piped3));
 
-  fp24 x_by_y;
-  fp24 two_minus_xby;
+  fp x_by_y;
+  fp two_minus_xby;
 
-  fp24_mul mul_x_by_y(.clk(clk), .a(x), .b(y), .prod(x_by_y));
-  fp24_add add_two_minus_xby(.clk(clk), .a(two), .b(x_by_y), .is_sub(1'b1), .sum(two_minus_xby));
-  fp24_mul mul_y_next(.clk(clk), .a(y_piped3), .b(two_minus_xby), .prod(y_next));
+  fp_mul mul_x_by_y(.clk(clk), .a(x), .b(y), .prod(x_by_y));
+  fp_add add_two_minus_xby(.clk(clk), .a(two), .b(x_by_y), .is_sub(1'b1), .sum(two_minus_xby));
+  fp_mul mul_y_next(.clk(clk), .a(y_piped3), .b(two_minus_xby), .prod(y_next));
 
 endmodule
 
 /*
-  fp24_inv:
-    find multiplicative inverse of an fp24
+  fp_inv:
+    find multiplicative inverse of an fp
 
   timing:
     INV_DELAY (INV_NR_STAGES * INV_STAGE_DELAY)
@@ -47,27 +47,26 @@ parameter integer INV_NR_STAGES = 2;
 parameter integer INV_STAGE_DELAY = 4;
 parameter integer INV_DELAY = INV_NR_STAGES * INV_STAGE_DELAY;
 
-module fp24_inv (
+module fp_inv (
   input wire clk,
   input wire rst,
 
-  input fp24 x,
-  output fp24 inv
+  input fp x,
+  output fp inv
 );
-  logic [22:0] MAGIC_NUMBER = 23'h7ddf0a;
+  logic [FP_BITS-2:0] MAGIC_NUMBER = FP_INV_MAGIC_NUM;
   localparam NR_STAGES = INV_NR_STAGES;
 
-  fp24 [NR_STAGES:0] x_buffer;
-  fp24 [NR_STAGES:0] y_buffer;
+  fp [NR_STAGES:0] x_buffer;
+  fp [NR_STAGES:0] y_buffer;
 
-  // To construct initial guess: negate exponent, flip all mantissa bits
-  fp24 init_guess;
-  assign init_guess = {x[23], MAGIC_NUMBER - x[22:0]};
+  fp init_guess;
+  assign init_guess = MAGIC_NUMBER - x[FP_BITS-2:0];
 
   generate
     genvar i;
     for (i = 0; i < NR_STAGES; i = i + 1) begin
-      fp24_inv_stage inv_stage (
+      fp_inv_stage inv_stage (
         .clk(clk),
         .rst(rst),
         .x((i == 0) ? x : x_buffer[i]),

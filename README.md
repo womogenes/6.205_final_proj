@@ -2,20 +2,20 @@
 
 ## Project structure
 
-We use 24-bit floating point for most operations. We call this data type `fp24`, and a bunch of modules exist to deal with operations on `fp24` numbers.
+We use 24-bit floating point for most operations. We call this data type `fp`, and a bunch of modules exist to deal with operations on `fp` numbers.
 
 - `hdl/math` contains:
-  - `fp24_add`, for the addition of two `fp24` numbers
-  - `fp24_mul`, for the multiplication of two `fp24` numbers
-  - `fp24_inv_sqrt`, for calculating the fast inverse square root of an `fp24` number
-  - `fp24_shift`, for changing the exponent of an `fp24` number by some constant amount (efficient multiplication by powers of two)
-  - `fp24_vec3_ops`, for adding `fp24_vec3`s, multiplying them element-wise, calculating their dot products, scaling them by scalars (represented as `fp24`s), and normalizing them.
+  - `fp_add`, for the addition of two `fp` numbers
+  - `fp_mul`, for the multiplication of two `fp` numbers
+  - `fp_inv_sqrt`, for calculating the fast inverse square root of an `fp` number
+  - `fp_shift`, for changing the exponent of an `fp` number by some constant amount (efficient multiplication by powers of two)
+  - `fp_vec3_ops`, for adding `fp_vec3`s, multiplying them element-wise, calculating their dot products, scaling them by scalars (represented as `fp`s), and normalizing them.
 
 ## Possible optimizations
 
 We anticipate getting cooked by LUT usage at some point, so here are some areas for optimization:
 
-- `fp24_inv_sqrt`: we can save ~250 LUTs per stage cut. This does change the cycle count of everything.
+- `fp_inv_sqrt`: we can save ~250 LUTs per stage cut. This does change the cycle count of everything.
 - `lerp`: since the value of `t` is only ever `mat.smoothness` or `1`, we can assume the value of `t` is always `1 - math.smoothness` or `0` and these are precomputable.
 
 ## Scene flashing
@@ -24,6 +24,16 @@ We anticipate getting cooked by LUT usage at some point, so here are some areas 
 2. Run `python flash_scene.py <scene.json>`
 
 Note: untested with triangles
+
+## So you want to mess with floating point?
+
+Things to recompute:
+
+- Magic numbers `three` and `MAGIC_NUMBER` in `fp_inv_sqrt.sv`
+- Magic number `two` and `MAGIC_NUMBER` in `fp_inv.sv`
+- The value of 1 in `rtx/ray_reflector.sv`
+- Initial camera values in `top_level_rtx.sv`
+- Initial value of `cur_ray_color` in `ray_tracer.sv`
 
 ## BELOW: CPU stuff that we don't really use anymore
 

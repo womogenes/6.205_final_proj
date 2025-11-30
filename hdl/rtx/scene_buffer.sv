@@ -16,12 +16,12 @@ module scene_buffer #(
 
   // TODO: remove debug signals
   output logic is_trig,            // 1 bit
-  output material mat,             // 264 bits
-  output fp24_vec3 [2:0] trig,     // 216 bits
-  output fp24_vec3 trig_norm,      // 72 bits
-  output fp24_vec3 sphere_center,  // 72 bits
-  output fp24 sphere_rad_sq,       // 24 bits
-  output fp24 sphere_rad_inv       // 24 bits
+  output material mat,
+  output fp_vec3 [2:0] trig,
+  output fp_vec3 trig_norm,
+  output fp_vec3 sphere_center,
+  output fp sphere_rad_sq,
+  output fp sphere_rad_inv
 );
   // FOR DEBUG ONLY
   // TODO: remove debug signals

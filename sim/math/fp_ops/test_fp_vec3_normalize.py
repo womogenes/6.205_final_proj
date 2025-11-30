@@ -17,14 +17,14 @@ import math
 import matplotlib.pyplot as plt
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from utils import convert_fp24, make_fp24, make_fp24_vec3, convert_fp24_vec3
+from utils import convert_fp, make_fp, make_fp_vec3, convert_fp_vec3
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
 @cocotb.test()
 async def test_module(dut):
     """
-    Test module: vec3 addition using fp24
+    Test module: vec3 addition using fp
     """
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
@@ -34,33 +34,33 @@ async def test_module(dut):
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    DELAY_CYCLES = 11
+    DELAY_CYCLES = 16
 
     N_SAMPLES = 1000
 
+    # Generate random (N, 3) tensors for inputs
     async def mean_rel_err(vec_scale: float):
-        xs = np.exp2((np.random.rand(N_SAMPLES) - 0.5) * 2 * vec_scale)
+        a_vecs = np.exp2((np.random.rand(N_SAMPLES, 3) - 0.5) * 2 * vec_scale)
+        a_vecs_fp = list(map(make_fp_vec3, a_vecs))
 
         # Clock in one per cycle brrr
         dut_ans = []
         for i in range(N_SAMPLES):
-            x = make_fp24(xs[i])
+            a_fp_vec3 = a_vecs_fp[i]
 
-            dut.x.value = x
+            dut.v.value = a_fp_vec3
 
             await ClockCycles(dut.clk, 1)
-            dut_ans.append(convert_fp24(dut.sqrt.value))
+            dut_ans.append(convert_fp_vec3(dut.normed.value))
 
         for _ in range(DELAY_CYCLES):
             await ClockCycles(dut.clk, 1)
-            dut_ans.append(convert_fp24(dut.sqrt.value))
+            dut_ans.append(convert_fp_vec3(dut.normed.value))
 
         # Get answers!
         await ClockCycles(dut.clk, DELAY_CYCLES * 2)
         dut_ans = np.array(dut_ans[DELAY_CYCLES:])
-        exp_ans = np.sqrt(xs)
-
-        dut._log.info(f"{dut_ans[0]=:.6f}, {exp_ans[0]=:.6f}")
+        exp_ans = a_vecs / np.linalg.norm(a_vecs, axis=1, keepdims=True)
 
         rel_err = np.abs(dut_ans / exp_ans - 1)
         dut._log.info(f"vector scale: {scale:>2}\tmean relative error: {np.mean(rel_err) * 100:.6f}%")
@@ -68,8 +68,8 @@ async def test_module(dut):
         return np.mean(rel_err)
 
     # for scale in range(1, 63):
-    scale = 32
-    await mean_rel_err(scale)
+    for scale in range(31, 32):
+        await mean_rel_err(scale)
 
 def runner():
     """Module tester."""
@@ -83,11 +83,11 @@ def runner():
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_shift.sv",
+        proj_path / "hdl" / "math" / "fp_add.sv",
+        proj_path / "hdl" / "math" / "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
     ]
     build_test_args = ["-Wall"]
 
@@ -95,7 +95,7 @@ def runner():
     parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "fp24_sqrt"
+    hdl_toplevel = "fp_vec3_normalize"
     
     runner = get_runner(sim)
     runner.build(

@@ -6,12 +6,17 @@ import ctypes
 import cocotb
 from cocotb.binary import BinaryValue
 
-FP24_WIDTH = 24
+FP_EXP_BITS = 7
+FP_MANT_BITS = 16
 
-# ===== FP24 REPRESENTATIONS =====
-def make_fp24(x: float):
+FP_EXP_OFFSET = (2 ** (FP_EXP_BITS - 1)) - 1
+FP_BITS = 1 + FP_EXP_BITS + FP_MANT_BITS
+FP_VEC3_BITS = 3 * FP_BITS
+
+# ===== FP REPRESENTATIONS =====
+def make_fp(x: float):
     """
-    Convert Python float to 24-bit fp24 value
+    Convert Python float to fp value
     """
     if x == 0:
         return 0
@@ -20,59 +25,58 @@ def make_fp24(x: float):
     value = abs(x)
 
     exp = int(math.floor(math.log2(value)))
-    exp_biased = exp + 63
-    assert 0 <= exp_biased <= 127, f"FP24 only supports exponents between -63 and 64, got {x} ({exp=})"
+    exp_biased = exp + FP_EXP_OFFSET
+    assert 0 <= exp_biased < 2 ** FP_EXP_BITS, f"FP exponent out of range, got {x} ({exp=})"
 
     frac = value / (2 ** exp)
 
-    mant = int((frac - 1.0) * (1 << 16) + 0.5)
-    return (sign << 23) | (exp_biased << 16) | mant
+    mant = int((frac - 1.0) * (1 << FP_MANT_BITS) + 0.5)
+    return (sign << (FP_EXP_BITS + FP_MANT_BITS)) | (exp_biased << FP_MANT_BITS) | mant
 
-def convert_fp24(f: BinaryValue):
+def convert_fp(f: BinaryValue):
     """
-    Convert 24-bit fp24 value to Python float
+    Convert fp value to Python float
     """
     if isinstance(f, BinaryValue) and not f.is_resolvable:
         # Not a valid float
         return None
         
     # If all but the sign bit is zero, this represents zero
-    if f & 0x7FFFFF == 0:
+    EXP_MANT_MASK = (1 << (FP_EXP_BITS + FP_MANT_BITS)) - 1
+    EXP_MASK = (1 << FP_EXP_BITS) - 1
+    MANT_MASK = (1 << FP_MANT_BITS) - 1
+
+    if f & EXP_MANT_MASK == 0:
         return 0
     
-    sign = -1 if (f >> 23) & 1 else 1
-    exp = ((f >> 16) & 0x7F) - 63
-    mant = 1 + (f & 0xFFFF) / (1 << 16)
+    sign = -1 if (f >> (FP_EXP_BITS + FP_MANT_BITS)) & 1 else 1
+    exp = ((f >> FP_MANT_BITS) & EXP_MASK) - FP_EXP_OFFSET
+    mant = 1 + (f & MANT_MASK) / (1 << FP_MANT_BITS)
 
     return sign * (2 ** exp) * mant
 
-def make_fp24_vec3(vec3: tuple[float]):
+def make_fp_vec3(vec3: tuple[float]):
     """
-    Convert (x, y, z) to packed 72-bit fp24_vec3
+    Convert (x, y, z) to packed fp_vec3
     """
     x, y, z = vec3
-    # return (
-    #     (make_fp24(x) << (FP24_WIDTH * 2)) +
-    #     (make_fp24(y) << (FP24_WIDTH * 1)) +
-    #     (make_fp24(z) << (FP24_WIDTH * 0))
-    # )
     return pack_bits([
-        (make_fp24(x), 24),
-        (make_fp24(y), 24),
-        (make_fp24(z), 24),
+        (make_fp(x), FP_BITS),
+        (make_fp(y), FP_BITS),
+        (make_fp(z), FP_BITS),
     ])
 
-def convert_fp24_vec3(vec3: BinaryValue):
+def convert_fp_vec3(vec3: BinaryValue):
     """
-    Unpack 72-bit vec3 into tuple of 3 floats
+    Unpack vec3 into tuple of 3 floats
     """
     if isinstance(vec3, BinaryValue) and not vec3.is_resolvable:
         return (None, None, None)
 
-    mask = (1 << FP24_WIDTH) - 1
-    x = convert_fp24((vec3 >> (FP24_WIDTH * 2)) & mask)
-    y = convert_fp24((vec3 >> (FP24_WIDTH * 1)) & mask)
-    z = convert_fp24((vec3 >> (FP24_WIDTH * 0)) & mask)
+    mask = (1 << FP_BITS) - 1
+    x = convert_fp((vec3 >> (FP_BITS * 2)) & mask)
+    y = convert_fp((vec3 >> (FP_BITS * 1)) & mask)
+    z = convert_fp((vec3 >> (FP_BITS * 0)) & mask)
     return (x, y, z)
 
 def make_material(
@@ -83,11 +87,11 @@ def make_material(
     specular=0,
 ):
     return pack_bits([
-        (color, 72),
-        (emit_color, 72),
-        (spec_color, 72),
-        (smooth, 24),
-        (specular, 8)
+        (color, FP_VEC3_BITS),
+        (emit_color, FP_VEC3_BITS),
+        (spec_color, FP_VEC3_BITS),
+        (smooth, FP_BITS),
+        (specular, 8),
     ])
 
 # Pack bits together

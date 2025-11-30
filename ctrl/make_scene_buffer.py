@@ -6,7 +6,7 @@ import sys
 proj_path = Path(__file__).parent.parent
 
 sys.path.append(str(proj_path / "sim"))
-from utils import make_fp24, make_fp24_vec3, pack_bits
+from utils import make_fp, make_fp_vec3, pack_bits, FP_BITS, FP_VEC3_BITS
 
 class Material:
     def __init__(
@@ -17,19 +17,19 @@ class Material:
         smoothness: float = 0,
         specular_prob: float = 0,
     ):
-        self.color = color                              # 72
-        self.spec_color = spec_color                    # 72
-        self.emit_color = emit_color                    # 72
-        self.smoothness = smoothness                    # 24
+        self.color = color
+        self.spec_color = spec_color
+        self.emit_color = emit_color
+        self.smoothness = smoothness
         self.specular_prob = int(specular_prob * 255)   # 8
 
     def pack_bits(self):
         # Pack properties into bit fields
         fields = [
-            (make_fp24_vec3(self.color), 72),
-            (make_fp24_vec3(self.emit_color), 72),
-            (make_fp24_vec3(self.spec_color), 72),
-            (make_fp24(self.smoothness), 24),
+            (make_fp_vec3(self.color), FP_VEC3_BITS),
+            (make_fp_vec3(self.emit_color), FP_VEC3_BITS),
+            (make_fp_vec3(self.spec_color), FP_VEC3_BITS),
+            (make_fp(self.smoothness), FP_BITS),
             (self.specular_prob, 8),
         ]
         return pack_bits(fields, msb=True), sum([width for _, width in fields])
@@ -57,11 +57,11 @@ class Object:
         fields = [
             (self.is_trig, 1),
             self.mat.pack_bits(),
-            *[(make_fp24_vec3(v), 72) for v in self.trig],
-            (make_fp24_vec3(self.trig_norm), 72),
-            (make_fp24_vec3(self.sphere_center), 72),
-            (make_fp24(self.sphere_rad_sq), 24),
-            (make_fp24(self.sphere_rad_inv), 24),
+            *[(make_fp_vec3(v), FP_VEC3_BITS) for v in self.trig],
+            (make_fp_vec3(self.trig_norm), FP_VEC3_BITS),
+            (make_fp_vec3(self.sphere_center), FP_VEC3_BITS),
+            (make_fp(self.sphere_rad_sq), FP_BITS),
+            (make_fp(self.sphere_rad_inv), FP_BITS),
         ]
         return pack_bits(fields, msb=True), sum([width for _, width in fields])
 

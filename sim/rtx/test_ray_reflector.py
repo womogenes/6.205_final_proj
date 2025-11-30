@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from sim.utils import convert_fp24_vec3, convert_fp24, make_fp24, make_fp24_vec3, make_material
+from sim.utils import convert_fp_vec3, convert_fp, make_fp, make_fp_vec3, make_material
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -40,20 +40,20 @@ async def test_module(dut):
     ray_dir /= np.linalg.norm(ray_dir)
     hit_normal = (0, 0, 1)
 
-    dut.ray_dir.value = make_fp24_vec3(ray_dir)
-    dut.ray_color.value = make_fp24_vec3((1.0, 1.0, 1.0))
-    dut.income_light.value = make_fp24_vec3((0.0, 0.0, 0.0))
+    dut.ray_dir.value = make_fp_vec3(ray_dir)
+    dut.ray_color.value = make_fp_vec3((1.0, 1.0, 1.0))
+    dut.income_light.value = make_fp_vec3((0.0, 0.0, 0.0))
 
-    dut.hit_pos.value = make_fp24_vec3((0, 0, 0))
-    # dut.hit_normal.value = make_fp24_vec3(((1/3)**0.5, (1/3)**0.5, (1/3)**0.5))
-    dut.hit_normal.value = make_fp24_vec3(hit_normal)
+    dut.hit_pos.value = make_fp_vec3((0, 0, 0))
+    # dut.hit_normal.value = make_fp_vec3(((1/3)**0.5, (1/3)**0.5, (1/3)**0.5))
+    dut.hit_normal.value = make_fp_vec3(hit_normal)
 
     mat = make_material(
-        color=make_fp24_vec3((1.0, 0.5, 0.25)),
-        spec_color=make_fp24_vec3((1.0, 1.0, 1.0)),
-        emit_color=make_fp24_vec3((0, 0, 0)),
+        color=make_fp_vec3((1.0, 0.5, 0.25)),
+        spec_color=make_fp_vec3((1.0, 1.0, 1.0)),
+        emit_color=make_fp_vec3((0, 0, 0)),
         specular=255,
-        smooth=make_fp24(0.9),
+        smooth=make_fp(0.9),
     )
     dut.hit_mat.value = mat
 
@@ -67,14 +67,14 @@ async def test_module(dut):
         # await ClockCycles(dut.clk, 100)
 
         await ClockCycles(dut.clk, 1)
-        points.append(convert_fp24_vec3(dut.new_dir.value))
+        points.append(convert_fp_vec3(dut.new_dir.value))
         dut.hit_valid.value = 1
         await ClockCycles(dut.clk, 1)
         dut.hit_valid.value = 0
     
     # assert 
 
-    # dut._log.info(convert_fp24_vec3(dut.new_income_light.value))
+    # dut._log.info(convert_fp_vec3(dut.new_income_light.value))
     # dut._log.info(points)
 
     fig = plt.figure(figsize=(12, 12))
