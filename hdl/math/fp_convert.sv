@@ -1,17 +1,17 @@
-// Convert integers to FP24 and vice versa
-// Turn 32-bit integer into FP24
+// Convert integers to fp and vice versa
+// Turn 32-bit integer into fp
 
 `default_nettype none
 
 // TODO: add offset parameter to allow making fractions
 // (basically interprets n as fixed-width fraction)
-module make_fp24 #(
+module make_fp #(
   parameter integer WIDTH
 ) (
   input wire clk,
   input wire rst,
   input wire [WIDTH-1:0] n,
-  output fp24 x
+  output fp x
 );
   localparam integer LOG_WIDTH = $clog2(WIDTH);
 
@@ -30,49 +30,57 @@ module make_fp24 #(
   assign log2_n = WIDTH - 1 - lead_zeros;
 
   // Compute exponent as offset MSB position
-  logic [6:0] exp;
-  assign exp = log2_n + 63;
+  logic [FP_EXP_BITS-1:0] exp;
+  assign exp = log2_n + FP_EXP_OFFSET;
 
   always_ff @(posedge clk) begin
-    logic [15:0] mant;
+    logic [FP_MANT_BITS-1:0] mant;
 
     // Handle zero case separately
     if (n == 0) begin
       x <= 0;
     end else begin
-      mant = (log2_n >= 16) ? (frac >> (log2_n - 16)) : (frac << (16 - log2_n));
+      mant = (log2_n >= FP_MANT_BITS) ?
+        (frac >> (log2_n - FP_MANT_BITS)) :
+        (frac << (FP_MANT_BITS - log2_n));
       x <= {sign, exp, mant};
     end
   end
 endmodule
 
 // Offset by FRAC bits
-module convert_fp24_uint #(
+module convert_fp_uint #(
   parameter integer WIDTH = 8,
   parameter integer FRAC = 8
 ) (
   input wire clk,
   input wire rst,
-  input fp24 x,
-  output logic [WIDTH-1:0] n
+  input fp x,
+  output logic [WIDTH-1:0] n,
+
+  output logic [6:0] x_exp,
+  output logic [31:0] x_exp_plus_frac
 );
   // Convert |x| to a WIDTH-bit unsigned integer
-  logic [6:0] shift_amt;
+  logic [FP_EXP_BITS-1:0] shift_amt;
+
+  assign x_exp = x.exp;
+  assign x_exp_plus_frac = x.exp + FRAC;
 
   always_ff @(posedge clk) begin
-    if (x.exp + FRAC < 63) begin
+    if (x.exp + FRAC < FP_EXP_OFFSET) begin
       // Magnitude is <1, round down to 0
       n <= 'h0;
 
-    end else if (x.exp + FRAC > (WIDTH-1) + 63) begin
+    end else if (x.exp + FRAC > (WIDTH-1) + FP_EXP_OFFSET) begin
       // Magnitude is too large to fit in this integer, cooked
       n <= 'hFF;
       
     end else begin
       // Shift mantissa by exponent
       // shift_amt should be between 0 and 7, inclusive
-      shift_amt = x.exp + FRAC - 63;
-      n <= {1'b1, x.mant} >> (16 - shift_amt);
+      shift_amt = x.exp + FRAC - FP_EXP_OFFSET;
+      n <= {1'b1, x.mant} >> (FP_MANT_BITS - shift_amt);
     end
   end
 endmodule

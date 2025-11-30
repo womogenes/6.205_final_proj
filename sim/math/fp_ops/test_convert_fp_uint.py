@@ -14,7 +14,7 @@ import ctypes
 import numpy as np
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from utils import convert_fp24, make_fp24
+from utils import convert_fp, make_fp
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -32,18 +32,18 @@ async def test_module(dut):
     N_TESTS = 1000
 
     for _ in range(N_TESTS):
-        n = (np.random.rand() - 0.5) * 300
-        dut.x.value = make_fp24(n)
+        n = np.random.rand()
+        dut.x.value = make_fp(n)
+
+        dut._log.info(f"{n=}, {convert_fp(make_fp(n))=}")
 
         await ClockCycles(dut.clk, 2)
         dut_ans = dut.n.value.integer
-        exp_ans = min(255, max(0, abs(n)))
+        exp_ans = min(255, max(0, abs(n * 256)))
 
-        assert exp_ans - dut_ans <= 1, f"Expected {exp_ans}, got {dut_ans}"
+        assert abs(exp_ans - dut_ans) <= 1, f"Expected {exp_ans}, got {dut_ans}"
 
         dut._log.info(f"{dut_ans=}, {exp_ans=}")
-
-    dut._log.info(f"")
 
 
 def runner():
@@ -54,9 +54,10 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_convert.sv"
+        proj_path / "hdl" / "math" / "fp_convert.sv"
     ]
     build_test_args = ["-Wall"]
 
@@ -64,7 +65,7 @@ def runner():
     parameters = {"WIDTH": 8}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "convert_fp24_uint"
+    hdl_toplevel = "convert_fp_uint"
     
     runner = get_runner(sim)
     runner.build(
