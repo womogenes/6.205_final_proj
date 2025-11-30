@@ -42,10 +42,10 @@ typedef struct packed {
 
 // ===== OBJECTS =====
 typedef struct packed {
-  fp_color color;           // 72 bits
-  fp_color emit_color;      // 72 bits
-  fp_color spec_color;      // 72 bits
-  fp smoothness;            // 24 bits
+  fp_color color;
+  fp_color emit_color;
+  fp_color spec_color;
+  fp smoothness;
   logic [7:0] specular_prob;  // 8 bits
 } material;
 
@@ -53,8 +53,8 @@ typedef struct packed {
   logic is_trig;            // 1 bit
   material mat;             // [several] bits
   fp_vec3 [2:0] trig;     // 216 bits
-  fp_vec3 trig_norm;      // 72 bits
-  fp_vec3 sphere_center;  // 72 bits
-  fp sphere_rad_sq;       // 24 bits
-  fp sphere_rad_inv;      // 24 bits
+  fp_vec3 trig_norm;
+  fp_vec3 sphere_center;
+  fp sphere_rad_sq;
+  fp sphere_rad_inv;
 } object;

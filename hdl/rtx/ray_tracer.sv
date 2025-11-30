@@ -10,12 +10,12 @@ module ray_tracer #(
   input wire [10:0] pixel_h_in,
   input wire [9:0] pixel_v_in,
 
-  input fp24_vec3 ray_origin,
-  input fp24_vec3 ray_dir,
+  input fp_vec3 ray_origin,
+  input fp_vec3 ray_dir,
   input wire ray_valid,
 
   output logic ray_done,
-  output fp24_vec3 pixel_color,
+  output fp_vec3 pixel_color,
   output logic [10:0] pixel_h_out,
   output logic [9:0] pixel_v_out,
 
@@ -39,22 +39,22 @@ module ray_tracer #(
   logic ray_valid_rflx;
   logic ray_done_reflect;
 
-  fp24_vec3 cur_ray_origin;
-  fp24_vec3 cur_ray_dir;
-  fp24_color cur_income_light;
-  fp24_color cur_ray_color;
+  fp_vec3 cur_ray_origin;
+  fp_vec3 cur_ray_dir;
+  fp_color cur_income_light;
+  fp_color cur_ray_color;
 
   // Intersector results
   material intx_hit_mat;
-  fp24_vec3 intx_hit_pos;
-  fp24_vec3 intx_hit_norm;
+  fp_vec3 intx_hit_pos;
+  fp_vec3 intx_hit_norm;
   logic intx_hit_any;
 
   // Reflector results
-  fp24_vec3 rflx_new_dir;
-  fp24_vec3 rflx_new_origin;
-  fp24_vec3 rflx_new_color;
-  fp24_vec3 rflx_new_income_light;
+  fp_vec3 rflx_new_dir;
+  fp_vec3 rflx_new_origin;
+  fp_vec3 rflx_new_color;
+  fp_vec3 rflx_new_income_light;
 
   logic [7:0] bounce_count;
 

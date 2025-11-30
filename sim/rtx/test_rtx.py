@@ -20,7 +20,9 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24, convert_fp24_vec3, pack_bits, make_fp24_vec3
+from utils import convert_fp, make_fp, convert_fp_vec3, pack_bits, make_fp_vec3
+
+FP_VEC3_BITS = 72
 
 parser = ArgumentParser()
 parser.add_argument("--scale", type=float, default=0.5)
@@ -54,10 +56,10 @@ async def test_module(dut):
     dut.max_bounces = 3
 
     dut.cam.value = pack_bits([
-        (make_fp24_vec3((0, 0, 0)), 72),            # origin
-        (make_fp24_vec3((0, 0, WIDTH / 2)), 72),    # forward
-        (make_fp24_vec3((1, 0, 0)), 72),            # right
-        (make_fp24_vec3((0, 1, 0)), 72),            # up
+        (make_fp_vec3((0, 0, 0)), FP_VEC3_BITS),            # origin
+        (make_fp_vec3((0, 0, WIDTH / 2)), FP_VEC3_BITS),    # forward
+        (make_fp_vec3((1, 0, 0)), FP_VEC3_BITS),            # right
+        (make_fp_vec3((0, 1, 0)), FP_VEC3_BITS),            # up
     ])
     dut.num_objs.value = NUM_OBJS
 

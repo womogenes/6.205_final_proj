@@ -25,7 +25,7 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import make_fp24_vec3, pack_bits
+from utils import make_fp_vec3, pack_bits
 
 # MULTIPROCESSING GO BRRR
 from multiprocessing import Pool
@@ -38,6 +38,9 @@ parser.add_argument("--waves", action=BooleanOptionalAction)
 
 args = parser.parse_args()
 print(args)
+
+FP_BITS = 24
+FP_VEC3_BITS = FP_BITS * 3
 
 # Use environment variables for worker processes
 if "TEST_WIDTH" in os.environ:
@@ -89,14 +92,14 @@ SOURCES = [
     proj_path / "hdl" / "constants.sv",
     proj_path / "hdl" / "types" / "types.sv",
     proj_path / "hdl" / "math" / "clz.sv",
-    proj_path / "hdl" / "math" / "fp24_shift.sv",
-    proj_path / "hdl" / "math" / "fp24_add.sv",
-    proj_path / "hdl" / "math" / "fp24_clip.sv",
-    proj_path / "hdl" / "math" / "fp24_mul.sv",
-    proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-    proj_path / "hdl" / "math" / "fp24_sqrt.sv",
-    proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
-    proj_path / "hdl" / "math" / "fp24_convert.sv",
+    proj_path / "hdl" / "math" / "fp_shift.sv",
+    proj_path / "hdl" / "math" / "fp_add.sv",
+    proj_path / "hdl" / "math" / "fp_clip.sv",
+    proj_path / "hdl" / "math" / "fp_mul.sv",
+    proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
+    proj_path / "hdl" / "math" / "fp_sqrt.sv",
+    proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
+    proj_path / "hdl" / "math" / "fp_convert.sv",
     proj_path / "hdl" / "math" / "specular_reflect.sv",
     proj_path / "hdl" / "rng" / "prng_sphere.sv",
     proj_path / "hdl" / "rng" / "prng8.sv",
@@ -139,10 +142,10 @@ async def test_module(dut):
     dut.rst.value = 1
 
     dut.cam.value = pack_bits([
-        (make_fp24_vec3((0, 0, -10)), 72),            # origin
-        (make_fp24_vec3((0, 0, WIDTH / 2 * 2.28)), 72),    # forward
-        (make_fp24_vec3((1, 0, 0)), 72),            # right
-        (make_fp24_vec3((0, 1, 0)), 72),            # up
+        (make_fp_vec3((0, 0, -10)), FP_VEC3_BITS),            # origin
+        (make_fp_vec3((0, 0, WIDTH / 2 * 2.28)), FP_VEC3_BITS),    # forward
+        (make_fp_vec3((1, 0, 0)), FP_VEC3_BITS),            # right
+        (make_fp_vec3((0, 1, 0)), FP_VEC3_BITS),            # up
     ])
     dut.num_objs.value = NUM_OBJS
     dut.max_bounces.value = 3

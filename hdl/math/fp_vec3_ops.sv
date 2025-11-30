@@ -129,7 +129,7 @@ module fp_vec3_normalize (
   // Delay a for the scaling portion
   fp_vec3 v_piped;
   pipeline #(
-    .WIDTH(72),
+    .WIDTH(FP_VEC3_BITS),
     .DEPTH(VEC3_DOT_DELAY + INV_SQRT_DELAY)
   ) v_pipe (
     .clk(clk), .in(v), .out(v_piped)
