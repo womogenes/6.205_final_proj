@@ -9,6 +9,7 @@ parameter integer OBJ_IDX_WIDTH = $clog2(MAX_NUM_OBJS);
 parameter integer FP_EXP_BITS = 7;
 parameter integer FP_MANT_BITS = 16;
 parameter integer FP_BITS = 1 + FP_EXP_BITS + FP_MANT_BITS;
+parameter integer FP_EXP_OFFSET = (1 << (FP_EXP_BITS - 1)) - 1;
  
 // Basic math operation delays
 parameter integer FP24_ADD_DELAY = 2;
