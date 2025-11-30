@@ -14,7 +14,7 @@ import ctypes
 import numpy as np
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp24, make_fp24
+from utils import convert_fp, make_fp
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -33,8 +33,8 @@ async def test_module(dut):
     for _ in range(100):
         await ClockCycles(dut.clk, 1)
 
-        u = convert_fp24(dut.maker.u.value)
-        v = convert_fp24(dut.maker.v.value)
+        u = convert_fp(dut.maker.u.value)
+        v = convert_fp(dut.maker.v.value)
 
         dut._log.info(f"{u=}, {v=}")
 
@@ -51,12 +51,12 @@ def runner():
         proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math" / "fp24_shift.sv",
-        proj_path / "hdl" / "math" / "fp24_add.sv",
-        proj_path / "hdl" / "math" / "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_inv_sqrt.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_ops.sv",
-        proj_path / "hdl" / "math" / "fp24_convert.sv",
+        proj_path / "hdl" / "math" / "fp_shift.sv",
+        proj_path / "hdl" / "math" / "fp_add.sv",
+        proj_path / "hdl" / "math" / "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
+        proj_path / "hdl" / "math" / "fp_convert.sv",
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
         proj_path / "hdl" / "rtx" / "ray_maker.sv",
         proj_path / "hdl" / "rtx" / "ray_caster.sv",
