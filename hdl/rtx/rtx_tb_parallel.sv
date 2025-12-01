@@ -58,7 +58,9 @@ module rtx_tb_parallel #(
 
     // Outputs
     .pixel_h_out(pixel_h_caster),
-    .pixel_v_out(pixel_v_caster)
+    .pixel_v_out(pixel_v_caster),
+
+    .lfsr_seed(lfsr_seed)
   );
 
   logic ray_done_tracer;

@@ -45,7 +45,9 @@ module rtx #(
 
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),
-    .ray_valid(ray_valid_caster)
+    .ray_valid(ray_valid_caster),
+
+    .lfsr_seed(lfsr_seed)
   );
 
   logic tracer_ready;

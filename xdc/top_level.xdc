@@ -27,6 +27,16 @@ set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/
 set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/rng8/ro_sampler/ro_array[2].n1]
 set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/tracer/ray_reflect/rng8/ro_sampler/ro_array[3].n1]
 
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/caster/maker/rng8_u/ro_sampler/ro_array[0].n1]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/caster/maker/rng8_u/ro_sampler/ro_array[1].n1]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/caster/maker/rng8_u/ro_sampler/ro_array[2].n1]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/caster/maker/rng8_u/ro_sampler/ro_array[3].n1]
+
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/caster/maker/rng8_v/ro_sampler/ro_array[0].n1]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/caster/maker/rng8_v/ro_sampler/ro_array[1].n1]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/caster/maker/rng8_v/ro_sampler/ro_array[2].n1]
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets my_rtx/caster/maker/rng8_v/ro_sampler/ro_array[3].n1]
+
 # USER GREEN LEDS
 set_property -dict {PACKAGE_PIN C13  IOSTANDARD LVCMOS33} [ get_ports {led[0]} ]
 set_property -dict {PACKAGE_PIN C14  IOSTANDARD LVCMOS33} [ get_ports {led[1]} ]

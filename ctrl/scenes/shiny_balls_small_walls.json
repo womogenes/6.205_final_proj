@@ -20,17 +20,6 @@
     },
     {
       "is_trig": 0,
-      "sphere_center": [0, 8.99, 6],
-      "sphere_rad": 6,
-      "material": {
-        "color": [0.8, 0.8, 0.8],
-        "emit_color": [15, 15, 15],
-        "smoothness": 0.5,
-        "specular_prob": 0.0
-      }
-    },
-    {
-      "is_trig": 0,
       "sphere_center": [0, -10, 6],
       "sphere_rad": 7,
       "material": {
@@ -45,7 +34,7 @@
       "sphere_center": [0, 0, 20],
       "sphere_rad": 8,
       "material": {
-        "color": [0.8, 0.8, 0.8],
+        "color": [0.5, 0.5, 0.5],
         "emit_color": [0.0, 0.0, 0.0],
         "smoothness": 0.999,
         "specular_prob": 0.0
@@ -53,11 +42,11 @@
     },
     {
       "is_trig": 0,
-      "sphere_center": [0, 0, -20],
-      "sphere_rad": 8,
+      "sphere_center": [0, 0, -2000],
+      "sphere_rad": 1998,
       "material": {
         "color": [1.0, 1.0, 1.0],
-        "emit_color": [0.0, 0.0, 0.0],
+        "emit_color": [0, 0, 0],
         "smoothness": 0.999,
         "specular_prob": 0.0
       }

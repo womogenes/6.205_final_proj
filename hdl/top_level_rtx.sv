@@ -199,9 +199,9 @@ module top_level (
     // Initialize camera
     if (sys_rst) begin
       cam.origin <= 'h0;
-      cam.forward <= {FP_ZERO, FP_ZERO, FP_HALF_SCREEN_WIDTH};  // (0, 0, 1280/2)
-      cam.right <= {FP_ONE, FP_ZERO, FP_ZERO};                  // (1, 0, 0)
-      cam.up <= {FP_ZERO, FP_ONE, FP_ZERO};                     // (0, 1, 0)
+      cam.forward <= {FP_ZER0, FP_ZER0, FP_HALF_SCREEN_WIDTH};  // (0, 0, 1280/2)
+      cam.right <= {FP_ONE, FP_ZER0, FP_ZER0};                  // (1, 0, 0)
+      cam.up <= {FP_ZER0, FP_ONE, FP_ZER0};                     // (0, 1, 0)
 
       // half-sensible defaults
       num_objs <= 16;
