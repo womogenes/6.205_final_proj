@@ -13,12 +13,12 @@ class Material:
         self,
         color: tuple[float],
         emit_color: tuple[float],
-        spec_color: tuple[float] = (0, 0, 0),
+        spec_color: tuple[float] = None,
         smoothness: float = 0,
         specular_prob: float = 0,
     ):
         self.color = color
-        self.spec_color = spec_color
+        self.spec_color = spec_color or color
         self.emit_color = emit_color
         self.smoothness = smoothness
         self.specular_prob = int(specular_prob * 255)   # 8
