@@ -4,18 +4,16 @@
 
 module top_level (
   input wire clk_100mhz, // crystal reference clock
-  input wire [15:0] sw, // all 16 input slide switches
+  input wire [7:0] sw, // all 8 input slide switches
 
-  input wire [3:0] btn, // all four momentary button switches
-  output logic [15:0] led, // 16 green output LEDs (located right above switches)
-  output logic [2:0] rgb0, // rgb led
-  output logic [2:0] rgb1, // rgb led
+  input wire [4:0] btn, // all four momentary button switches
+  output logic [7:0] led, // 8 green output LEDs (located right above switches)
 
   // seven-segment outputs
-  output logic [3:0] ss0_an,
-  output logic [3:0] ss1_an,
-  output logic [6:0] ss0_c,
-  output logic [6:0] ss1_c,
+  // output logic [3:0] ss0_an,
+  // output logic [3:0] ss1_an,
+  // output logic [6:0] ss0_c,
+  // output logic [6:0] ss1_c,
 
   // HDMI, UART peripherals etc
   output logic [2:0] hdmi_tx_p, // hdmi output signals (positives) (blue, green, red)
@@ -24,8 +22,6 @@ module top_level (
 
   // UART
   input wire uart_rxd,
-
-  output logic [7:0] pmoda,
 
   //SDRAM (DDR3) ports
   inout wire [15:0]   ddr3_dq, //data input/output
@@ -43,10 +39,6 @@ module top_level (
   output wire [1:0]   ddr3_dm, //data mask
   output wire         ddr3_odt //on-die termination (helps impedance match)
 );
-  // shut up those rgb LEDs (active high):
-  assign rgb1 = 0;
-  assign rgb0 = 0;
-
   // buffered clock signal (we need this apparently)
   logic clk_100mhz_buffered;
  
@@ -159,7 +151,7 @@ module top_level (
     .flash_wen(uart_flash_wen)
   );
 
-  assign led[15] = uart_flash_active;
+  assign led[7] = uart_flash_active;
   // =========================
 
   // rtx requires an external scene buffer
@@ -219,8 +211,6 @@ module top_level (
     end
   end
 
-  assign led[13:0] = num_objs;
-
   rtx my_rtx(
     .clk(clk_rtx),
     .rst(sys_rst | !dram_ready),
@@ -234,7 +224,8 @@ module top_level (
     .max_bounces(max_bounces),
 
     .num_objs(num_objs),
-    .obj(scene_buf_obj)
+    .obj(scene_buf_obj),
+    .lfsr_seed(96'h1)
   );
 
   // Latch overwrite on top left pixel
@@ -252,17 +243,17 @@ module top_level (
     end
   end
 
-  assign led[14] = rtx_overwrite;
+  assign led[6] = rtx_overwrite;
 
   // ==== SEVEN SEGMENT DISPLAY =======
-  seven_segment_controller(
-    .clk(clk_100mhz_buffered),
-    .rst(sys_rst),
-    .val({frame_count_rtx, rendered_color_rtx}), //{blue, green, red}}),
-    .cat(ss0_c),
-    .an({ ss0_an, ss1_an })
-  );
-  assign ss1_c = ss0_c;
+  // seven_segment_controller(
+  //   .clk(clk_100mhz_buffered),
+  //   .rst(sys_rst),
+  //   .val({frame_count_rtx, rendered_color_rtx}), //{blue, green, red}}),
+  //   .cat(ss0_c),
+  //   .an({ ss0_an, ss1_an })
+  // );
+  // assign ss1_c = ss0_c;
 
   // logic [23:0] frame_buff_bram;
   // frame_buffer #(
@@ -363,7 +354,7 @@ module top_level (
     .i_rst           (sys_rst_controller),
     .ddr3_clk_locked (ddr3_clk_locked),
 
-    .debug(pmoda[5:0]),
+    // .debug(pmoda[5:0]),
 
     // Bus wires to connect FPGA to SDRAM chip
     .ddr3_dq         (ddr3_dq[15:0]),
@@ -462,17 +453,6 @@ module top_level (
     .rst(sys_rst),
     .tmds_in(tmds_10b[2]),
     .tmds_out(tmds_signal[2]));
-
-  // assign led[15] = highdef_fb.memrequest_busy;
-  // assign led[14] = highdef_fb.memrequest_complete;
-  // assign led[13] = highdef_fb.memrequest_resp_data[4];
-  // assign led[12] = highdef_fb.memrequest_en;
-  // assign led[11] = highdef_fb.memrequest_write_enable;
-  // assign led[10] = highdef_fb.memrequest_addr[0];
-  // assign led[9] = highdef_fb.display_memclk_axis_tvalid;
-  // assign led[8] = highdef_fb.display_memclk_axis_tready;
-  // assign led[7] = highdef_fb.camera_memclk_axis_tvalid;
-  // assign led[6] = highdef_fb.camera_memclk_axis_tready;
  
   // output buffers generating differential signals:
   // three for the r,g,b signals and one that is at the pixel clock rate

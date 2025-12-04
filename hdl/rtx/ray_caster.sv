@@ -16,7 +16,7 @@ module ray_caster #(
   output fp_vec3 ray_dir,
   output logic ray_valid,
 
-  input logic [95:0] lfsr_seed
+  input wire [95:0] lfsr_seed
 );
   logic [10:0] pixel_h_rsg;
   logic [9:0] pixel_v_rsg;

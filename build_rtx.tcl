@@ -9,7 +9,7 @@ set_param general.maxThreads 4
 # csga324 refers to its package it is in
 # refers to the "speed grade" of the chip
 
-set partNum xc7s50csga324-1
+set partNum xc7a200t-fbg484-1
 set outputDir obj
 file mkdir $outputDir
 set files [glob -nocomplain "$outputDir/*"]
