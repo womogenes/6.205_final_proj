@@ -1,6 +1,6 @@
 # clk_100mhz is from the 100 MHz oscillator on Urbana Boad
 
-set_property -dict {PACKAGE_PIN N15 IOSTANDARD LVCMOS33} [get_ports {clk_100mhz}]
+set_property -dict {PACKAGE_PIN R4 IOSTANDARD LVCMOS33} [get_ports {clk_100mhz}]
 create_clock -add -name gclk -period 10.000 -waveform {0 4} [get_ports {clk_100mhz}]
 
 # Set Bank 0 voltage
@@ -402,5 +402,6 @@ set_property BITSTREAM.CONFIG.UNUSEDPIN PULLUP [current_design]
 set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 
 set_property INTERNAL_VREF 0.675 [get_iobanks 34]
+set_property INTERNAL_VREF 0.675 [get_iobanks 35]
 #set_property CFGBVS VCCO [current_design]
 #set_property CONFIG_VOLTAGE 3.3 [current_design]
