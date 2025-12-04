@@ -18,7 +18,9 @@ module rtx #(
 
   // scene buffer interface
   input wire [$clog2(MAX_NUM_OBJS)-1:0] num_objs,
-  input object obj
+  input object obj,
+
+  input wire [95:0] lfsr_seed
 );
   logic [10:0] pixel_h_caster;
   logic [9:0] pixel_v_caster;
