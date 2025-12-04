@@ -101,6 +101,35 @@ module fp_vec3_dot (
 endmodule
 
 /*
+  Cross product of two vec3s
+
+  Timing:
+    VEC3_CROSS_DELAY cycles
+    Currently 3 (mul - 1, add - 2)
+*/
+module fp_vec3_cross (
+  input wire clk,
+  input wire rst,
+  input fp_vec3 v,
+  input fp_vec3 w,
+  output fp_vec3 cross_prod
+);
+  fp xy, yx, xz, zx, yz, zy;
+
+  fp_mul xy_mul ( .clk(clk), .rst(rst), .a(v.x), .b(w.y), .prod(xy) );
+  fp_mul yx_mul ( .clk(clk), .rst(rst), .a(v.y), .b(w.x), .prod(yx) );
+  fp_mul xz_mul ( .clk(clk), .rst(rst), .a(v.x), .b(w.z), .prod(xz) );
+  fp_mul zx_mul ( .clk(clk), .rst(rst), .a(v.z), .b(w.x), .prod(zx) );
+  fp_mul yz_mul ( .clk(clk), .rst(rst), .a(v.y), .b(w.z), .prod(yz) );
+  fp_mul zy_mul ( .clk(clk), .rst(rst), .a(v.z), .b(w.y), .prod(zy) );
+
+  fp_add x_add  ( .clk(clk), .rst(rst), .a(yz),  .b(zy),  .is_sub(1'b1), .sum(cross_prod.x));
+  fp_add y_add  ( .clk(clk), .rst(rst), .a(zx),  .b(xz),  .is_sub(1'b1), .sum(cross_prod.y));
+  fp_add z_add  ( .clk(clk), .rst(rst), .a(xy),  .b(yx),  .is_sub(1'b1), .sum(cross_prod.z));
+  
+endmodule
+
+/*
   Normalize a vector to have magnitude 1 using inv_sqrt
 
   Timing:

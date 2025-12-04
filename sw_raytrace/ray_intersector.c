@@ -1,10 +1,11 @@
 #include "types.h"
 #include "scene_buffer.c"
 #include "sphere_intersector.c"
+#include "trig_intersector.c"
 
 void ray_intersector(Vec3 ray_dir, Vec3 ray_origin, RayIntersectorResult* result) {
   // Intersect ray with everything in scene buffer
-  SphereIntersectorResult sphere_result;
+  GeometryIntersectorResult intx_result;
 
   int any_hit = 0;
   Vec3 hit_pos = (Vec3){0};
@@ -16,13 +17,17 @@ void ray_intersector(Vec3 ray_dir, Vec3 ray_origin, RayIntersectorResult* result
     Object obj = SCENE_BUFFER[obj_idx];
 
     // Assume is sphere for now
-    sphere_intersector(ray_dir, ray_origin, &obj, &sphere_result);
+    if (obj.is_trig) {
+      trig_intersector(ray_dir, ray_origin, &obj, &intx_result);
+    } else {
+      sphere_intersector(ray_dir, ray_origin, &obj, &intx_result);
+    }
 
-    if (sphere_result.hit && (!any_hit || sphere_result.dist < hit_dist)) {
+    if (intx_result.hit && (!any_hit || intx_result.dist < hit_dist)) {
       // Update curent best hit point
-      hit_pos = sphere_result.hit_pos;
-      hit_norm = sphere_result.hit_norm;
-      hit_dist = sphere_result.dist;
+      hit_pos = intx_result.hit_pos;
+      hit_norm = intx_result.hit_norm;
+      hit_dist = intx_result.dist;
       hit_mat = obj.mat;
       any_hit = 1;
     }

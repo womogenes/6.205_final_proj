@@ -33,8 +33,16 @@ async def test_module(dut):
     dut.rst.value = 1
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
+    dut.x.value = make_fp(-7)
+    await ClockCycles(dut.clk, 1)
+    dut.x.value = make_fp(0.25)
+    await ClockCycles(dut.clk, 1)
+    dut.x.value = make_fp(1)
+    await ClockCycles(dut.clk, 10)
+
 
     DELAY_CYCLES = 8
+    
 
     N_SAMPLES = 1000
 

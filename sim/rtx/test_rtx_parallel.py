@@ -94,6 +94,7 @@ SOURCES = [
     proj_path / "hdl" / "math" / "fp_clip.sv",
     proj_path / "hdl" / "math" / "fp_mul.sv",
     proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
+    proj_path / "hdl" / "math" / "fp_inv.sv",
     proj_path / "hdl" / "math" / "fp_sqrt.sv",
     proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
     proj_path / "hdl" / "math" / "fp_convert.sv",
@@ -101,7 +102,8 @@ SOURCES = [
     proj_path / "hdl" / "rng" / "prng_sphere.sv",
     proj_path / "hdl" / "rng" / "prng8.sv",
     proj_path / "hdl" / "math" / "quadratic_solver.sv",
-    proj_path / "hdl" / "math" / "sphere_intersector.sv",
+    # proj_path / "hdl" / "math" / "sphere_intersector.sv",
+    proj_path / "hdl" / "math" / "trig_intersector.sv",
     proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
     proj_path / "hdl" / "rtx" / "ray_maker.sv",
     proj_path / "hdl" / "rtx" / "ray_caster.sv",
@@ -139,13 +141,13 @@ async def test_module(dut):
     dut.rst.value = 1
 
     dut.cam.value = pack_bits([
-        (make_fp_vec3((0, 0, -10)), FP_VEC3_BITS),            # origin
-        (make_fp_vec3((0, 0, WIDTH / 2 * 2.28)), FP_VEC3_BITS),    # forward
+        (make_fp_vec3((0, 0, 0)), FP_VEC3_BITS),            # origin
+        (make_fp_vec3((0, WIDTH / 2, 0)), FP_VEC3_BITS),    # forward
         (make_fp_vec3((1, 0, 0)), FP_VEC3_BITS),            # right
-        (make_fp_vec3((0, 1, 0)), FP_VEC3_BITS),            # up
+        (make_fp_vec3((0, 0, 1)), FP_VEC3_BITS),            # up
     ])
     dut.num_objs.value = NUM_OBJS
-    dut.max_bounces.value = 3
+    dut.max_bounces.value = 2
 
     await ClockCycles(dut.clk, 100)
     dut.rst.value = 0

@@ -54,7 +54,7 @@ typedef struct {
   Vec3 hit_pos;
   Vec3 hit_norm;
   float dist;
-} SphereIntersectorResult;
+} GeometryIntersectorResult;
 
 typedef struct {
   int any_hit;    // whether we hit an object

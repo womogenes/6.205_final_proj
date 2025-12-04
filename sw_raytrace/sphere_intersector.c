@@ -25,7 +25,7 @@ int solve_quadratic(float b, float c, float* x0, float* x1) {
   return 1;
 }
 
-void sphere_intersector(Vec3 ray_dir, Vec3 ray_origin, Object* sphere, SphereIntersectorResult* result) {
+void sphere_intersector(Vec3 ray_dir, Vec3 ray_origin, Object* sphere, GeometryIntersectorResult* result) {
   // Intersect a ray with a sphere!
 
   // Ray is parameterized as (ray_origin + t * ray_dir)

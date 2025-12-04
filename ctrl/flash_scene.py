@@ -13,6 +13,7 @@ import wave
 import serial
 import sys
 import json
+import numpy as np
 
 from tqdm import tqdm
 
@@ -75,11 +76,44 @@ if __name__ == "__main__":
     with open(args.scene) as fin:
         scene = json.load(fin)
 
+    forward = np.array(scene["camera"]["forward"])
+    right = np.array(scene["camera"]["right"])
+    up = np.array(scene["camera"]["up"])
+    pitch = scene["camera"]["pitch"]
+    yaw = scene["camera"]["yaw"]
+    
+    # Create rotation matrices for pitch (rotation around right vector) and yaw (rotation around up vector)
+    # Pitch rotation matrix around right vector
+    cos_pitch = np.cos(pitch)
+    sin_pitch = np.sin(pitch)
+    pitch_mat = np.array([
+        [1, 0, 0],
+        [0, cos_pitch, -sin_pitch],
+        [0, sin_pitch, cos_pitch]
+    ])
+    
+    # Yaw rotation matrix around up vector
+    cos_yaw = np.cos(yaw)
+    sin_yaw = np.sin(yaw)
+    yaw_mat = np.array([
+        [cos_yaw, 0, sin_yaw],
+        [0, 1, 0],
+        [-sin_yaw, 0, cos_yaw]
+    ])
+    
+    # Combined rotation matrix: apply yaw first, then pitch
+    rotmat = pitch_mat @ yaw_mat
+    
+    # Apply rotations to get new vectors
+    forward = tuple(rotmat @ forward)
+    right = tuple(rotmat @ right)
+    up = tuple(rotmat @ up)
+
     set_cam(
         origin=scene["camera"]["origin"],
-        forward=scene["camera"]["forward"],
-        right=scene["camera"]["right"],
-        up=scene["camera"]["up"],
+        forward=forward,
+        right=right,
+        up=up,
     )
 
     # Flash objects

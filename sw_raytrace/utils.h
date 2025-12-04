@@ -84,6 +84,14 @@ Vec3 norm_vec3(Vec3 v) {
   return mul_vec3f(v, 1 / sqrtf(mag_sq));
 }
 
+Vec3 cross_vec3(Vec3 v, Vec3 w) {
+  return (Vec3){
+    .x = v.y * w.z - v.z * w.y,
+    .y = v.z * w.x - v.x * w.z,
+    .z = v.x * w.y - v.y * w.x,
+  };
+}
+
 float lerp(float a, float b, float t) {
   return a * (1 - t) + b * t;
 }

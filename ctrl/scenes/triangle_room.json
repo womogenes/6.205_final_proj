@@ -1,0 +1,132 @@
+{
+  "max_bounces": 4,
+  "camera": {
+    "origin": [0, 0, 0],
+    "forward": [0, 1280.1, 0],
+    "up": [0, 0, 2],
+    "right": [2, 0, 0],
+    "pitch": 0,
+    "yaw": 0
+  },
+  "objects": [
+    {
+      "name": "light_1",
+      "is_trig": true,
+      "trig": [
+        [-2, 4, 2.875],
+        [0, 4, 0],
+        [4, 0, 0]
+      ],
+      "trig_norm": [0, 0, -1.0],
+      "material": {
+        "color": [0.8, 0.8, 0.8],
+        "spec_color": [1.0, 1.0, 1.0],
+        "emit_color": [15, 15, 15],
+        "smoothness": 0.5,
+        "specular_prob": 0.0
+      }
+    },
+    {
+      "name": "light_2",
+      "is_trig": true,
+      "trig": [
+        [2, 8, 2.875],
+        [0, -4, 0],
+        [-4, 0, 0]
+      ],
+      "trig_norm": [0, 0, -1.0],
+      "material": {
+        "color": [0.8, 0.8, 0.8],
+        "spec_color": [1.0, 1.0, 1.0],
+        "emit_color": [15, 15, 15],
+        "smoothness": 0.5,
+        "specular_prob": 0.0
+      }
+    },
+    {
+      "name": "bottom_wall",
+      "is_trig": true,
+      "trig": [
+        [-6, 12, -3],
+        [0, -24, 0],
+        [24, 0, 0]
+      ],
+      "trig_norm": [0, 0, 1.0],
+      "material": {
+        "color": [0.3, 1.0, 0.3],
+        "spec_color": [1.0, 1.0, 1.0],
+        "emit_color": [0.0, 0.0, 0.0],
+        "smoothness": 0.5,
+        "specular_prob": 0.0
+      }
+    },
+    {
+      "name": "top_wall",
+      "is_trig": true,
+      "trig": [
+        [-6, 12, 3],
+        [24, 0, 0],
+        [0, -24, 0]
+      ],
+      "trig_norm": [0, 0, -1.0],
+      "material": {
+        "color": [1.0, 1.0, 1.0],
+        "spec_color": [0.0, 0.0, 0.0],
+        "emit_color": [0.6, 0.6, 0.6],
+        "smoothness": 0.5,
+        "specular_prob": 0.0
+      }
+    },
+    {
+      "name": "back_wall",
+      "is_trig": true,
+      "trig": [
+        [-6, 12, -3],
+        [24, 0, 0],
+        [0, 0, 12]
+      ],
+      "trig_norm": [0, -1.0, 0],
+      "material": {
+        "color": [0.8, 0.8, 0.8],
+        "spec_color": [1.0, 1.0, 1.0],
+        "emit_color": [0.0, 0.0, 0.0],
+        "smoothness": 1.0,
+        "specular_prob": 1
+      }
+    },
+    {
+      "name": "left_wall",
+      "is_trig": true,
+      "trig": [
+        [-6, 12, -3],
+        [0, 0, 12],
+        [0, -24, 0]
+      ],
+      "trig_norm": [1.0, 0, 0],
+      "material": {
+        "color": [1.0, 0.3, 0.3],
+        "spec_color": [1.0, 0.3, 0.3],
+        "emit_color": [0.0, 0.0, 0.0],
+        "smoothness": 1.0,
+        "specular_prob": 0.0
+      }
+    },
+    {
+      "name": "right_wall",
+      "is_trig": true,
+      "trig": [
+        [6, 12, -3],
+        [0, -24, 0],
+        [0, 0, 12]
+      ],
+      "trig_norm": [-1.0, 0, 0],
+      "material": {
+        "color": [0.3, 0.3, 1.0],
+        "spec_color": [0.3, 0.3, 1.0],
+        "emit_color": [0.0, 0.0, 0.0],
+        "smoothness": 1.0,
+        "specular_prob": 0.0
+      }
+    }
+  ]
+}

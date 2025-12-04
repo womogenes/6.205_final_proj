@@ -11,7 +11,7 @@ module ray_intersector (
   output material hit_mat,
   output fp_vec3 hit_pos,
   output fp_vec3 hit_normal,
-  output fp hit_dist_sq,
+  output fp hit_dist,
   output logic hit_any,
   output logic hit_valid,
 
@@ -48,16 +48,15 @@ module ray_intersector (
       hit_valid <= 1'b0;
       hit_pos <= 0;
       hit_any <= 1'b0;
-      hit_dist_sq <= 1'b0;
+      hit_dist <= 1'b0;
       
       pre_obj_count <= num_objs;
       post_obj_count <= num_objs;
 
-      hit_mat <= 0;
-      hit_pos <= 0;
-      hit_normal <= 0;
-      hit_dist_sq <= 0;
-      
+      // hit_mat <= 0;
+      // hit_pos <= 0;
+      // hit_normal <= 0;
+      // hit_dist <= 0;
     end else begin
       // count input objects
       if (ray_valid) begin
@@ -78,25 +77,69 @@ module ray_intersector (
       end
       
       // first object check of this ray
+      // if (is_trig_piped) begin
+      //   if (ray_valid_piped) begin
+      //     if (trig_intx_hit) begin
+      //       hit_mat <= obj_intx_mat;
+      //       hit_pos <= trig_intx_hit_pos;
+      //       hit_normal <= trig_intx_hit_norm;
+      //       hit_dist <= trig_intx_hit_dist;
+      //       hit_any <= 1'b1;
+      //     end else begin
+      //       hit_any <= 1'b0;
+      //     end
+      //   end else begin
+      //     if (
+      //       trig_intx_hit && 
+      //       (hit_any == 0 || fp_greater(hit_dist, trig_intx_hit_dist))
+      //     ) begin
+      //       hit_mat <= obj_intx_mat;
+      //       hit_pos <= trig_intx_hit_pos;
+      //       hit_normal <= trig_intx_hit_norm;
+      //       hit_dist <= trig_intx_hit_dist;
+      //       hit_any <= 1'b1;
+      //     end
+      //   end
+      // end else begin
+      //   if (ray_valid_piped) begin
+      //     if (sphere_intx_hit) begin
+      //       hit_mat <= obj_intx_mat;
+      //       hit_pos <= sphere_intx_hit_pos;
+      //       hit_normal <= sphere_intx_hit_norm;
+      //       hit_dist <= sphere_intx_hit_dist;
+      //       hit_any <= 1'b1;
+      //     end else begin
+      //       hit_any <= 1'b0;
+      //     end
+      //   end else begin
+      //     if (
+      //       sphere_intx_hit && 
+      //       (hit_any == 0 || fp_greater(hit_dist, sphere_intx_hit_dist))
+      //     ) begin
+      //       hit_mat <= obj_intx_mat;
+      //       hit_pos <= sphere_intx_hit_pos;
+      //       hit_normal <= sphere_intx_hit_norm;
+      //       hit_dist <= sphere_intx_hit_dist;
+      //       hit_any <= 1'b1;
+      //     end
+      //   end
+      // end
+
       if (ray_valid_piped) begin
-        if (sphere_intx_hit) begin
-          hit_mat <= sphere_intx_mat;
-          hit_pos <= sphere_intx_hit_pos;
-          hit_normal <= sphere_intx_hit_norm;
-          hit_dist_sq <= sphere_intx_hit_dist_sq;
-          hit_any <= 1'b1;
-        end else begin
-          hit_any <= 1'b0;
-        end
+        hit_mat <= obj_intx_mat;
+        hit_pos <= trig_intx_hit_pos;
+        hit_normal <= trig_intx_hit_norm;
+        hit_dist <= trig_intx_hit_dist;
+        hit_any <= trig_intx_hit;
       end else begin
         if (
-          sphere_intx_hit && 
-          (hit_any == 0 || fp_greater(hit_dist_sq, sphere_intx_hit_dist_sq))
+          trig_intx_hit && 
+          (hit_any == 1'b0 || fp_greater(hit_dist, trig_intx_hit_dist))
         ) begin
-          hit_mat <= sphere_intx_mat;
-          hit_pos <= sphere_intx_hit_pos;
-          hit_normal <= sphere_intx_hit_norm;
-          hit_dist_sq <= sphere_intx_hit_dist_sq;
+          hit_mat <= obj_intx_mat;
+          hit_pos <= trig_intx_hit_pos;
+          hit_normal <= trig_intx_hit_norm;
+          hit_dist <= trig_intx_hit_dist;
           hit_any <= 1'b1;
         end
       end
@@ -112,11 +155,21 @@ module ray_intersector (
   */
   logic sphere_intx_hit;
   fp_vec3 sphere_intx_hit_pos;
-  fp sphere_intx_hit_dist_sq;
+  fp sphere_intx_hit_dist;
   fp_vec3 sphere_intx_hit_norm;
 
+  logic trig_intx_hit_prepipe;
+  fp_vec3 trig_intx_hit_pos_prepipe;
+  fp trig_intx_hit_dist_prepipe;
+  fp_vec3 trig_intx_hit_norm_prepipe;
+
+  logic trig_intx_hit;
+  fp_vec3 trig_intx_hit_pos;
+  fp trig_intx_hit_dist;
+  fp_vec3 trig_intx_hit_norm;
+
   // Pipelined hit material (for reflection)
-  material sphere_intx_mat;
+  material obj_intx_mat;
 
   pipeline #(
     .WIDTH($bits(material)), 
@@ -124,8 +177,23 @@ module ray_intersector (
   ) mat_pipe (
     .clk(clk), 
     .in(obj.mat), 
-    .out(sphere_intx_mat)
+    .out(obj_intx_mat)
   );
+
+  // Pipelined object type
+  logic is_trig_piped;
+
+  pipeline #(
+    .WIDTH(1),
+    .DEPTH(SPHERE_INTX_DELAY)
+  ) obj_type_pipe (
+    .clk(clk),
+    .in(obj.is_trig),
+    .out(is_trig_piped)
+  );
+
+  sphere sphere_cast;
+  assign sphere_cast = obj.stuff;
 
   // The actual intersector logic
   sphere_intersector sphere_intx (
@@ -134,15 +202,51 @@ module ray_intersector (
 
     .ray_origin(ray_origin),
     .ray_dir(ray_dir),
-    .sphere_center(obj.sphere_center),
-    .sphere_rad_sq(obj.sphere_rad_sq),
-    .sphere_rad_inv(obj.sphere_rad_inv),
+    .sphere_center(sphere_cast.sphere_center),
+    .sphere_rad_sq(sphere_cast.sphere_rad_sq),
+    .sphere_rad_inv(sphere_cast.sphere_rad_inv),
 
     .hit(sphere_intx_hit),
     .hit_pos(sphere_intx_hit_pos),
-    .hit_dist_sq(sphere_intx_hit_dist_sq),
+    .hit_dist(sphere_intx_hit_dist),
     .hit_norm(sphere_intx_hit_norm)
   );
+
+  trig trig_cast;
+  assign trig_cast = obj.stuff;
+
+  trig_intersector trig_intx (
+    .clk(clk),
+    .rst(rst),
+
+    .ray_origin(ray_origin),
+    .ray_dir(ray_dir),
+    .v0(trig_cast.points[2]),
+    .v0v1(trig_cast.points[1]),
+    .v0v2(trig_cast.points[0]),
+    .normal(trig_cast.normal),
+
+    .hit(trig_intx_hit_prepipe),
+    .hit_pos(trig_intx_hit_pos_prepipe),
+    .hit_dist(trig_intx_hit_dist_prepipe),
+    .hit_norm(trig_intx_hit_norm_prepipe)
+  );
+
+  pipeline #(
+    .WIDTH(1 + $bits(fp_vec3) + $bits(fp_vec3) + $bits(fp)), 
+    .DEPTH(SPHERE_INTX_DELAY - TRIG_INTX_DELAY)) trig_inx_pipe (
+      .clk(clk),
+      .in({
+        trig_intx_hit_prepipe,
+        trig_intx_hit_pos_prepipe,
+        trig_intx_hit_dist_prepipe,
+        trig_intx_hit_norm_prepipe}),
+      .out({
+        trig_intx_hit,
+        trig_intx_hit_pos,
+        trig_intx_hit_dist,
+        trig_intx_hit_norm})
+    );
 
 endmodule
 

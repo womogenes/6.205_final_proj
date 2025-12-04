@@ -60,6 +60,12 @@ module fp_inv (
   fp [NR_STAGES:0] x_buffer;
   fp [NR_STAGES:0] y_buffer;
 
+  fp abs_x;
+  assign abs_x = {1'b0, x.exp, x.mant};
+
+  logic inv_sign;
+  pipeline #(.WIDTH(1), .DEPTH(INV_DELAY)) sign_pipe (.clk(clk), .in(x.sign), .out(inv_sign));
+
   fp init_guess;
   assign init_guess = MAGIC_NUMBER - x[FP_BITS-2:0];
 
@@ -69,7 +75,7 @@ module fp_inv (
       fp_inv_stage inv_stage (
         .clk(clk),
         .rst(rst),
-        .x((i == 0) ? x : x_buffer[i]),
+        .x((i == 0) ? abs_x : x_buffer[i]),
         .y((i == 0) ? init_guess : y_buffer[i]),
 
         .x_out(x_buffer[i + 1]),
@@ -79,7 +85,7 @@ module fp_inv (
   endgenerate
 
   // Outputs are last stage in the pipeline
-  assign inv = y_buffer[NR_STAGES];
+  assign inv = {inv_sign, y_buffer[NR_STAGES].exp, y_buffer[NR_STAGES].mant};
 
 endmodule
 

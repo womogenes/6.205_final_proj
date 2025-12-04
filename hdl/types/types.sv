@@ -45,9 +45,17 @@ typedef struct packed {
 typedef struct packed {
   logic is_trig;            // 1 bit
   material mat;             // [several] bits
-  fp_vec3 [2:0] trig;     // 216 bits
-  fp_vec3 trig_norm;
-  fp_vec3 sphere_center;
-  fp sphere_rad_sq;
-  fp sphere_rad_inv;
+  logic [(FP_BITS*12)-1:0] stuff;       // max data needed for obj (288)
 } object;
+
+typedef struct packed {
+  fp_vec3 sphere_center;  // 72 bits
+  fp sphere_rad_sq;       // 24 bits
+  fp sphere_rad_inv;      // 24 bits
+  logic [(FP_BITS*7)-1:0] stuff;      // throwaway 168 bits
+} sphere;
+
+typedef struct packed {
+  fp_vec3 [2:0] points;    // 216 bits
+  fp_vec3 normal;          // 72 bits
+} trig;

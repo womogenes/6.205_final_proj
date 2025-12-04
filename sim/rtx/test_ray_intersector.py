@@ -39,52 +39,82 @@ async def scene_buffer(dut):
         specular_prob=0,
     )
     objs = [
+        # Object(
+        #     is_trig=False,
+        #     mat=mat0,
+        #     trig=None,
+        #     trig_norm=None,
+        #     sphere_center=(0, 4, 0),
+        #     sphere_rad=1,
+        # ),
+        # Object(
+        #     is_trig=False,
+        #     mat=mat0,
+        #     trig=None,
+        #     trig_norm=None,
+        #     sphere_center=(0, 4, 1),
+        #     sphere_rad=0.5,
+        # ),
         Object(
-            is_trig=False,
+            is_trig=True,
             mat=mat0,
-            trig=None,
-            trig_norm=None,
-            sphere_center=(0, 4, 0),
-            sphere_rad=1,
+            trig=(((-1, 4, -1), (1, 0, 1), (0, 0, 2))),
+            trig_norm=(0, -1, 0),
+            sphere_center=None,
+            sphere_rad=1
         ),
         Object(
-            is_trig=False,
+            is_trig=True,
             mat=mat0,
-            trig=None,
-            trig_norm=None,
-            sphere_center=(0, 4, 1),
-            sphere_rad=0.5,
+            trig=(((-1, 4, -1), (1, 0, 1), (2, 0, 0))),
+            trig_norm=(0, 1, 0),
+            sphere_center=None,
+            sphere_rad=1
+        ),
+        Object(
+            is_trig=True,
+            mat=mat0,
+            trig=(((0, 6, 2), (-2, -2, -4), (2, -2, -4))),
+            trig_norm=(0, -4/np.sqrt(17), 1/np.sqrt(17)),
+            sphere_center=None,
+            sphere_rad=1
+        ),
+        Object(
+            is_trig=True,
+            mat=mat0,
+            trig=(((-1, -3, -1), (0, 0, 3), (3, 0, 0))),
+            trig_norm=(0, 1, 0),
+            sphere_center=None,
+            sphere_rad=1
         ),
     ]
-
+    dut.num_objs.value = len(objs)
     # Manual timing
     while True:
-        dut.obj.value = objs[0].pack_bits()[0]
-        await ClockCycles(dut.clk, 1)
-        dut.obj.value = objs[1].pack_bits()[0]
-        await ClockCycles(dut.clk, 1)
+        for obj in objs:
+            dut.obj.value = obj.pack_bits()[0]
+            await ClockCycles(dut.clk, 1)
 
 @cocotb.test()
 async def test_module(dut):
     """cocotb test for the lazy mult module"""
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
-    cocotb.start_soon(scene_buffer(dut))
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
-    
-
     # Manual timing
     await ClockCycles(dut.clk, 3)
+    cocotb.start_soon(scene_buffer(dut))
 
     num_points = 1_000
     points = []
-    normalpoints = []
-    for i in range(num_points):
+    missedpoints = []
+    normals = []
+    for i in tqdm(range(num_points)):
         dut.ray_origin.value = make_fp_vec3((0, 0, 0))
         random_val = np.random.random((2,))
         random_dir = np.array([random_val[0] - 0.5, 1, random_val[1] - 0.5])
@@ -93,27 +123,36 @@ async def test_module(dut):
         dut.ray_valid.value = 1
         await ClockCycles(dut.clk, 1)
         dut.ray_valid.value = 0
-        await RisingEdge(dut.hit_valid)
+        await with_timeout(RisingEdge(dut.hit_valid), 1000, 'ns')
+        await ReadOnly()
         if (dut.hit_any.value):
             # print(convert_fp_vec3(dut.hit_pos.value))
             points.append(convert_fp_vec3(dut.hit_pos.value))
+            normals.append(tuple(np.array(convert_fp_vec3(dut.hit_normal.value)) + np.array(points[-1])))
+            # print(dut.hit_pos.value, convert_fp_vec3(dut.hit_pos.value))
             # print(convert_fp_vec3(dut.hit_normal.value))
-            normalpoints.append(convert_fp_vec3(dut.hit_normal.value))
+            
             # points.append(dirvec)
+        else:
+            missedpoints.append(convert_fp_vec3(dut.hit_pos.value))
         await ClockCycles(dut.clk, 1)
-        
 
     fig = plt.figure(figsize=(12, 12))
     ax = fig.add_subplot(projection='3d')
     ax.set_aspect('equal')
     ax.set_xlim3d(-2, 2)
-    ax.set_ylim3d(0, 5)
+    ax.set_ylim3d(-5, 5)
     ax.set_zlim3d(-2, 2)
 
     x_data, y_data, z_data = zip(*points)
 
     ax.scatter(x_data, y_data, z_data, s=2, alpha=1, color="blue")
-    x_data, y_data, z_data = zip(*normalpoints)
+
+    x_data, y_data, z_data = zip(*normals)
+
+    ax.scatter(x_data, y_data, z_data, s=1, alpha=1, color="green")
+
+    x_data, y_data, z_data = zip(*missedpoints)
 
     ax.scatter(x_data, y_data, z_data, s=2, alpha=1, color="red")
     plt.show()
@@ -162,11 +201,13 @@ def runner():
         proj_path / "hdl" / "math" / "fp_add.sv",
         proj_path / "hdl" / "math" / "fp_mul.sv",
         proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
+        proj_path / "hdl" / "math" / "fp_inv.sv",
         proj_path / "hdl" / "math" / "fp_sqrt.sv",
         proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
         proj_path / "hdl" / "math" / "fp_convert.sv",
         proj_path / "hdl" / "math" / "quadratic_solver.sv",
         proj_path / "hdl" / "math" / "sphere_intersector.sv",
+        proj_path / "hdl" / "math" / "trig_intersector.sv",
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
         proj_path / "hdl" / "rtx" / "ray_maker.sv",
         proj_path / "hdl" / "rtx" / "ray_caster.sv",

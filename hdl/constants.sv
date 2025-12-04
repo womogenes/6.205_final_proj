@@ -44,6 +44,7 @@ parameter integer SQRT_DELAY = INV_SQRT_DELAY + 1;
 parameter integer VEC3_ADD_DELAY = FP_ADD_DELAY;  // 2
 parameter integer VEC3_MUL_DELAY = FP_MUL_DELAY;  // 1
 parameter integer VEC3_DOT_DELAY = 5;
+parameter integer VEC3_CROSS_DELAY = 3;
 parameter integer VEC3_SCALE_DELAY = FP_MUL_DELAY;
 parameter integer VEC3_NORM_DELAY = VEC3_DOT_DELAY + INV_SQRT_DELAY + 1;  // 16
 parameter integer VEC3_LERP_DELAY = VEC3_SCALE_DELAY + VEC3_ADD_DELAY;

@@ -147,11 +147,24 @@ module ray_reflector (
   );
 
   // Pipeline the origin
-  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(37)) origin_pipe (
+  fp_vec3 hit_pos_piped;
+  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(35)) origin_pipe (
     .clk(clk),
     .in(hit_pos),
-    .out(new_origin)
+    .out(hit_pos_piped)
   );
+  fp_vec3 hit_normal_piped;
+  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(34)) normal_pipe (
+    .clk(clk),
+    .in(hit_normal),
+    .out(hit_normal_piped)
+  );
+  localparam fp EPSILON = 24'h370000;
+  fp_vec3 scaled_normal;
+  fp_vec3_scale offset_scale (.clk(clk), .rst(rst), .v(hit_normal_piped), .s(EPSILON), .scaled(scaled_normal));
+
+  fp_vec3_add offset_add (.clk(clk), .rst(rst), .v(hit_pos_piped), .w(scaled_normal), .sum(new_origin));
+
 
   // ===== BRANCH 2: NEW COLOR =====
 
@@ -230,7 +243,20 @@ module ray_reflector (
     .in(new_color_unpiped),
     .out(new_color)
   );
-  
+
+  // TODO temp pipeline for debug
+  // fp_vec3 hit_pos_superpiped;
+  // pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(36)) new_income_light_pipe (
+  //   .clk(clk),
+  //   .in(hit_pos),
+  //   .out(hit_pos_superpiped)
+  // );
+
+  // assign new_income_light = new_dir;
+  // fp_vec3_scale pos_scale (.clk(clk), .rst(rst), .v(hit_pos_superpiped), .s(24'h3c5555), .scaled(new_income_light));
+  // assign new_income_light = new_color;
+
+    
 endmodule
 
 `default_nettype wire

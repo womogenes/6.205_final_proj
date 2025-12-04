@@ -18,7 +18,7 @@ module sphere_intersector (
 
   output logic hit,
   output fp_vec3 hit_pos,
-  output fp hit_dist_sq,
+  output fp hit_dist,
   output fp_vec3 hit_norm
 );
   fp_vec3 L;                // ray_origin - sphere_center
@@ -59,7 +59,7 @@ module sphere_intersector (
   // result 7 cycles behind
   fp_vec3_dot dot_ray_dir_dot_L(.clk(clk), .v(ray_dir_pipe.pipe[1]), .w(L), .dot(ray_dir_dot_L));
   fp_vec3_dot dot_L_mag_sq(.clk(clk), .v(L), .w(L), .dot(L_mag_sq));
-  pipeline #(.WIDTH(FP_BITS), .DEPTH(2 + VEC3_DOT_DELAY)) sphere_rad_sq_pipe (
+  pipeline #(.WIDTH(FP_BITS), .DEPTH(2 + VEC3_DOT_DELAY)) sphere_rad_pipe (
     .clk(clk),
     .in(sphere_rad_sq),
     .out(sphere_rad_sq_piped)
@@ -93,8 +93,8 @@ module sphere_intersector (
   // result 29 cycles behind
   pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(1)) hit_pos_pipe (.clk(clk), .in(hit_pos_prepiped), .out(hit_pos));
   fp_vec3_scale scale_hit_norm(.clk(clk), .v(hit_norm_prenorm), .s(sphere_rad_inv_piped), .scaled(hit_norm));
-  pipeline #(.WIDTH(1), .DEPTH(4)) hit_pipe (.clk(clk), .in(qr_solver.valid && ~x0[FP_BITS-1]), .out(hit));
-  pipeline #(.WIDTH(FP_BITS), .DEPTH(4)) hit_dist_pipe (.clk(clk), .in(x0), .out(hit_dist_sq));
+  pipeline #(.WIDTH(1), .DEPTH(4)) hit_pipe (.clk(clk), .in(qr_solver.valid && ~x0.sign), .out(hit));
+  pipeline #(.WIDTH(FP_BITS), .DEPTH(4)) hit_dist_pipe (.clk(clk), .in(x0), .out(hit_dist));
 
 endmodule
 

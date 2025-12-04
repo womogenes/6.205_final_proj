@@ -23,7 +23,7 @@ int main() {
   RayTracerParams params;
   RayTracerResult result;
 
-  const int N_FRAMES = 60;
+  const int N_FRAMES = 1;
   const int mask_565 = 0;
 
   for (int frame_idx = 0; frame_idx < N_FRAMES; frame_idx++) {

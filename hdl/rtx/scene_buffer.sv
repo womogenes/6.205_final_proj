@@ -12,23 +12,23 @@ module scene_buffer #(
   input wire [OBJ_IDX_WIDTH-1:0] flash_obj_idx,
   input wire [$bits(object)-1:0] flash_obj_data,
 
-  output object obj,
+  output object obj
 
   // TODO: remove debug signals
-  output logic is_trig,            // 1 bit
-  output material mat,
-  output fp_vec3 [2:0] trig,
-  output fp_vec3 trig_norm,
-  output fp_vec3 sphere_center,
-  output fp sphere_rad_sq,
-  output fp sphere_rad_inv
+  // output logic is_trig,            // 1 bit
+  // output material mat,
+  // output fp_vec3 [2:0] trig,
+  // output fp_vec3 trig_norm,
+  // output fp_vec3 sphere_center,
+  // output fp sphere_rad_sq,
+  // output fp sphere_rad_inv
 );
   // FOR DEBUG ONLY
   // TODO: remove debug signals
-  assign mat = obj.mat;
-  assign sphere_center = obj.sphere_center;
-  assign sphere_rad_sq = obj.sphere_rad_sq;
-  assign sphere_rad_inv = obj.sphere_rad_inv;
+  // assign mat = obj.mat;
+  // assign sphere_center = obj.sphere_center;
+  // assign sphere_rad_sq = obj.sphere_rad_sq;
+  // assign sphere_rad_inv = obj.sphere_rad_inv;
 
   logic [$clog2(MAX_NUM_OBJS)-1:0] obj_idx;
 

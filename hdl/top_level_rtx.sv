@@ -258,7 +258,7 @@ module top_level (
   seven_segment_controller(
     .clk(clk_100mhz_buffered),
     .rst(sys_rst),
-    .val({frame_count_rtx, rendered_color_rtx}), //{blue, green, red}}),
+    .val(highdef_fb.traffic_generator_inst.frame_count), //{blue, green, red}}),
     .cat(ss0_c),
     .an({ ss0_an, ss1_an })
   );

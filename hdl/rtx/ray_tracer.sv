@@ -53,8 +53,8 @@ module ray_tracer #(
   // Reflector results
   fp_vec3 rflx_new_dir;
   fp_vec3 rflx_new_origin;
-  fp_vec3 rflx_new_color;
-  fp_vec3 rflx_new_income_light;
+  fp_color rflx_new_color;
+  fp_color rflx_new_income_light;
 
   logic [7:0] bounce_count;
 
@@ -82,6 +82,7 @@ module ray_tracer #(
             cur_ray_dir <= ray_dir;
             cur_income_light <= 0;                  // (0, 0, 0)
             cur_ray_color <= {FP_ONE, FP_ONE, FP_ONE};  // (1, 1, 1)
+            pixel_color <= 72'h3f00000000003f0000;
 
             // Trigger the intersector
             ray_valid_intx <= 1'b1;
@@ -94,8 +95,6 @@ module ray_tracer #(
           if (ray_done_intx) begin
             if (intx_hit_any) begin
               // Capture results from intersector
-              cur_ray_origin <= intx_hit_pos;
-
               ray_valid_rflx <= 1'b1;
               state <= REFLECT;
 
@@ -103,7 +102,17 @@ module ray_tracer #(
               // We didn't hit anything :( ray is done for
               // TODO: ambient light
               state <= IDLE;
-              pixel_color <= cur_income_light;
+              // MAX RED for debug
+              if (bounce_count > 0) begin
+                pixel_color <= cur_income_light;
+                
+              end
+              // pixel_color <= cur_ray_dir | (bounce_count == 0 ? {{24{1'b1}}, {24{1'b0}}, {24{1'b1}}} : 0);
+              // pixel_color <= (1 ? {
+              //   cur_ray_dir.x.sign ? 24'h3f0000 : 24'h3e0000,
+              //   cur_ray_dir.y.sign ? 24'h3f0000 : 24'h3e0000,
+              //   cur_ray_dir.z.sign ? 24'h3f0000 : 24'h3e0000
+              // } : cur_ray_dir);
               ray_done <= 1'b1;
             end
           end
@@ -147,7 +156,7 @@ module ray_tracer #(
     .hit_mat(intx_hit_mat),
     .hit_pos(intx_hit_pos),
     .hit_normal(intx_hit_norm),
-    .hit_dist_sq(),
+    .hit_dist(),
     .hit_any(intx_hit_any),
     .hit_valid(ray_done_intx),
 
@@ -181,8 +190,10 @@ module ray_tracer #(
   );
 
   // pipeline #(.WIDTH(11), .DEPTH(2)) pixel_h_pipe (.clk(clk), .in(pixel_h_in), .out(pixel_h_out));
-  // pipeline #(.WIDTH(10), .DEPTH(2)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
 
+  // pipeline #(.WIDTH(10), .DEPTH(2)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
+  // pipeline #(.WIDTH(10), .DEPTH(2)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
+  // pipeline #(.WIDTH(10), .DEPTH(2)) pixel_v_pipe (.clk(clk), .in(pixel_v_in), .out(pixel_v_out));
   // I think we can assume this because inputs should be held constant?
   // TODO: optimize this
   assign pixel_h_out = pixel_h_in;

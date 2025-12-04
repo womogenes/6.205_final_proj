@@ -1,12 +1,20 @@
 # We love python <3
 
 from pathlib import Path
-import sys
+
+from argparse import ArgumentParser
+import json
 
 proj_path = Path(__file__).parent.parent
-
+import sys
 sys.path.append(str(proj_path / "sim"))
+
 from utils import make_fp, make_fp_vec3, pack_bits, FP_BITS, FP_VEC3_BITS
+
+parser = ArgumentParser()
+parser.add_argument("scene", nargs="?", type=str)
+
+args = parser.parse_args()
 
 class Material:
     def __init__(
@@ -39,30 +47,36 @@ class Object:
     def __init__(
         self,
         mat: Material,
-        sphere_center: tuple[float],
-        sphere_rad: float,
+        sphere_center: tuple[float] = (),
+        sphere_rad: float = 1,
         is_trig: bool = False,
         trig: tuple[tuple[float]] = (),
         trig_norm: tuple[float] = (),
+        name: str = ""
     ):
         self.is_trig = is_trig
         self.mat = mat
         self.trig = trig or ((0, 0, 0),) * 3
         self.trig_norm = trig_norm or (0, 0, 0)
-        self.sphere_center = sphere_center
-        self.sphere_rad_sq = sphere_rad ** 2
-        self.sphere_rad_inv = 1 / sphere_rad
+        self.sphere_center = sphere_center or (0, 0, 0)
+        self.sphere_rad_sq = sphere_rad ** 2 or 0
+        self.sphere_rad_inv = 1 / sphere_rad or 0
+        self.name = name
 
     def pack_bits(self):
         fields = [
             (self.is_trig, 1),
             self.mat.pack_bits(),
-            *[(make_fp_vec3(v), FP_VEC3_BITS) for v in self.trig],
-            (make_fp_vec3(self.trig_norm), FP_VEC3_BITS),
-            (make_fp_vec3(self.sphere_center), FP_VEC3_BITS),
-            (make_fp(self.sphere_rad_sq), FP_BITS),
-            (make_fp(self.sphere_rad_inv), FP_BITS),
-        ]
+            *[(make_fp_vec3(v), 72) for v in self.trig],
+            (make_fp_vec3(self.trig_norm), 72)
+            ] if self.is_trig else [
+                (self.is_trig, 1),
+                self.mat.pack_bits(),
+                (make_fp_vec3(self.sphere_center), 72),
+                (make_fp(self.sphere_rad_sq), 24),
+                (make_fp(self.sphere_rad_inv), 24),
+                (0, 168)
+            ]
         return pack_bits(fields, msb=True), sum([width for _, width in fields])
 
 
@@ -72,155 +86,17 @@ if __name__ == "__main__":
     ROOM_WIDTH = 12
     INF = 100
 
-    objs = [
-        # Light
-        Object(
-            mat=Material(
-                color=(0.8, 0.8, 0.8),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(15, 15, 15),
-                smoothness=0.5,
-                specular_prob=0.0,
-            ),
-            sphere_center=(0, ROOM_HEIGHT / 2 + 9.85, ROOM_DEPTH / 2),
-            sphere_rad=10,
-        ),
+    with open(args.scene) as fin:
+        scene = json.load(fin)
 
-        # Ground
-        Object(
-            mat=Material(
-                color=(0.3, 1.0, 0.3),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=0.5,
-                specular_prob=0.0,
-            ),
-            sphere_center=(0, -INF, 0),
-            sphere_rad=INF - ROOM_HEIGHT / 2,
-        ),
+    objs = scene["objects"]
+    obj_objs = []
+    for idx, obj in enumerate(objs):
+        obj["mat"] = Material(**obj["material"])
+        del obj["material"]
+        obj_objs.append(Object(**obj))
+    objs = obj_objs
 
-        # Ceiling
-        Object(
-            mat=Material(
-                color=(1.0, 1.0, 1.0),
-                spec_color=(0.0, 0.0, 0.0),
-                emit_color=(0.6, 0.6, 0.6),
-                smoothness=0.5,
-                specular_prob=0.0,
-            ),
-            sphere_center=(0, INF, 0),
-            sphere_rad=INF - ROOM_HEIGHT / 2,
-        ),
-
-        # Back wall
-        Object(
-            mat=Material(
-                color=(0.8, 0.8, 0.8),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=0.999,
-                specular_prob=0.0,
-            ),
-            sphere_center=(0, 0, INF),
-            sphere_rad=INF - ROOM_DEPTH,
-        ),
-
-        # Front wall
-        Object(
-            mat=Material(
-                color=(1.0, 1.0, 1.0),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=0.999,
-                specular_prob=0.0,
-            ),
-            sphere_center=(0, 0, -INF),
-            sphere_rad=INF - ROOM_DEPTH,
-        ),
-
-        # Left wall
-        Object(
-            mat=Material(
-                color=(1.0, 0.3, 0.3),
-                spec_color=(1.0, 0.3, 0.3),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=1.0,
-                specular_prob=0.0,
-            ),
-            sphere_center=(-INF, 0, 0),
-            sphere_rad=INF - ROOM_WIDTH / 2,
-        ),
-
-        # Right wall
-        Object(
-            mat=Material(
-                color=(0.3, 0.3, 1.0),
-                spec_color=(0.3, 0.3, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=1.0,
-                specular_prob=0.0,
-            ),
-            sphere_center=(INF, 0, 0),
-            sphere_rad=INF - ROOM_WIDTH / 2,
-        ),
-
-        # Shiny balls
-        Object(
-            mat=Material(
-                color=(1.0, 1.0, 1.0),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=0,
-                specular_prob=1.0,
-            ),
-            sphere_center=(-4, 0, ROOM_DEPTH / 2),
-            sphere_rad=0.8,
-        ),
-        Object(
-            mat=Material(
-                color=(1.0, 1.0, 1.0),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=0.4,
-                specular_prob=1.0,
-            ),
-            sphere_center=(-2, 0, ROOM_DEPTH / 2),
-            sphere_rad=0.8,
-        ),
-        Object(
-            mat=Material(
-                color=(1.0, 1.0, 1.0),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=0.6,
-                specular_prob=1.0,
-            ),
-            sphere_center=(0, 0, ROOM_DEPTH / 2),
-            sphere_rad=0.8,
-        ),
-        Object(
-            mat=Material(
-                color=(1.0, 1.0, 1.0),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=0.8,
-                specular_prob=1.0,
-            ),
-            sphere_center=(2, 0, ROOM_DEPTH / 2),
-            sphere_rad=0.8,
-        ),
-        Object(
-            mat=Material(
-                color=(1.0, 1.0, 1.0),
-                spec_color=(1.0, 1.0, 1.0),
-                emit_color=(0.0, 0.0, 0.0),
-                smoothness=1.0,
-                specular_prob=1.0,
-            ),
-            sphere_center=(4, 0, ROOM_DEPTH / 2),
-            sphere_rad=0.8,
-        ),
-    ]
 
     with open(str(proj_path / "data" / "scene_buffer.mem"), "w") as fout:
         for obj in objs:
