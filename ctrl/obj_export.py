@@ -6,23 +6,6 @@ import trimesh
 import sys
 import subprocess
 
-def mtl_to_dict(mtl_path):
-    """Parse MTL file into material dictionary"""
-    data, current = {}, None
-    with open(mtl_path) as f:
-        for line in f:
-            parts = line.split()
-            if not parts:
-                continue
-            if parts[0] == "newmtl":
-                current = parts[1]
-                data[current] = {}
-            elif current and parts[0] in ("Kd", "Ks", "Ke", "Ka"):
-                data[current][parts[0]] = list(map(float, parts[1:]))
-            elif current and parts[0] in ("Ns", "illum"):
-                data[current][parts[0]] = float(parts[1])
-    return data
-
 def is_sphere(verts, threshold=0.05):
     """
     Check if >20 unique vertices with low radii std deviation
@@ -42,7 +25,7 @@ def sphere_from_verts(verts):
     r = np.linalg.norm(verts - c, axis=1).mean()
     return [round(x, 5) for x in c], float(r)
 
-def convert_obj_to_json(obj_path, mtl_path, out_path, max_bounces=5, camera=None):
+def convert_obj_to_json(obj_path, out_path, max_bounces=5, camera=None, blender_materials=None):
     """
     Convert OBJ+MTL to raytracer JSON scene format
     """
@@ -53,7 +36,7 @@ def convert_obj_to_json(obj_path, mtl_path, out_path, max_bounces=5, camera=None
         "right": [2, 0, 0]
     }
 
-    mtl = mtl_to_dict(mtl_path)
+    blender_materials = blender_materials or {}
     scene = trimesh.load(obj_path, split_object="o", group_material=False)
     objects, materials = [], {}
     geoms = scene.geometry.items() if hasattr(scene, "geometry") else [("default", scene)]
@@ -68,13 +51,13 @@ def convert_obj_to_json(obj_path, mtl_path, out_path, max_bounces=5, camera=None
 
         # Build materials dictionary once per unique material
         if mat_name not in materials:
-            m = mtl.get(mat_name, {})
+            m = blender_materials.get(mat_name, {})
             materials[mat_name] = {
-                "color": m.get("Kd", [1, 1, 1]),
-                "emit_color": m.get("Ke", [0, 0, 0]),
-                "spec_color": m.get("Ks", [1, 1, 1]),
-                "smoothness": m.get("Ns", 0.0) / 1000.0,
-                "specular_prob": sum(m.get("Ka", [1, 1, 1])) / 3.0
+                "color": m.get("base_color", [1, 1, 1]),
+                "emit_color": m.get("emission", [0, 0, 0]),
+                "spec_color": m.get("specular_tint", [1, 1, 1]),
+                "smoothness": 1.0 - m.get("roughness", 0.5),
+                "specular_prob": m.get("specular", 0.5)
             }
 
         # Detect sphere or export as triangles
@@ -119,6 +102,24 @@ bpy.ops.wm.obj_export(
     up_axis='Z'
 )
 
+# Get material properties
+materials = {}
+for mat in bpy.data.materials:
+    if mat.use_nodes and (bsdf := next((n for n in mat.node_tree.nodes if n.type == 'BSDF_PRINCIPLED'), None)):
+        inp = bsdf.inputs
+        emit_color = list(inp['Emission Color'].default_value[:3]) if 'Emission Color' in inp else list(inp.get('Emission', inp[26]).default_value[:3])
+        emit_strength = inp['Emission Strength'].default_value if 'Emission Strength' in inp else 1.0
+        materials[mat.name] = {
+            'base_color': list(inp['Base Color'].default_value[:3]),
+            'emission': [c * emit_strength for c in emit_color],
+            'specular_tint': list(inp.get('Specular Tint', inp['Base Color']).default_value[:3]),
+            'roughness': inp['Roughness'].default_value,
+            'specular': inp.get('Specular IOR Level', inp.get('Specular', inp.get('Specular Intensity', type('obj', (), {'default_value': 0.5})))).default_value
+        }
+
+with open('/tmp/materials.json', 'w') as f:
+    json.dump(materials, f)
+
 cam = bpy.data.objects['Camera']
 quat = cam.matrix_world.to_quaternion()
 
@@ -136,7 +137,7 @@ if cam.data.type == 'PERSP':
 else:
     fwd_mag = 2560.0
 
-# Extract camera axes in world space (Blender camera: looks down local -Z, up is +Y)
+# Get camera axes
 forward = axis((0, 0, -1))  # Camera viewing direction
 up = axis((0, 1, 0))        # Camera up direction
 right = axis((1, 0, 0))     # Camera right direction
@@ -154,9 +155,12 @@ with open('/tmp/camera.json', 'w') as f:
     with open("/tmp/camera.json") as f:
         camera = json.load(f)
 
+    with open("/tmp/materials.json") as f:
+        blender_materials = json.load(f)
+
     convert_obj_to_json(
         "/tmp/output.obj",
-        "/tmp/output.mtl",
         "/tmp/output.json",
-        camera=camera
+        camera=camera,
+        blender_materials=blender_materials
     )
