@@ -115,6 +115,7 @@ module top_level (
   logic [7:0] uart_flash_cmd;
   logic [FP_VEC3_BITS-1:0] uart_flash_cam_data;
   logic [$bits(object)-1:0] uart_flash_obj_data;
+  logic [OBJ_IDX_WIDTH-1:0] uart_flash_obj_idx;
   logic [$clog2(MAX_NUM_OBJS)-1:0] uart_flash_num_objs_data;
   logic [7:0] uart_flash_max_bounces_data;
   logic uart_flash_wen;
@@ -146,6 +147,7 @@ module top_level (
     .flash_cmd(uart_flash_cmd),
     .flash_cam_data(uart_flash_cam_data),
     .flash_obj_data(uart_flash_obj_data),
+    .flash_obj_idx(uart_flash_obj_idx),
     .flash_num_objs_data(uart_flash_num_objs_data),
     .flash_max_bounces_data(uart_flash_max_bounces_data),
     .flash_wen(uart_flash_wen)
@@ -166,7 +168,7 @@ module top_level (
   // Scene buffer uart flashing logic
   always_comb begin
     flash_obj_wen = uart_flash_wen && (~uart_flash_cmd[7]);
-    flash_obj_idx = uart_flash_cmd[6:0];
+    flash_obj_idx = uart_flash_obj_idx;
     flash_obj_data = uart_flash_obj_data;
   end
 

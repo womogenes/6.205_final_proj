@@ -102,7 +102,7 @@ SOURCES = [
     proj_path / "hdl" / "rng" / "prng_sphere.sv",
     proj_path / "hdl" / "rng" / "prng8.sv",
     proj_path / "hdl" / "math" / "quadratic_solver.sv",
-    # proj_path / "hdl" / "math" / "sphere_intersector.sv",
+    proj_path / "hdl" / "math" / "sphere_intersector.sv",
     proj_path / "hdl" / "math" / "trig_intersector.sv",
     proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
     proj_path / "hdl" / "rtx" / "ray_maker.sv",

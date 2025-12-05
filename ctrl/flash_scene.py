@@ -58,7 +58,9 @@ if __name__ == "__main__":
 
     def set_obj(obj_idx: int, obj: Object):
         obj_bits, obj_num_bits = obj.pack_bits()
-        ser.write(obj_idx.to_bytes(1))
+        ser.write((0x00).to_bytes(1, "little"))
+
+        ser.write(obj_idx.to_bytes(2, "little"))
 
         obj_num_bytes = ((obj_num_bits + 7) // 8)
 

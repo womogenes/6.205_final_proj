@@ -105,3 +105,4 @@ if __name__ == "__main__":
             fout.write(hex(bits)[2:].zfill(n_hex_digits) + "\n")
 
     print(f"width: {width}")
+    print(f"depth: {len(objs)}")
