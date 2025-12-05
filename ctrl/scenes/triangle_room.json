@@ -10,6 +10,23 @@
   },
   "objects": [
     {
+      "name": "light_0",
+      "is_trig": true,
+      "trig": [
+        [-2, 4, 2.875],
+        [0, 4, 0],
+        [4, 0, 0]
+      ],
+      "trig_norm": [0, 0, -1.0],
+      "material": {
+        "color": [0.8, 0.8, 0.8],
+        "spec_color": [1.0, 1.0, 1.0],
+        "emit_color": [15, 15, 15],
+        "smoothness": 0.5,
+        "specular_prob": 0.0
+      }
+    },
+    {
       "name": "light_1",
       "is_trig": true,
       "trig": [

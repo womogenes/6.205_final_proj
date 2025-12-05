@@ -28,7 +28,7 @@ parser.add_argument("scene", nargs="?", type=str)
 args = parser.parse_args()
 
 # Communication Parameters
-SERIAL_PORTNAME = "/dev/ttyUSB1"  # CHANGE ME to match your system's serial port name!
+SERIAL_PORTNAME = "/dev/ttyUSB0"  # CHANGE ME to match your system's serial port name!
 BAUD = 115200  # Make sure this matches your UART receiver
 
 

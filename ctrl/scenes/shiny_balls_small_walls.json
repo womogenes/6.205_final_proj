@@ -4,7 +4,9 @@
     "origin": [0, 0, -10],
     "forward": [0, 0, 1500],
     "up": [0, 2, 0],
-    "right": [2, 0, 0]
+    "right": [2, 0, 0],
+    "pitch": 0,
+    "yaw": 0
   },
   "objects": [
     {
