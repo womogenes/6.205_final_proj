@@ -79,8 +79,8 @@ if __name__ == "__main__":
     forward = np.array(scene["camera"]["forward"])
     right = np.array(scene["camera"]["right"])
     up = np.array(scene["camera"]["up"])
-    pitch = scene["camera"]["pitch"]
-    yaw = scene["camera"]["yaw"]
+    pitch = scene["camera"].get("pitch", 0)
+    yaw = scene["camera"].get("yaw", 0)
     
     # Create rotation matrices for pitch (rotation around right vector) and yaw (rotation around up vector)
     # Pitch rotation matrix around right vector
@@ -116,14 +116,11 @@ if __name__ == "__main__":
         up=up,
     )
 
-    # Create material dictionary
-    materials = {mat["name"]: mat for mat in scene["materials"]}
-
     # Flash objects
     objs = scene["objects"]
     for idx, obj in enumerate(objs):
         # Look up material in dictionary
-        obj["mat"] = Material(**materials[obj["material"]])
+        obj["mat"] = Material(**scene["materials"][obj["material"]])
         del obj["material"]
         set_obj(idx, Object(**obj))
 
