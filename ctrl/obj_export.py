@@ -112,7 +112,12 @@ if __name__ == "__main__":
     subprocess.run(["blender", "-b", blend_path, "--python-expr", """
 import bpy, mathutils, math, json
 
-bpy.ops.wm.obj_export(filepath='/tmp/output.obj', export_materials=True)
+bpy.ops.wm.obj_export(
+    filepath='/tmp/output.obj',
+    export_materials=True,
+    forward_axis='Y',
+    up_axis='Z'
+)
 
 cam = bpy.data.objects['Camera']
 quat = cam.matrix_world.to_quaternion()
@@ -121,20 +126,20 @@ quat = cam.matrix_world.to_quaternion()
 axis = lambda v: quat @ mathutils.Vector(v)
 
 # Compute forward magnitude from horizontal FOV
-aspect = 1440.0 / 720.0
+aspect = 1280.0 / 720.0
 if cam.data.type == 'PERSP':
     angle, fit = cam.data.angle, cam.data.sensor_fit
     h_fov = angle if fit == 'HORIZONTAL' else (
         2 * math.atan(math.tan(angle/2) * aspect) if fit == 'VERTICAL'
         else angle if aspect >= 1 else 2 * math.atan(math.tan(angle/2) * aspect))
-    fwd_mag = 1440.0 / math.tan(h_fov / 2)
+    fwd_mag = 0.5 * 1280.0 / math.tan(h_fov / 2)
 else:
     fwd_mag = 2560.0
 
-# Extract camera axes - adjust for Blender camera looking down -Z local
-forward = axis((0, 1, 0))  # Use +Y local instead of -Z
-up = axis((0, 0, 1))       # Use +Z local instead of +Y
-right = axis((1, 0, 0))    # +X local stays the same
+# Extract camera axes in world space (Blender camera: looks down local -Z, up is +Y)
+forward = axis((0, 0, -1))  # Camera viewing direction
+up = axis((0, 1, 0))        # Camera up direction
+right = axis((1, 0, 0))     # Camera right direction
 
 with open('/tmp/camera.json', 'w') as f:
     json.dump({
