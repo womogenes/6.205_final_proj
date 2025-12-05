@@ -82,7 +82,7 @@ module ray_tracer #(
             cur_ray_dir <= ray_dir;
             cur_income_light <= 0;                  // (0, 0, 0)
             cur_ray_color <= {FP_ONE, FP_ONE, FP_ONE};  // (1, 1, 1)
-            pixel_color <= 72'h3f00000000003f0000;
+            pixel_color <= {FP_ONE, FP_ZER0, FP_ONE}; // (1, 0, 1) debug color
 
             // Trigger the intersector
             ray_valid_intx <= 1'b1;
@@ -102,17 +102,6 @@ module ray_tracer #(
               // We didn't hit anything :( ray is done for
               // TODO: ambient light
               state <= IDLE;
-              // MAX RED for debug
-              if (bounce_count > 0) begin
-                pixel_color <= cur_income_light;
-                
-              end
-              // pixel_color <= cur_ray_dir | (bounce_count == 0 ? {{24{1'b1}}, {24{1'b0}}, {24{1'b1}}} : 0);
-              // pixel_color <= (1 ? {
-              //   cur_ray_dir.x.sign ? 24'h3f0000 : 24'h3e0000,
-              //   cur_ray_dir.y.sign ? 24'h3f0000 : 24'h3e0000,
-              //   cur_ray_dir.z.sign ? 24'h3f0000 : 24'h3e0000
-              // } : cur_ray_dir);
               ray_done <= 1'b1;
             end
           end

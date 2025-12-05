@@ -57,6 +57,7 @@ module ray_intersector (
       // hit_pos <= 0;
       // hit_normal <= 0;
       // hit_dist <= 0;
+      
     end else begin
       // count input objects
       if (ray_valid) begin
@@ -77,72 +78,72 @@ module ray_intersector (
       end
       
       // first object check of this ray
-      // if (is_trig_piped) begin
-      //   if (ray_valid_piped) begin
-      //     if (trig_intx_hit) begin
-      //       hit_mat <= obj_intx_mat;
-      //       hit_pos <= trig_intx_hit_pos;
-      //       hit_normal <= trig_intx_hit_norm;
-      //       hit_dist <= trig_intx_hit_dist;
-      //       hit_any <= 1'b1;
-      //     end else begin
-      //       hit_any <= 1'b0;
-      //     end
-      //   end else begin
-      //     if (
-      //       trig_intx_hit && 
-      //       (hit_any == 0 || fp_greater(hit_dist, trig_intx_hit_dist))
-      //     ) begin
-      //       hit_mat <= obj_intx_mat;
-      //       hit_pos <= trig_intx_hit_pos;
-      //       hit_normal <= trig_intx_hit_norm;
-      //       hit_dist <= trig_intx_hit_dist;
-      //       hit_any <= 1'b1;
-      //     end
-      //   end
-      // end else begin
-      //   if (ray_valid_piped) begin
-      //     if (sphere_intx_hit) begin
-      //       hit_mat <= obj_intx_mat;
-      //       hit_pos <= sphere_intx_hit_pos;
-      //       hit_normal <= sphere_intx_hit_norm;
-      //       hit_dist <= sphere_intx_hit_dist;
-      //       hit_any <= 1'b1;
-      //     end else begin
-      //       hit_any <= 1'b0;
-      //     end
-      //   end else begin
-      //     if (
-      //       sphere_intx_hit && 
-      //       (hit_any == 0 || fp_greater(hit_dist, sphere_intx_hit_dist))
-      //     ) begin
-      //       hit_mat <= obj_intx_mat;
-      //       hit_pos <= sphere_intx_hit_pos;
-      //       hit_normal <= sphere_intx_hit_norm;
-      //       hit_dist <= sphere_intx_hit_dist;
-      //       hit_any <= 1'b1;
-      //     end
-      //   end
-      // end
-
-      if (ray_valid_piped) begin
-        hit_mat <= obj_intx_mat;
-        hit_pos <= trig_intx_hit_pos;
-        hit_normal <= trig_intx_hit_norm;
-        hit_dist <= trig_intx_hit_dist;
-        hit_any <= trig_intx_hit;
+      if (is_trig_piped) begin
+        if (ray_valid_piped) begin
+          if (trig_intx_hit) begin
+            hit_mat <= obj_intx_mat;
+            hit_pos <= trig_intx_hit_pos;
+            hit_normal <= trig_intx_hit_norm;
+            hit_dist <= trig_intx_hit_dist;
+            hit_any <= 1'b1;
+          end else begin
+            hit_any <= 1'b0;
+          end
+        end else begin
+          if (
+            trig_intx_hit && 
+            (hit_any == 0 || fp_greater(hit_dist, trig_intx_hit_dist))
+          ) begin
+            hit_mat <= obj_intx_mat;
+            hit_pos <= trig_intx_hit_pos;
+            hit_normal <= trig_intx_hit_norm;
+            hit_dist <= trig_intx_hit_dist;
+            hit_any <= 1'b1;
+          end
+        end
       end else begin
-        if (
-          trig_intx_hit && 
-          (hit_any == 1'b0 || fp_greater(hit_dist, trig_intx_hit_dist))
-        ) begin
-          hit_mat <= obj_intx_mat;
-          hit_pos <= trig_intx_hit_pos;
-          hit_normal <= trig_intx_hit_norm;
-          hit_dist <= trig_intx_hit_dist;
-          hit_any <= 1'b1;
+        if (ray_valid_piped) begin
+          if (sphere_intx_hit) begin
+            hit_mat <= obj_intx_mat;
+            hit_pos <= sphere_intx_hit_pos;
+            hit_normal <= sphere_intx_hit_norm;
+            hit_dist <= sphere_intx_hit_dist;
+            hit_any <= 1'b1;
+          end else begin
+            hit_any <= 1'b0;
+          end
+        end else begin
+          if (
+            sphere_intx_hit && 
+            (hit_any == 0 || fp_greater(hit_dist, sphere_intx_hit_dist))
+          ) begin
+            hit_mat <= obj_intx_mat;
+            hit_pos <= sphere_intx_hit_pos;
+            hit_normal <= sphere_intx_hit_norm;
+            hit_dist <= sphere_intx_hit_dist;
+            hit_any <= 1'b1;
+          end
         end
       end
+
+      // if (ray_valid_piped) begin
+      //   hit_mat <= obj_intx_mat;
+      //   hit_pos <= trig_intx_hit_pos;
+      //   hit_normal <= trig_intx_hit_norm;
+      //   hit_dist <= trig_intx_hit_dist;
+      //   hit_any <= trig_intx_hit;
+      // end else begin
+      //   if (
+      //     trig_intx_hit && 
+      //     (hit_any == 1'b0 || fp_greater(hit_dist, trig_intx_hit_dist))
+      //   ) begin
+      //     hit_mat <= obj_intx_mat;
+      //     hit_pos <= trig_intx_hit_pos;
+      //     hit_normal <= trig_intx_hit_norm;
+      //     hit_dist <= trig_intx_hit_dist;
+      //     hit_any <= 1'b1;
+      //   end
+      // end
 
       hit_valid <= last_obj;
     end
