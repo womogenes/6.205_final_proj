@@ -116,10 +116,14 @@ if __name__ == "__main__":
         up=up,
     )
 
+    # Create material dictionary
+    materials = {mat["name"]: mat for mat in scene["materials"]}
+
     # Flash objects
     objs = scene["objects"]
     for idx, obj in enumerate(objs):
-        obj["mat"] = Material(**obj["material"])
+        # Look up material in dictionary
+        obj["mat"] = Material(**materials[obj["material"]])
         del obj["material"]
         set_obj(idx, Object(**obj))
 

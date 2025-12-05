@@ -8,6 +8,50 @@
     "pitch": 0,
     "yaw": 0
   },
+  "materials": {
+    "light_bright": {
+      "color": [0.8, 0.8, 0.8],
+      "spec_color": [1.0, 1.0, 1.0],
+      "emit_color": [15, 15, 15],
+      "smoothness": 0.5,
+      "specular_prob": 0.0
+    },
+    "green_matte": {
+      "color": [0.3, 1.0, 0.3],
+      "spec_color": [1.0, 1.0, 1.0],
+      "emit_color": [0.0, 0.0, 0.0],
+      "smoothness": 0.5,
+      "specular_prob": 0.0
+    },
+    "light_dim": {
+      "color": [1.0, 1.0, 1.0],
+      "spec_color": [0.0, 0.0, 0.0],
+      "emit_color": [0.6, 0.6, 0.6],
+      "smoothness": 0.5,
+      "specular_prob": 0.0
+    },
+    "gray_mirror": {
+      "color": [0.8, 0.8, 0.8],
+      "spec_color": [1.0, 1.0, 1.0],
+      "emit_color": [0.0, 0.0, 0.0],
+      "smoothness": 1.0,
+      "specular_prob": 1
+    },
+    "red_glossy": {
+      "color": [1.0, 0.3, 0.3],
+      "spec_color": [1.0, 0.3, 0.3],
+      "emit_color": [0.0, 0.0, 0.0],
+      "smoothness": 1.0,
+      "specular_prob": 0.0
+    },
+    "blue_glossy": {
+      "color": [0.3, 0.3, 1.0],
+      "spec_color": [0.3, 0.3, 1.0],
+      "emit_color": [0.0, 0.0, 0.0],
+      "smoothness": 1.0,
+      "specular_prob": 0.0
+    }
+  },
   "objects": [
     {
       "name": "light_0",
@@ -17,14 +61,7 @@
         [0, 4, 0],
         [4, 0, 0]
       ],
-      "trig_norm": [0, 0, -1.0],
-      "material": {
-        "color": [0.8, 0.8, 0.8],
-        "spec_color": [1.0, 1.0, 1.0],
-        "emit_color": [15, 15, 15],
-        "smoothness": 0.5,
-        "specular_prob": 0.0
-      }
+      "material": "light_bright"
     },
     {
       "name": "light_1",
@@ -34,14 +71,7 @@
         [0, 4, 0],
         [4, 0, 0]
       ],
-      "trig_norm": [0, 0, -1.0],
-      "material": {
-        "color": [0.8, 0.8, 0.8],
-        "spec_color": [1.0, 1.0, 1.0],
-        "emit_color": [15, 15, 15],
-        "smoothness": 0.5,
-        "specular_prob": 0.0
-      }
+      "material": "light_bright"
     },
     {
       "name": "light_2",
@@ -51,14 +81,7 @@
         [0, -4, 0],
         [-4, 0, 0]
       ],
-      "trig_norm": [0, 0, -1.0],
-      "material": {
-        "color": [0.8, 0.8, 0.8],
-        "spec_color": [1.0, 1.0, 1.0],
-        "emit_color": [15, 15, 15],
-        "smoothness": 0.5,
-        "specular_prob": 0.0
-      }
+      "material": "light_bright"
     },
     {
       "name": "bottom_wall",
@@ -68,14 +91,7 @@
         [0, -24, 0],
         [24, 0, 0]
       ],
-      "trig_norm": [0, 0, 1.0],
-      "material": {
-        "color": [0.3, 1.0, 0.3],
-        "spec_color": [1.0, 1.0, 1.0],
-        "emit_color": [0.0, 0.0, 0.0],
-        "smoothness": 0.5,
-        "specular_prob": 0.0
-      }
+      "material": "green_matte"
     },
     {
       "name": "top_wall",
@@ -85,14 +101,7 @@
         [24, 0, 0],
         [0, -24, 0]
       ],
-      "trig_norm": [0, 0, -1.0],
-      "material": {
-        "color": [1.0, 1.0, 1.0],
-        "spec_color": [0.0, 0.0, 0.0],
-        "emit_color": [0.6, 0.6, 0.6],
-        "smoothness": 0.5,
-        "specular_prob": 0.0
-      }
+      "material": "light_dim"
     },
     {
       "name": "back_wall",
@@ -102,14 +111,7 @@
         [24, 0, 0],
         [0, 0, 12]
       ],
-      "trig_norm": [0, -1.0, 0],
-      "material": {
-        "color": [0.8, 0.8, 0.8],
-        "spec_color": [1.0, 1.0, 1.0],
-        "emit_color": [0.0, 0.0, 0.0],
-        "smoothness": 1.0,
-        "specular_prob": 1
-      }
+      "material": "gray_mirror"
     },
     {
       "name": "left_wall",
@@ -119,14 +121,7 @@
         [0, 0, 12],
         [0, -24, 0]
       ],
-      "trig_norm": [1.0, 0, 0],
-      "material": {
-        "color": [1.0, 0.3, 0.3],
-        "spec_color": [1.0, 0.3, 0.3],
-        "emit_color": [0.0, 0.0, 0.0],
-        "smoothness": 1.0,
-        "specular_prob": 0.0
-      }
+      "material": "red_glossy"
     },
     {
       "name": "right_wall",
@@ -136,14 +131,7 @@
         [0, -24, 0],
         [0, 0, 12]
       ],
-      "trig_norm": [-1.0, 0, 0],
-      "material": {
-        "color": [0.3, 0.3, 1.0],
-        "spec_color": [0.3, 0.3, 1.0],
-        "emit_color": [0.0, 0.0, 0.0],
-        "smoothness": 1.0,
-        "specular_prob": 0.0
-      }
+      "material": "blue_glossy"
     }
   ]
 }

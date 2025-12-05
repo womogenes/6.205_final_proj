@@ -1,3 +1,7 @@
+"""
+Convert .blend file to a json for use in flashing
+"""
+
 import json
 import numpy as np
 import trimesh

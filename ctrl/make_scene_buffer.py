@@ -4,6 +4,7 @@ from pathlib import Path
 
 from argparse import ArgumentParser
 import json
+import numpy as np
 
 proj_path = Path(__file__).parent.parent
 import sys
@@ -20,10 +21,11 @@ class Material:
     def __init__(
         self,
         color: tuple[float],
-        emit_color: tuple[float],
+        emit_color: tuple[float] = (0, 0, 0),
         spec_color: tuple[float] = None,
         smoothness: float = 0,
         specular_prob: float = 0,
+        **kwargs,
     ):
         self.color = color
         self.spec_color = spec_color or color
@@ -50,18 +52,22 @@ class Object:
         sphere_center: tuple[float] = (),
         sphere_rad: float = 1,
         is_trig: bool = False,
-        trig: tuple[tuple[float]] = (),
-        trig_norm: tuple[float] = (),
-        name: str = ""
+        trig: tuple[tuple[float]] = None,
+        **kwargs,
     ):
         self.is_trig = is_trig
         self.mat = mat
         self.trig = trig or ((0, 0, 0),) * 3
-        self.trig_norm = trig_norm or (0, 0, 0)
+
+        if trig is not None:
+            self.trig_norm = np.cross(trig[1], trig[2]).astype(float)
+            self.trig_norm /= np.linalg.norm(self.trig_norm)
+        else:
+            self.trig_norm = (0, 0, 0)
+
         self.sphere_center = sphere_center or (0, 0, 0)
         self.sphere_rad_sq = sphere_rad ** 2 or 0
         self.sphere_rad_inv = 1 / sphere_rad or 0
-        self.name = name
 
     def pack_bits(self):
         fields = [
@@ -81,19 +87,13 @@ class Object:
 
 
 if __name__ == "__main__":
-    ROOM_HEIGHT = 6
-    ROOM_DEPTH = 12
-    ROOM_WIDTH = 12
-    INF = 100
-
     with open(args.scene) as fin:
         scene = json.load(fin)
 
     objs = scene["objects"]
     obj_objs = []
     for idx, obj in enumerate(objs):
-        obj["mat"] = Material(**obj["material"])
-        del obj["material"]
+        obj["mat"] = Material(**scene["materials"][obj["material"]])
         obj_objs.append(Object(**obj))
     objs = obj_objs
 

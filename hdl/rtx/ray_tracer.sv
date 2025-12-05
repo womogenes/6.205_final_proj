@@ -82,7 +82,7 @@ module ray_tracer #(
             cur_ray_dir <= ray_dir;
             cur_income_light <= 0;                  // (0, 0, 0)
             cur_ray_color <= {FP_ONE, FP_ONE, FP_ONE};  // (1, 1, 1)
-            pixel_color <= {FP_ONE, FP_ZER0, FP_ONE}; // (1, 0, 1) debug color
+            pixel_color <= {FP_ZER0, FP_ZER0, FP_ZER0}; // (1, 0, 1) debug color
 
             // Trigger the intersector
             ray_valid_intx <= 1'b1;
