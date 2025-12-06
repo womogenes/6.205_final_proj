@@ -14,7 +14,7 @@ import ctypes
 import numpy as np
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
-from utils import convert_fp, make_fp
+from utils import convert_fp, make_fp, pack_bits, FP_VEC3_BITS, make_fp_vec3
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -26,12 +26,20 @@ async def test_module(dut):
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
+    dut.lfsr_seed.value = 1
     await ClockCycles(dut.clk, 3)
     dut.rst.value = 0
 
     dut.new_ray.value = 1
     for _ in range(100):
         await ClockCycles(dut.clk, 1)
+
+        dut.cam.value = pack_bits([
+            (make_fp_vec3((0, 0, 0)), FP_VEC3_BITS),
+            (make_fp_vec3((0, 1280, 0)), FP_VEC3_BITS),
+            (make_fp_vec3((2, 0, 0)), FP_VEC3_BITS),
+            (make_fp_vec3((0, 0, 2)), FP_VEC3_BITS),
+        ])
 
         u = convert_fp(dut.maker.u.value)
         v = convert_fp(dut.maker.v.value)
@@ -57,6 +65,7 @@ def runner():
         proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
         proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
         proj_path / "hdl" / "math" / "fp_convert.sv",
+        proj_path / "hdl" / "rng" / "prng8.sv",
         proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
         proj_path / "hdl" / "rtx" / "ray_maker.sv",
         proj_path / "hdl" / "rtx" / "ray_caster.sv",
