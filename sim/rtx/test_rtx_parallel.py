@@ -10,6 +10,8 @@ warnings.filterwarnings("ignore", category=UserWarning)
 import os
 import sys
 import shutil
+import json
+import subprocess
 from pathlib import Path
 from argparse import ArgumentParser, BooleanOptionalAction
 
@@ -25,7 +27,10 @@ from PIL import Image
 from tqdm import tqdm
 
 sys.path.append(Path(__file__).resolve().parent.parent._str)
+sys.path.append(str(Path(__file__).resolve().parent.parent.parent / "ctrl"))
+
 from utils import make_fp_vec3, pack_bits, FP_BITS, FP_VEC3_BITS
+from make_scene_buffer import export_scene
 
 # MULTIPROCESSING GO BRRR
 from multiprocessing import Pool
@@ -35,21 +40,32 @@ parser.add_argument("--chunks", type=int, default=None)
 parser.add_argument("--scale", type=float, default=0.5)
 parser.add_argument("--frames", type=int, default=1)
 parser.add_argument("--waves", action=BooleanOptionalAction)
+parser.add_argument("--json", type=str, default=None)
 
 args = parser.parse_args()
-print(args)
 
-# Use environment variables for worker processes
 if "TEST_WIDTH" in os.environ:
     WIDTH = int(os.environ["TEST_WIDTH"])
     HEIGHT = int(os.environ["TEST_HEIGHT"])
     N_FRAMES = int(os.environ["TEST_N_FRAMES"])
     scale = WIDTH / 32
+    assert "CAM_DATA" in os.environ
+    CAM_DATA = json.loads(os.environ["CAM_DATA"])
+    MAX_BOUNCES = int(os.environ["MAX_BOUNCES"])
+
 else:
     scale = args.scale
     WIDTH = int(32 * scale)
     HEIGHT = int(18 * scale)
     N_FRAMES = args.frames
+
+    # Parent caller, initialize scene params
+    if args.json:
+        export_scene(args.json)
+        with open(args.json) as fin:
+            data = json.load(fin)
+            CAM_DATA = data["camera"]
+            MAX_BOUNCES = data["max_bounces"]
 
 N_CHUNKS = args.chunks or (4 * os.cpu_count() * N_FRAMES)
 TOTAL_PIXELS = WIDTH * HEIGHT
@@ -140,14 +156,16 @@ async def test_module(dut):
     dut.lfsr_seed.value = int.from_bytes(os.urandom(12))
     dut.rst.value = 1
 
+    cam_scale = WIDTH / 1280
     dut.cam.value = pack_bits([
-        (make_fp_vec3((0, 0, 0)), FP_VEC3_BITS),            # origin
-        (make_fp_vec3((0, WIDTH / 2, 0)), FP_VEC3_BITS),    # forward
-        (make_fp_vec3((1, 0, 0)), FP_VEC3_BITS),            # right
-        (make_fp_vec3((0, 0, 1)), FP_VEC3_BITS),            # up
+        (make_fp_vec3(CAM_DATA["origin"]), FP_VEC3_BITS),
+        (make_fp_vec3([v * cam_scale for v in CAM_DATA["forward"]]), FP_VEC3_BITS),
+        (make_fp_vec3(CAM_DATA["right"]), FP_VEC3_BITS),
+        (make_fp_vec3(CAM_DATA["up"]), FP_VEC3_BITS),
     ])
+    
     dut.num_objs.value = NUM_OBJS
-    dut.max_bounces.value = 2
+    dut.max_bounces.value = MAX_BOUNCES
 
     await ClockCycles(dut.clk, 100)
     dut.rst.value = 0
@@ -227,7 +245,10 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
     os.environ["TEST_HEIGHT"] = str(HEIGHT)
     os.environ["TEST_N_FRAMES"] = str(N_FRAMES)
 
-    # Get runner and initialize (build will be skipped since already built)
+    if CAM_DATA:
+        os.environ["CAM_DATA"] = json.dumps(CAM_DATA)
+        os.environ["MAX_BOUNCES"] = str(MAX_BOUNCES)
+
     runner = get_runner(SIM)
     runner.build(
         sources=SOURCES,

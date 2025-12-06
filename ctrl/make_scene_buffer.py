@@ -15,8 +15,6 @@ from utils import make_fp, make_fp_vec3, pack_bits, FP_BITS, FP_VEC3_BITS
 parser = ArgumentParser()
 parser.add_argument("scene", nargs="?", type=str)
 
-args = parser.parse_args()
-
 class Material:
     def __init__(
         self,
@@ -86,8 +84,12 @@ class Object:
         return pack_bits(fields, msb=True), sum([width for _, width in fields])
 
 
-if __name__ == "__main__":
-    with open(args.scene) as fin:
+def export_scene(scene_file: str):
+    """
+    Export the JSON description of a scene to the .mem file
+        For use in testbenching and initializing BRAM
+    """
+    with open(scene_file) as fin:
         scene = json.load(fin)
 
     objs = scene["objects"]
@@ -106,3 +108,8 @@ if __name__ == "__main__":
 
     print(f"width: {width}")
     print(f"depth: {len(objs)}")
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    export_scene(args.scene)
