@@ -37,6 +37,7 @@ async def test_module(dut):
         {
             "ray_dir": [0, -1, 0],
             "hit_normal": [1/np.sqrt(2), 1/np.sqrt(2), 0],
+            "income_light": [1, 0, 1],
             "mat": make_material(
                 color=make_fp_vec3((1.0, 0.0, 0.0)),
                 spec_color=make_fp_vec3((1.0, 0.0, 0.0)),
@@ -48,6 +49,7 @@ async def test_module(dut):
         {
             "ray_dir": [0, -1, 0],
             "hit_normal": [0, 1/np.sqrt(2), -1/np.sqrt(2)],
+            "income_light": [0, 1, 1],
             "mat": make_material(
                 color=make_fp_vec3((0.0, 0.0, 1.0)),
                 spec_color=make_fp_vec3((0.0, 0.0, 1.0)),
@@ -59,6 +61,7 @@ async def test_module(dut):
         {
             "ray_dir": [1, 0, 0],
             "hit_normal": [-1/np.sqrt(2), 1/np.sqrt(2), 0],
+            "income_light": [1, 1, 0],
             "mat": make_material(
                 color=make_fp_vec3((0.0, 1.0, 0.0)),
                 spec_color=make_fp_vec3((0.0, 1.0, 0.0)),
@@ -68,7 +71,7 @@ async def test_module(dut):
             )
         },
     ]
-    
+
     # ONE INPUT PER CYCLE!!
     dut.hit_valid.value = 1
 
@@ -81,7 +84,7 @@ async def test_module(dut):
             dut.hit_normal.value = make_fp_vec3(mat["hit_normal"])
             dut.hit_mat.value = mat["mat"]
             dut.ray_color.value = make_fp_vec3((1.0, 1.0, 1.0))
-            dut.income_light.value = make_fp_vec3((0.0, 0.0, 0.0))
+            dut.income_light.value = make_fp_vec3(mat["income_light"])
             dut.hit_pos.value = make_fp_vec3((0.0, 0.0, 0.0))
 
         await ClockCycles(dut.clk, 1)
@@ -94,7 +97,7 @@ async def test_module(dut):
             mat_type = ["red diffuse", "blue spec", "green diffuse"][idx % 3]
             dut._log.info(f"{mat_type:15s} | {new_color=} {new_income=} {new_dir=}")
             dirs.append(new_dir)
-            colors.append(new_color)
+            colors.append(new_income)
 
     dut.hit_valid.value = 0
     await ClockCycles(dut.clk, 10)
