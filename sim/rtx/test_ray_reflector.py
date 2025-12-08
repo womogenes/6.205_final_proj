@@ -45,20 +45,59 @@ async def test_module(dut):
     dut.income_light.value = make_fp_vec3((0.0, 0.0, 0.0))
 
     dut.hit_pos.value = make_fp_vec3((0, 0, 0))
-    # dut.hit_normal.value = make_fp_vec3(((1/3)**0.5, (1/3)**0.5, (1/3)**0.5))
     dut.hit_normal.value = make_fp_vec3(hit_normal)
 
-    mat = make_material(
+    mat1 = make_material(
         color=make_fp_vec3((1.0, 0.5, 0.25)),
-        spec_color=make_fp_vec3((1.0, 1.0, 1.0)),
-        emit_color=make_fp_vec3((0, 0, 0)),
+        spec_color=make_fp_vec3((0.5, 0.5, 0.5)),
+        emit_color=make_fp_vec3((3.0, 3.0, 3.0)),
         specular=255,
-        smooth=make_fp(0.9),
+        smooth=make_fp(1.0),
     )
-    dut.hit_mat.value = mat
+    dut.hit_mat.value = mat1
 
     await ClockCycles(dut.clk, 1)
+
+    ray_dir = np.array((-1, 0, -1), dtype=float)
+    ray_dir /= np.linalg.norm(ray_dir)
+    hit_normal = (1, 0, 0)
+
+    dut.ray_dir.value = make_fp_vec3(ray_dir)
+    dut.ray_color.value = make_fp_vec3((0.5, 0.5, 0.5))
+    dut.income_light.value = make_fp_vec3((10.0, 10.0, 10.0))
+
+    dut.hit_pos.value = make_fp_vec3((0, 0, 0))
+    dut.hit_normal.value = make_fp_vec3(hit_normal)
+
+    mat2 = make_material(
+        color=make_fp_vec3((0.25, 0.5, 1.0)),
+        spec_color=make_fp_vec3((1.0, 1.0, 1.0)),
+        emit_color=make_fp_vec3((0.0, 0.0, 0.0)),
+        specular=0,
+        smooth=make_fp(0.0),
+    )
+    dut.hit_mat.value = mat2
+
+    await ClockCycles(dut.clk, 1)
+
+    ray_dir = np.array((1, 0, -1), dtype=float)
+    ray_dir /= np.linalg.norm(ray_dir)
+    hit_normal = (0, 0, 1)
+
+    dut.ray_dir.value = make_fp_vec3(ray_dir)
+    dut.ray_color.value = make_fp_vec3((1.0, 1.0, 1.0))
+    dut.income_light.value = make_fp_vec3((0.0, 0.0, 0.0))
+
+    dut.hit_pos.value = make_fp_vec3((0, 0, 0))
+    dut.hit_normal.value = make_fp_vec3(hit_normal)
+
+    dut.hit_mat.value = mat1
+
     dut.hit_valid.value = 0
+
+    await ClockCycles(dut.clk, 40)
+
+    return
 
     num_points = 1_000
     points = []
@@ -100,8 +139,8 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
-        proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "constants.sv",
+        proj_path / "hdl" / "types" / "types.sv",
         proj_path / "hdl" / "pipeline.sv",
         *glob.glob(f'{proj_path}/hdl/rng/*.sv', recursive=True),
         *glob.glob(f'{proj_path}/hdl/math/*.sv', recursive=True),
