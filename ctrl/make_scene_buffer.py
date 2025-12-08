@@ -46,7 +46,7 @@ class Material:
 class Object:
     def __init__(
         self,
-        mat: Material,
+        mat_idx: int,
         sphere_center: tuple[float] = (),
         sphere_rad: float = 1,
         is_trig: bool = False,
@@ -54,7 +54,7 @@ class Object:
         **kwargs,
     ):
         self.is_trig = is_trig
-        self.mat = mat
+        self.mat_idx = mat_idx
         self.trig = trig or ((0, 0, 0),) * 3
 
         if trig is not None:
@@ -70,12 +70,12 @@ class Object:
     def pack_bits(self):
         fields = [
             (self.is_trig, 1),
-            self.mat.pack_bits(),
+            (self.mat_idx, 8),
             *[(make_fp_vec3(v), 72) for v in self.trig],
             (make_fp_vec3(self.trig_norm), 72)
             ] if self.is_trig else [
                 (self.is_trig, 1),
-                self.mat.pack_bits(),
+                (self.mat_idx, 8),
                 (make_fp_vec3(self.sphere_center), 72),
                 (make_fp(self.sphere_rad_sq), 24),
                 (make_fp(self.sphere_rad_inv), 24),
@@ -92,22 +92,52 @@ def export_scene(scene_file: str):
     with open(scene_file) as fin:
         scene = json.load(fin)
 
+    # Construct material dictionary
+    mat_idx = 0
+    mat_bits2idx = {}
+    mat_name2idx = {}
+    for mat_name, mat_json in scene["materials"].items():
+        mat_bits, mat_width = Material(**mat_json).pack_bits()
+
+        # New material?
+        if mat_bits not in mat_bits2idx:
+            mat_bits2idx[mat_bits] = mat_idx
+            mat_idx += 1
+
+        mat_name2idx[mat_name] = mat_bits2idx[mat_bits]
+
+    from pprint import pprint
+    pprint(mat_bits2idx)
+    pprint(mat_name2idx)
+
+    for mat_bits, mat_idx in mat_bits2idx.items():
+        print(mat_idx, hex(mat_bits))
+
     objs = scene["objects"]
     obj_objs = []
     for idx, obj in enumerate(objs):
-        obj["mat"] = Material(**scene["materials"][obj["material"]])
+        obj["mat_idx"] = mat_name2idx[obj["material"]]
         obj_objs.append(Object(**obj))
     objs = obj_objs
 
-
     with open(str(proj_path / "data" / "scene_buffer.mem"), "w") as fout:
         for obj in objs:
-            bits, width = obj.pack_bits()
-            n_hex_digits = (width + 3) // 4
+            bits, obj_width = obj.pack_bits()
+            n_hex_digits = (obj_width + 3) // 4
             fout.write(hex(bits)[2:].zfill(n_hex_digits) + "\n")
 
-    print(f"width: {width}")
-    print(f"depth: {len(objs)}")
+    with open(str(proj_path / "data" / "mat_dict.mem"), "w") as fout:
+        # Sort materials by index
+        mats = sorted(mat_bits2idx.items(), key=lambda x: x[1])
+        for mat_bits, _ in mats:
+            n_hex_digits = (mat_width + 3) // 4
+            fout.write(hex(mat_bits)[2:].zfill(n_hex_digits) + "\n")
+
+    print(f"Object width: {obj_width}")
+    print(f"Scene buffer depth: {len(objs)}")
+
+    print(f"Material width: {mat_width}")
+    print(f"Material dictionary depth: {len(mat_bits2idx)}")
 
 
 if __name__ == "__main__":

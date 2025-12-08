@@ -23,6 +23,10 @@ module ray_tracer #(
   input wire [$clog2(MAX_NUM_OBJS)-1:0] num_objs,
   input object obj,
 
+  // Interface to material dictionary
+  output wire [7:0] mat_dict_idx,
+  input material mat_dict_mat,
+
   // Dynamic parameter: # of bounces
   input wire [7:0] max_bounces,
 
@@ -45,7 +49,7 @@ module ray_tracer #(
   fp_color cur_ray_color;
 
   // Intersector results
-  material intx_hit_mat;
+  logic [7:0] intx_hit_mat_idx;
   fp_vec3 intx_hit_pos;
   fp_vec3 intx_hit_norm;
   logic intx_hit_any;
@@ -142,7 +146,7 @@ module ray_tracer #(
     .ray_valid(ray_valid_intx),
 
     // Outputs
-    .hit_mat(intx_hit_mat),
+    .hit_mat_idx(intx_hit_mat_idx),
     .hit_pos(intx_hit_pos),
     .hit_normal(intx_hit_norm),
     .hit_dist(),
@@ -167,7 +171,7 @@ module ray_tracer #(
 
     .hit_pos(intx_hit_pos),
     .hit_normal(intx_hit_norm),
-    .hit_mat(intx_hit_mat),
+    .hit_mat_idx(intx_hit_mat_idx),
     .hit_valid(ray_valid_rflx),
 
     // Outputs
@@ -175,7 +179,11 @@ module ray_tracer #(
     .new_origin(rflx_new_origin),
     .new_color(rflx_new_color),
     .new_income_light(rflx_new_income_light),
-    .reflect_done(ray_done_reflect)
+    .reflect_done(ray_done_reflect),
+
+    // Material dictionary interface
+    .mat_dict_idx(mat_dict_idx),
+    .mat_dict_mat(mat_dict_mat)
   );
 
   // pipeline #(.WIDTH(11), .DEPTH(2)) pixel_h_pipe (.clk(clk), .in(pixel_h_in), .out(pixel_h_out));

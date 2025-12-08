@@ -67,6 +67,15 @@ else:
             CAM_DATA = data["camera"]
             MAX_BOUNCES = data["max_bounces"]
 
+    else:
+        CAM_DATA = {
+            "origin": [0, 0, 0],
+            "forward": [0, WIDTH, 0],
+            "right": [2, 0, 0],
+            "up": [0, 0, 2],
+        }
+        MAX_BOUNCES = 3
+        
 N_CHUNKS = args.chunks or (4 * os.cpu_count() * N_FRAMES)
 TOTAL_PIXELS = WIDTH * HEIGHT
 

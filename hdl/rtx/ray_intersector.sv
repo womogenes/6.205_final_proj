@@ -8,7 +8,7 @@ module ray_intersector (
   input wire ray_valid,         // single-cycle trigger
 
   // Running values
-  output material hit_mat,
+  output logic [7:0] hit_mat_idx,
   output fp_vec3 hit_pos,
   output fp_vec3 hit_normal,
   output fp hit_dist,
@@ -53,7 +53,7 @@ module ray_intersector (
       pre_obj_count <= num_objs;
       post_obj_count <= num_objs;
 
-      // hit_mat <= 0;
+      // hit_mat_idx <= 0;
       // hit_pos <= 0;
       // hit_normal <= 0;
       // hit_dist <= 0;
@@ -81,7 +81,7 @@ module ray_intersector (
       if (is_trig_piped) begin
         if (ray_valid_piped) begin
           if (trig_intx_hit) begin
-            hit_mat <= obj_intx_mat;
+            hit_mat_idx <= obj_intx_mat_idx;
             hit_pos <= trig_intx_hit_pos;
             hit_normal <= trig_intx_hit_norm;
             hit_dist <= trig_intx_hit_dist;
@@ -94,7 +94,7 @@ module ray_intersector (
             trig_intx_hit && 
             (hit_any == 0 || fp_greater(hit_dist, trig_intx_hit_dist))
           ) begin
-            hit_mat <= obj_intx_mat;
+            hit_mat_idx <= obj_intx_mat_idx;
             hit_pos <= trig_intx_hit_pos;
             hit_normal <= trig_intx_hit_norm;
             hit_dist <= trig_intx_hit_dist;
@@ -104,7 +104,7 @@ module ray_intersector (
       end else begin
         if (ray_valid_piped) begin
           if (sphere_intx_hit) begin
-            hit_mat <= obj_intx_mat;
+            hit_mat_idx <= obj_intx_mat_idx;
             hit_pos <= sphere_intx_hit_pos;
             hit_normal <= sphere_intx_hit_norm;
             hit_dist <= sphere_intx_hit_dist;
@@ -117,7 +117,7 @@ module ray_intersector (
             sphere_intx_hit && 
             (hit_any == 0 || fp_greater(hit_dist, sphere_intx_hit_dist))
           ) begin
-            hit_mat <= obj_intx_mat;
+            hit_mat_idx <= obj_intx_mat_idx;
             hit_pos <= sphere_intx_hit_pos;
             hit_normal <= sphere_intx_hit_norm;
             hit_dist <= sphere_intx_hit_dist;
@@ -125,25 +125,6 @@ module ray_intersector (
           end
         end
       end
-
-      // if (ray_valid_piped) begin
-      //   hit_mat <= obj_intx_mat;
-      //   hit_pos <= trig_intx_hit_pos;
-      //   hit_normal <= trig_intx_hit_norm;
-      //   hit_dist <= trig_intx_hit_dist;
-      //   hit_any <= trig_intx_hit;
-      // end else begin
-      //   if (
-      //     trig_intx_hit && 
-      //     (hit_any == 1'b0 || fp_greater(hit_dist, trig_intx_hit_dist))
-      //   ) begin
-      //     hit_mat <= obj_intx_mat;
-      //     hit_pos <= trig_intx_hit_pos;
-      //     hit_normal <= trig_intx_hit_norm;
-      //     hit_dist <= trig_intx_hit_dist;
-      //     hit_any <= 1'b1;
-      //   end
-      // end
 
       hit_valid <= last_obj;
     end
@@ -170,15 +151,15 @@ module ray_intersector (
   fp_vec3 trig_intx_hit_norm;
 
   // Pipelined hit material (for reflection)
-  material obj_intx_mat;
+  logic [7:0] obj_intx_mat_idx;
 
   pipeline #(
-    .WIDTH($bits(material)), 
+    .WIDTH(8), 
     .DEPTH(SPHERE_INTX_DELAY)
-  ) mat_pipe (
+  ) mat_idx_pipe (
     .clk(clk), 
-    .in(obj.mat), 
-    .out(obj_intx_mat)
+    .in(obj.mat_idx), 
+    .out(obj_intx_mat_idx)
   );
 
   // Pipelined object type

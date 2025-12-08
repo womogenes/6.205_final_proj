@@ -43,9 +43,9 @@ typedef struct packed {
 } material;
 
 typedef struct packed {
-  logic is_trig;            // 1 bit
-  material mat;             // [several] bits
-  logic [(FP_BITS*12)-1:0] stuff;       // max data needed for obj (288)
+  logic is_trig;                    // 1 bit
+  logic [7:0] mat_idx;              // [several] bits
+  logic [(FP_BITS*12)-1:0] stuff;   // max data needed for object geometry (288)
 } object;
 
 typedef struct packed {

@@ -16,9 +16,13 @@ module rtx #(
   // Dynamic parameter: # of bounces
   input wire [7:0] max_bounces,
 
-  // scene buffer interface
+  // Scene buffer interface
   input wire [$clog2(MAX_NUM_OBJS)-1:0] num_objs,
   input object obj,
+
+  // Material dictionary interface
+  output wire [7:0] mat_dict_idx,
+  input material mat_dict_mat,
 
   input wire [95:0] lfsr_seed
 );
@@ -82,6 +86,10 @@ module rtx #(
     // Scene buffer interface
     .num_objs(num_objs),
     .obj(obj),
+
+    // Material dictionary interface
+    .mat_dict_idx(mat_dict_idx),
+    .mat_dict_mat(mat_dict_mat),
 
     // SET SEED FOR LFSR HERE
     .lfsr_seed(48'h1)
