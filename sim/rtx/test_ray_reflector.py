@@ -9,125 +9,102 @@ from cocotb.clock import Clock
 from cocotb.triggers import Timer, ClockCycles, RisingEdge, FallingEdge, ReadOnly
 from cocotb.runner import get_runner
 
-from enum import Enum
-import random
-import ctypes
 import numpy as np
 import matplotlib.pyplot as plt
 
-from tqdm import tqdm
-
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
-from sim.utils import convert_fp_vec3, convert_fp, make_fp, make_fp_vec3, make_material
+from sim.utils import convert_fp_vec3, make_fp, make_fp_vec3, make_material
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
 @cocotb.test()
 async def test_module(dut):
-    """cocotb test for the lfsr prng sphere module"""
+    """cocotb test for ray_reflector pipelining"""
     dut._log.info("Starting...")
     cocotb.start_soon(Clock(dut.clk, 10, units="ns").start())
 
     dut._log.info("Holding reset...")
     dut.rst.value = 1
-    dut.lfsr_seed.value = 0x1234_5678_abcd
-    await ClockCycles(dut.clk, 3)
+    dut.lfsr_seed.value = int.from_bytes(os.urandom(8))
+    await ClockCycles(dut.clk, 50)
     dut.rst.value = 0
-    await ClockCycles(dut.clk, 20)
+    await ClockCycles(dut.clk, 5)
+
+    DELAY_CYCLES = 37
+    N_SAMPLES = 1000
+
+    mat_types = [
+        {
+            "ray_dir": [0, -1, 0],
+            "hit_normal": [1/np.sqrt(2), 1/np.sqrt(2), 0],
+            "mat": make_material(
+                color=make_fp_vec3((1.0, 0.0, 0.0)),
+                spec_color=make_fp_vec3((1.0, 0.0, 0.0)),
+                emit_color=make_fp_vec3((0.0, 0.0, 0.0)),
+                specular=255,
+                smooth=make_fp(0.9),
+            )
+        },
+        {
+            "ray_dir": [0, -1, 0],
+            "hit_normal": [0, 1/np.sqrt(2), -1/np.sqrt(2)],
+            "mat": make_material(
+                color=make_fp_vec3((0.0, 0.0, 1.0)),
+                spec_color=make_fp_vec3((0.0, 0.0, 1.0)),
+                emit_color=make_fp_vec3((0.0, 0.0, 0.0)),
+                specular=255,
+                smooth=make_fp(1.0),
+            )
+        },
+        {
+            "ray_dir": [1, 0, 0],
+            "hit_normal": [-1/np.sqrt(2), 1/np.sqrt(2), 0],
+            "mat": make_material(
+                color=make_fp_vec3((0.0, 1.0, 0.0)),
+                spec_color=make_fp_vec3((0.0, 1.0, 0.0)),
+                emit_color=make_fp_vec3((0.0, 0.0, 0.0)),
+                specular=255,
+                smooth=make_fp(0.9),
+            )
+        },
+    ]
+    
+    # ONE INPUT PER CYCLE!!
     dut.hit_valid.value = 1
 
-    ray_dir = np.array((1, 0, -1), dtype=float)
-    ray_dir /= np.linalg.norm(ray_dir)
-    hit_normal = (0, 0, 1)
+    dirs, colors = [], []
 
-    dut.ray_dir.value = make_fp_vec3(ray_dir)
-    dut.ray_color.value = make_fp_vec3((1.0, 1.0, 1.0))
-    dut.income_light.value = make_fp_vec3((0.0, 0.0, 0.0))
+    for i in range(N_SAMPLES + DELAY_CYCLES):
+        if i < N_SAMPLES:
+            mat = mat_types[i % 3]
+            dut.ray_dir.value = make_fp_vec3(mat["ray_dir"])
+            dut.hit_normal.value = make_fp_vec3(mat["hit_normal"])
+            dut.hit_mat.value = mat["mat"]
+            dut.ray_color.value = make_fp_vec3((1.0, 1.0, 1.0))
+            dut.income_light.value = make_fp_vec3((0.0, 0.0, 0.0))
+            dut.hit_pos.value = make_fp_vec3((0.0, 0.0, 0.0))
 
-    dut.hit_pos.value = make_fp_vec3((0, 0, 0))
-    dut.hit_normal.value = make_fp_vec3(hit_normal)
+        await ClockCycles(dut.clk, 1)
 
-    mat1 = make_material(
-        color=make_fp_vec3((1.0, 0.5, 0.25)),
-        spec_color=make_fp_vec3((0.5, 0.5, 0.5)),
-        emit_color=make_fp_vec3((3.0, 3.0, 3.0)),
-        specular=255,
-        smooth=make_fp(1.0),
-    )
-    dut.hit_mat.value = mat1
-
-    await ClockCycles(dut.clk, 1)
-
-    ray_dir = np.array((-1, 0, -1), dtype=float)
-    ray_dir /= np.linalg.norm(ray_dir)
-    hit_normal = (1, 0, 0)
-
-    dut.ray_dir.value = make_fp_vec3(ray_dir)
-    dut.ray_color.value = make_fp_vec3((0.5, 0.5, 0.5))
-    dut.income_light.value = make_fp_vec3((10.0, 10.0, 10.0))
-
-    dut.hit_pos.value = make_fp_vec3((0, 0, 0))
-    dut.hit_normal.value = make_fp_vec3(hit_normal)
-
-    mat2 = make_material(
-        color=make_fp_vec3((0.25, 0.5, 1.0)),
-        spec_color=make_fp_vec3((1.0, 1.0, 1.0)),
-        emit_color=make_fp_vec3((0.0, 0.0, 0.0)),
-        specular=0,
-        smooth=make_fp(0.0),
-    )
-    dut.hit_mat.value = mat2
-
-    await ClockCycles(dut.clk, 1)
-
-    ray_dir = np.array((1, 0, -1), dtype=float)
-    ray_dir /= np.linalg.norm(ray_dir)
-    hit_normal = (0, 0, 1)
-
-    dut.ray_dir.value = make_fp_vec3(ray_dir)
-    dut.ray_color.value = make_fp_vec3((1.0, 1.0, 1.0))
-    dut.income_light.value = make_fp_vec3((0.0, 0.0, 0.0))
-
-    dut.hit_pos.value = make_fp_vec3((0, 0, 0))
-    dut.hit_normal.value = make_fp_vec3(hit_normal)
-
-    dut.hit_mat.value = mat1
+        if i >= DELAY_CYCLES:
+            idx = i - DELAY_CYCLES
+            new_color = convert_fp_vec3(dut.new_color.value)
+            new_income = convert_fp_vec3(dut.new_income_light.value)
+            new_dir = convert_fp_vec3(dut.new_dir.value)
+            mat_type = ["red diffuse", "blue spec", "green diffuse"][idx % 3]
+            dut._log.info(f"{mat_type:15s} | {new_color=} {new_income=} {new_dir=}")
+            dirs.append(new_dir)
+            colors.append(new_color)
 
     dut.hit_valid.value = 0
+    await ClockCycles(dut.clk, 10)
 
-    await ClockCycles(dut.clk, 40)
-
-    return
-
-    num_points = 1_000
-    points = []
-    for i in tqdm(range(num_points)):
-        await RisingEdge(dut.reflect_done)
-        # await ClockCycles(dut.clk, 100)
-
-        await ClockCycles(dut.clk, 1)
-        points.append(convert_fp_vec3(dut.new_dir.value))
-        dut.hit_valid.value = 1
-        await ClockCycles(dut.clk, 1)
-        dut.hit_valid.value = 0
-    
-    # assert 
-
-    # dut._log.info(convert_fp_vec3(dut.new_income_light.value))
-    # dut._log.info(points)
-
-    fig = plt.figure(figsize=(12, 12))
+    # plot
+    fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
-    ax.set_aspect('equal')
-    ax.set_xlim3d(-1, 1)
-    ax.set_ylim3d(-1, 1)
-    ax.set_zlim3d(-1, 1)
-
-    x_data, y_data, z_data = zip(*points)
-
-    ax.scatter(x_data, y_data, z_data, s=20, alpha=1, marker='.')
-    ax.scatter(*ray_dir)
-    ax.scatter(*hit_normal)
+    dirs = np.array(dirs)
+    colors = np.array(colors)
+    ax.scatter(dirs[:,0], dirs[:,1], dirs[:,2], c=colors, s=20)
     plt.show()
 
 
@@ -160,12 +137,12 @@ def runner():
 
     sys.path.append(str(proj_path / "sim"))
     hdl_toplevel = "ray_reflector"
-    
+
     runner = get_runner(sim)
     runner.build(
         sources=sources,
         hdl_toplevel=hdl_toplevel,
-        always=False,
+        always=True,
         build_args=build_test_args,
         parameters=parameters,
         timescale=("1ns", "1ps"),
