@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 
 sys.path.append(Path(__file__).resolve().parent.parent.parent._str)
 from sim.utils import convert_fp_vec3, make_fp, make_fp_vec3, make_material
+from ctrl.make_scene_buffer import Material
 
 test_file = os.path.basename(__file__).replace(".py", "")
 
@@ -35,40 +36,40 @@ async def test_module(dut):
 
     mat_types = [
         {
-            "ray_dir": [0, -1, 0],
-            "hit_normal": [1/np.sqrt(2), 1/np.sqrt(2), 0],
-            "income_light": [1, 0, 1],
-            "mat": make_material(
-                color=make_fp_vec3((1.0, 0.0, 0.0)),
-                spec_color=make_fp_vec3((1.0, 0.0, 0.0)),
-                emit_color=make_fp_vec3((0.0, 0.0, 0.0)),
-                specular=255,
-                smooth=make_fp(0.9),
-            )
-        },
-        {
-            "ray_dir": [0, -1, 0],
-            "hit_normal": [0, 1/np.sqrt(2), -1/np.sqrt(2)],
-            "income_light": [0, 1, 1],
-            "mat": make_material(
-                color=make_fp_vec3((0.0, 0.0, 1.0)),
-                spec_color=make_fp_vec3((0.0, 0.0, 1.0)),
-                emit_color=make_fp_vec3((0.0, 0.0, 0.0)),
-                specular=255,
-                smooth=make_fp(1.0),
-            )
-        },
-        {
             "ray_dir": [1, 0, 0],
-            "hit_normal": [-1/np.sqrt(2), 1/np.sqrt(2), 0],
+            "hit_normal": [1, 1, 0],
+            "income_light": [1, 0, 1],
+            "mat": Material(
+                color=(1.0, 0.0, 0.0),
+                spec_color=(1.0, 0.0, 0.0),
+                emit_color=(0.0, 0.0, 0.0),
+                specular_prob=1.0,
+                smoothness=0.9
+            ),
+        },
+        {
+            "ray_dir": [0, 1, 0],
+            "hit_normal": [-1, -1, 0],
             "income_light": [1, 1, 0],
-            "mat": make_material(
-                color=make_fp_vec3((0.0, 1.0, 0.0)),
-                spec_color=make_fp_vec3((0.0, 1.0, 0.0)),
-                emit_color=make_fp_vec3((0.0, 0.0, 0.0)),
-                specular=255,
-                smooth=make_fp(0.9),
-            )
+            "mat": Material(
+                color=(0.0, 1.0, 0.0),
+                spec_color=(0.0, 1.0, 0.0),
+                emit_color=(0.0, 0.0, 0.0),
+                specular_prob=1.0,
+                smoothness=0.5,
+            ),
+        },
+        {
+            "ray_dir": [0, 0, 1],
+            "hit_normal": [0, 1, -1],
+            "income_light": [0, 1, 1],
+            "mat": Material(
+                color=(0.0, 0.0, 1.0),
+                spec_color=(0.0, 0.0, 1.0),
+                emit_color=(0.0, 0.0, 0.0),
+                specular_prob=1.0,
+                smoothness=0.1
+            ),
         },
     ]
 
@@ -77,12 +78,16 @@ async def test_module(dut):
 
     dirs, colors = [], []
 
+    def normalize(vec):
+        vec = np.array(vec)
+        return vec / np.linalg.norm(vec)
+
     for i in range(N_SAMPLES + DELAY_CYCLES):
         if i < N_SAMPLES:
             mat = mat_types[i % 3]
             dut.ray_dir.value = make_fp_vec3(mat["ray_dir"])
             dut.hit_normal.value = make_fp_vec3(mat["hit_normal"])
-            dut.hit_mat.value = mat["mat"]
+            dut.hit_mat.value = mat["mat"].pack_bits()[0]
             dut.ray_color.value = make_fp_vec3((1.0, 1.0, 1.0))
             dut.income_light.value = make_fp_vec3(mat["income_light"])
             dut.hit_pos.value = make_fp_vec3((0.0, 0.0, 0.0))
@@ -97,7 +102,7 @@ async def test_module(dut):
             mat_type = ["red diffuse", "blue spec", "green diffuse"][idx % 3]
             dut._log.info(f"{mat_type:15s} | {new_color=} {new_income=} {new_dir=}")
             dirs.append(new_dir)
-            colors.append(new_income)
+            colors.append(new_color)
 
     dut.hit_valid.value = 0
     await ClockCycles(dut.clk, 10)
@@ -108,6 +113,10 @@ async def test_module(dut):
     dirs = np.array(dirs)
     colors = np.array(colors)
     ax.scatter(dirs[:,0], dirs[:,1], dirs[:,2], c=colors, s=20)
+
+    for mat in mat_types:
+        ax.plot(*zip((0, 0, 0), mat["ray_dir"]), c=mat["mat"].color)
+
     plt.show()
 
 

@@ -46,7 +46,7 @@ module ray_reflector (
   assign is_specular = rng_specular < hit_mat.specular_prob;
 
   always_comb begin
-    if (rng_specular < hit_mat.specular_prob) begin
+    if (rng_specular <= hit_mat.specular_prob) begin
       spec_amt = hit_mat.smoothness;
     end else begin
       spec_amt = 0;
