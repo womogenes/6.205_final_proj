@@ -12,6 +12,7 @@ import sys
 import shutil
 import json
 import subprocess
+import glob
 from pathlib import Path
 from argparse import ArgumentParser, BooleanOptionalAction
 
@@ -76,7 +77,7 @@ else:
         }
         MAX_BOUNCES = 3
         
-N_CHUNKS = args.chunks or (4 * os.cpu_count() * N_FRAMES)
+N_CHUNKS = args.chunks or (2 * os.cpu_count() * N_FRAMES)
 TOTAL_PIXELS = WIDTH * HEIGHT
 
 # Round up on chunk size
@@ -91,6 +92,7 @@ test_file = os.path.basename(__file__).replace(".py", "")
 
 proj_path = Path(__file__).resolve().parent.parent.parent
 SCENE_BUF_MEM_PATH = str(proj_path / "data" / "scene_buffer.mem")
+MAT_DICT_MEM_PATH = str(proj_path / "data" / "mat_dict.mem")
 
 with open(SCENE_BUF_MEM_PATH, "r") as fin:
     NUM_OBJS = fin.read().strip().count("\n") + 1
@@ -113,32 +115,10 @@ SOURCES = [
     proj_path / "hdl" / "pipeline.sv",
     proj_path / "hdl" / "constants.sv",
     proj_path / "hdl" / "types" / "types.sv",
-    proj_path / "hdl" / "math" / "clz.sv",
-    proj_path / "hdl" / "math" / "fp_shift.sv",
-    proj_path / "hdl" / "math" / "fp_add.sv",
-    proj_path / "hdl" / "math" / "fp_clip.sv",
-    proj_path / "hdl" / "math" / "fp_mul.sv",
-    proj_path / "hdl" / "math" / "fp_inv_sqrt.sv",
-    proj_path / "hdl" / "math" / "fp_inv.sv",
-    proj_path / "hdl" / "math" / "fp_sqrt.sv",
-    proj_path / "hdl" / "math" / "fp_vec3_ops.sv",
-    proj_path / "hdl" / "math" / "fp_convert.sv",
-    proj_path / "hdl" / "math" / "specular_reflect.sv",
-    proj_path / "hdl" / "rng" / "prng_sphere.sv",
-    proj_path / "hdl" / "rng" / "prng8.sv",
-    proj_path / "hdl" / "math" / "quadratic_solver.sv",
-    proj_path / "hdl" / "math" / "sphere_intersector.sv",
-    proj_path / "hdl" / "math" / "trig_intersector.sv",
-    proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
-    proj_path / "hdl" / "rtx" / "ray_maker.sv",
-    proj_path / "hdl" / "rtx" / "ray_caster.sv",
+    *glob.glob(f"{proj_path}/hdl/math/*.sv", recursive=True),
+    *glob.glob(f"{proj_path}/hdl/rng/*.sv", recursive=True),
     proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
-    proj_path / "hdl" / "rtx" / "scene_buffer.sv",
-    proj_path / "hdl" / "rtx" / "ray_intersector.sv",
-    proj_path / "hdl" / "rtx" / "ray_reflector.sv",
-    proj_path / "hdl" / "rtx" / "ray_tracer.sv",
-    proj_path / "hdl" / "rtx" / "rtx.sv",
-    proj_path / "hdl" / "rtx" / "rtx_tb_parallel.sv",
+    *glob.glob(f"{proj_path}/hdl/rtx/*.sv", recursive=True),
 ]
 
 BUILD_TEST_ARGS = [
@@ -225,6 +205,7 @@ def build_verilator():
 
     # Copy scene buffer to build dir
     shutil.copy(SCENE_BUF_MEM_PATH, BUILD_DIR / "scene_buffer.mem")
+    shutil.copy(MAT_DICT_MEM_PATH, BUILD_DIR / "mat_dict.mem")
 
     runner = get_runner(SIM)
     runner.build(
@@ -234,7 +215,7 @@ def build_verilator():
         build_args=BUILD_TEST_ARGS,
         parameters=PARAMETERS,
         timescale=("1ns", "1ps"),
-        waves=args.waves,
+        waves=True,
         build_dir=BUILD_DIR,
     )
 
@@ -266,7 +247,7 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
         build_args=BUILD_TEST_ARGS,
         parameters=PARAMETERS,
         timescale=("1ns", "1ps"),
-        waves=args.waves,
+        waves=True,
         build_dir=BUILD_DIR,
     )
 
@@ -275,7 +256,7 @@ def run_test_worker(pixel_start_idx: int, pixel_end_idx: int, chunk_idx: int):
         hdl_toplevel=HDL_TOPLEVEL,
         test_module=test_file,
         test_args=[],
-        waves=args.waves,
+        waves=True,
     )
 
     return chunk_idx
