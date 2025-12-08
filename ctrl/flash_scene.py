@@ -48,32 +48,31 @@ if __name__ == "__main__":
         right: tuple[float] = None,
         up: tuple[float] = None,
     ):
-        for cmd, vec in zip([0b1_00000_00, 0b1_00000_01, 0b1_00000_10, 0b1_00000_11], [origin, forward, right, up]):
+        for cmd, vec in zip([0x00, 0x01, 0x02, 0x03], [origin, forward, right, up]):
             if vec is None:
                 continue
 
-            ser.write((cmd).to_bytes(1, "little"))
+            ser.write((cmd).to_bytes(1, "big"))
             data = make_fp_vec3(vec)
-            ser.write(data.to_bytes((FP_VEC3_BITS + 7) // 8, "little"))
+            ser.write(data.to_bytes((FP_VEC3_BITS + 7) // 8, "big"))
 
     def set_obj(obj_idx: int, obj: Object):
         obj_bits, obj_num_bits = obj.pack_bits()
-        ser.write((0x00).to_bytes(1, "little"))
-
-        ser.write(obj_idx.to_bytes(2, "little"))
+        ser.write((0x04).to_bytes(1, "big"))
+        ser.write(obj_idx.to_bytes(2, "big"))
 
         obj_num_bytes = ((obj_num_bits + 7) // 8)
-
-        ser.write(obj_bits.to_bytes(obj_num_bytes, "little"))
-
-    def set_max_bounces(max_bounces: int):
-        ser.write((0x85).to_bytes(1, "little"))
-        ser.write(max_bounces.to_bytes(1, "little"))
+        ser.write((0x05).to_bytes(1, "big"))
+        ser.write(obj_bits.to_bytes(obj_num_bytes, "big"))
 
     def set_num_objs(num_objs: int):
         assert num_objs > 0, "Cannot set zero objects"
-        ser.write((0x84).to_bytes(1, "little"))
-        ser.write(num_objs.to_bytes(2, "little"))
+        ser.write((0x06).to_bytes(1, "big"))
+        ser.write(num_objs.to_bytes(2, "big"))
+
+    def set_max_bounces(max_bounces: int):
+        ser.write((0x07).to_bytes(1, "big"))
+        ser.write(max_bounces.to_bytes(1, "big"))
 
     with open(args.scene) as fin:
         scene = json.load(fin)
