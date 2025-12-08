@@ -113,11 +113,7 @@ module top_level (
   // ===== UART MEMFLASH =====
   logic uart_flash_active;
   logic [7:0] uart_flash_cmd;
-  logic [FP_VEC3_BITS-1:0] uart_flash_cam_data;
-  logic [$bits(object)-1:0] uart_flash_obj_data;
-  logic [OBJ_IDX_WIDTH-1:0] uart_flash_obj_idx;
-  logic [$clog2(MAX_NUM_OBJS)-1:0] uart_flash_num_objs_data;
-  logic [7:0] uart_flash_max_bounces_data;
+  logic [MAX_UART_DATA_BYTES*8-1:0] uart_flash_data;
   logic uart_flash_wen;
 
   logic uart_rx_buf0, uart_rx_buf1;
@@ -145,11 +141,12 @@ module top_level (
 
     .flash_active(uart_flash_active),
     .flash_cmd(uart_flash_cmd),
-    .flash_cam_data(uart_flash_cam_data),
-    .flash_obj_data(uart_flash_obj_data),
-    .flash_obj_idx(uart_flash_obj_idx),
-    .flash_num_objs_data(uart_flash_num_objs_data),
-    .flash_max_bounces_data(uart_flash_max_bounces_data),
+    .flash_data(uart_flash_data),
+    // .flash_cam_data(uart_flash_cam_data),
+    // .flash_obj_data(uart_flash_obj_data),
+    // .flash_obj_idx(uart_flash_obj_idx),
+    // .flash_num_objs_data(uart_flash_num_objs_data),
+    // .flash_max_bounces_data(uart_flash_max_bounces_data),
     .flash_wen(uart_flash_wen)
   );
 
@@ -167,9 +164,8 @@ module top_level (
 
   // Scene buffer uart flashing logic
   always_comb begin
-    flash_obj_wen = uart_flash_wen && (~uart_flash_cmd[7]);
-    flash_obj_idx = uart_flash_obj_idx;
-    flash_obj_data = uart_flash_obj_data;
+    flash_obj_wen = uart_flash_wen && (uart_flash_cmd == 8'h05);
+    flash_obj_data = uart_flash_data;   // auto-truncated (i hope)
   end
 
   scene_buffer #(.INIT_FILE("scene_buffer.mem")) scene_buf (
@@ -203,12 +199,15 @@ module top_level (
 
     end else if (uart_flash_wen) begin
       casez (uart_flash_cmd)
-        8'b1????000: cam.origin <= uart_flash_cam_data;
-        8'b1????001: cam.forward <= uart_flash_cam_data;
-        8'b1????010: cam.right <= uart_flash_cam_data;
-        8'b1????011: cam.up <= uart_flash_cam_data;
-        8'b1????100: num_objs <= uart_flash_num_objs_data;
-        8'b1????101: max_bounces <= uart_flash_max_bounces_data;
+        8'h00: cam.origin <= uart_flash_data;
+        8'h01: cam.forward <= uart_flash_data;
+        8'h02: cam.right <= uart_flash_data;
+        8'h03: cam.up <= uart_flash_data;
+
+        8'h04: flash_obj_idx <= uart_flash_data;
+        // object data is latched by scene_buffer
+        8'h06: num_objs <= uart_flash_data;
+        8'h07: max_bounces <= uart_flash_data;
       endcase
     end
   end
@@ -355,8 +354,6 @@ module top_level (
     .i_ref_clk       (i_ref_clk),
     .i_rst           (sys_rst_controller),
     .ddr3_clk_locked (ddr3_clk_locked),
-
-    // .debug(pmoda[5:0]),
 
     // Bus wires to connect FPGA to SDRAM chip
     .ddr3_dq         (ddr3_dq[15:0]),
