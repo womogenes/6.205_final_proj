@@ -180,6 +180,31 @@ module top_level (
     .flash_obj_data(flash_obj_data)
   );
 
+  // Material dictionary
+  logic [7:0] mat_idx;
+  material mat;
+
+  // Material dictionary flashing
+  logic flash_mat_wen;
+  logic [7:0] flash_mat_idx;
+  logic [$bits(material)-1:0] flash_mat_data;
+
+  always_comb begin
+    flash_mat_wen = uart_flash_wen && (uart_flash_cmd == 8'h09);
+    flash_mat_data = uart_flash_data;
+  end
+
+  material_dictionary #(.INIT_FILE("mat_dict.mem")) mat_dict (
+    .clk(clk_rtx),
+    .rst(sys_rst),
+    .flash_mat_wen(flash_mat_wen),
+    .flash_mat_idx(flash_mat_idx),
+    .flash_mat_data(flash_mat_data),
+
+    .mat_idx(mat_idx),
+    .mat(mat)
+  );
+
   // max bounces is dynamic now
   logic [7:0] max_bounces;
 
@@ -189,9 +214,9 @@ module top_level (
     // Initialize camera
     if (sys_rst) begin
       cam.origin <= 'h0;
-      cam.forward <= {FP_ZER0, FP_ZER0, FP_HALF_SCREEN_WIDTH};  // (0, 0, 1280/2)
+      cam.forward <= {FP_ZER0, FP_HALF_SCREEN_WIDTH, FP_ZER0};  // (0, 0, 1280/2)
       cam.right <= {FP_ONE, FP_ZER0, FP_ZER0};                  // (1, 0, 0)
-      cam.up <= {FP_ZER0, FP_ONE, FP_ZER0};                     // (0, 1, 0)
+      cam.up <= {FP_ZER0, FP_ZER0, FP_ONE};                     // (0, 1, 0)
 
       // half-sensible defaults
       num_objs <= 16;
@@ -208,6 +233,8 @@ module top_level (
         // object data is latched by scene_buffer
         8'h06: num_objs <= uart_flash_data;
         8'h07: max_bounces <= uart_flash_data;
+
+        8'h08: flash_mat_idx <= uart_flash_data;
       endcase
     end
   end
@@ -218,6 +245,7 @@ module top_level (
     .cam(cam),
 
     .rtx_pixel(rtx_pixel),
+    
     .pixel_h(rtx_h_count),
     .pixel_v(rtx_v_count),
     .ray_done(rtx_valid),
@@ -226,6 +254,10 @@ module top_level (
 
     .num_objs(num_objs),
     .obj(scene_buf_obj),
+
+    .mat_dict_idx(mat_idx),
+    .mat_dict_mat(mat),
+
     .lfsr_seed(96'h1)
   );
 
@@ -238,7 +270,7 @@ module top_level (
       rtx_overwrite <= sw[1] | scene_changed | uart_flash_wen;
       scene_changed <= 1'b0;
 
-    end else if (uart_flash_wen) begin
+    end else if (uart_flash_wen | !dram_ready) begin
       // Set flag when camera update happens mid-frame
       scene_changed <= 1'b1;
     end

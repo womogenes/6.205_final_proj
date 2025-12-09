@@ -19,6 +19,8 @@ module rtx_tb #(
   output logic ray_done          // i.e. pixel_color valid
 );
   object obj;
+  logic [7:0] mat_dict_idx;
+  material mat_dict_mat;
 
   // Initialize scene buffer
   // Bind inputs to ray tracer
@@ -27,6 +29,13 @@ module rtx_tb #(
     .rst(rst),
     .num_objs(num_objs),
     .obj(obj)
+  );
+
+  material_dictionary #(.INIT_FILE("mat_dict.mem")) mat_dict (
+    .clk(clk),
+    .rst(rst),
+    .mat_idx(mat_dict_idx),
+    .mat(mat_dict_mat)
   );
 
   rtx #(.WIDTH(WIDTH), .HEIGHT(HEIGHT)) my_rtx (
@@ -44,7 +53,11 @@ module rtx_tb #(
 
     // Scene buffer wires
     .num_objs(num_objs),
-    .obj(obj)
+    .obj(obj),
+
+    // Material dictionary wires
+    .mat_dict_idx(mat_dict_idx),
+    .mat_dict_mat(mat_dict_mat)
   );
 
 endmodule

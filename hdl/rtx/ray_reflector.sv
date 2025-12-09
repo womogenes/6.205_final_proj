@@ -14,7 +14,7 @@ module ray_reflector (
 
   input fp_vec3 hit_pos,
   input fp_vec3 hit_normal,
-  input material hit_mat,
+  input wire [7:0] hit_mat_idx,
   input wire hit_valid,
 
   output fp_vec3 new_dir,
@@ -22,6 +22,10 @@ module ray_reflector (
   output fp_color new_color,
   output fp_color new_income_light,
   output logic reflect_done,
+
+  // Material dictionary interface
+  output logic [7:0] mat_dict_idx,
+  input material mat_dict_mat,
 
   // DEBUG: to be used only for testbench
   input wire [95:0] lfsr_seed
@@ -34,6 +38,11 @@ module ray_reflector (
   );
 
   // ===== BRANCH 0: specular_amt =====
+  material hit_mat;
+
+  assign mat_dict_idx = hit_mat_idx;
+  assign hit_mat = mat_dict_mat;    // 2 cycles behind
+
   fp spec_amt;
   logic [7:0] rng_specular;
   prng8 rng8 (
@@ -69,12 +78,12 @@ module ray_reflector (
   // Pipeline t, 1-t for direction calculation
   fp spec_amt_piped_dir;
   fp one_sub_spec_amt_piped_dir;
-  pipeline #(.WIDTH(FP_BITS), .DEPTH(18)) spec_amt_pipe (
+  pipeline #(.WIDTH(FP_BITS), .DEPTH(16)) spec_amt_pipe (
     .clk(clk),
     .in(spec_amt),
     .out(spec_amt_piped_dir)
   );
-  pipeline #(.WIDTH(FP_BITS), .DEPTH(16)) one_sub_spec_amt_pipe (
+  pipeline #(.WIDTH(FP_BITS), .DEPTH(14)) one_sub_spec_amt_pipe (
     .clk(clk),
     .in(one_sub_spec_amt),
     .out(one_sub_spec_amt_piped_dir)
@@ -173,7 +182,7 @@ module ray_reflector (
   fp_color extra_income_light;
   fp_vec3_mul mul_extra_income_light (
     .clk(clk),
-    .v(ray_color),
+    .v(ray_color_pipe.pipe[1]),
     .w(hit_mat.emit_color),
     .prod(extra_income_light)
   );
@@ -181,16 +190,24 @@ module ray_reflector (
   // Calculate new incoming light
   // 3 cycles behind
   // Requires big pipeline ahead of it to delay accordingly
+  fp_color income_light_piped2;
+  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(2)) income_light_pipe (
+    .clk(clk),
+    .in(income_light),
+    .out(income_light_piped2)
+  );
+
   fp_color new_income_light_unpiped;
+
   fp_vec3_add add_new_income_light (
     .clk(clk),
     .rst(rst),
     .v(extra_income_light),
-    .w(income_light),
+    .w(income_light_piped2),
     .is_sub(1'b0),
     .sum(new_income_light_unpiped)
   );
-  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(34)) new_income_light_pipe (
+  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(32)) new_income_light_pipe (
     .clk(clk),
     .in(new_income_light_unpiped),
     .out(new_income_light)
@@ -224,21 +241,21 @@ module ray_reflector (
   );
 
   // Combine ray_color and true_mat_color to get new ray color
-  fp_color ray_color_piped;
-  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(5)) ray_color_pipe (
+  fp_color ray_color_piped7;
+  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(7)) ray_color_pipe (
     .clk(clk),
     .in(ray_color),
-    .out(ray_color_piped)
+    .out(ray_color_piped7)
   );
   fp_color new_color_unpiped;
   fp_vec3_mul mul_new_ray_color (
     .clk(clk),
     .rst(rst),
-    .v(ray_color_piped),
+    .v(ray_color_piped7),
     .w(true_mat_color),
     .prod(new_color_unpiped)
   );
-  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(31)) new_ray_color_pipe (
+  pipeline #(.WIDTH(FP_VEC3_BITS), .DEPTH(29)) new_ray_color_pipe (
     .clk(clk),
     .in(new_color_unpiped),
     .out(new_color)

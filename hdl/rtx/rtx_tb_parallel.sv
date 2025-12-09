@@ -24,6 +24,8 @@ module rtx_tb_parallel #(
   input wire [95:0] lfsr_seed
 );
   object obj;
+  logic [7:0] mat_dict_idx;
+  material mat_dict_mat;
 
   logic [10:0] pixel_h_caster;
   logic [9:0] pixel_v_caster;
@@ -38,6 +40,13 @@ module rtx_tb_parallel #(
     .rst(rst),
     .num_objs(num_objs),
     .obj(obj)
+  );
+
+  material_dictionary #(.INIT_FILE("mat_dict.mem")) mat_dict (
+    .clk(clk),
+    .rst(rst),
+    .mat_idx(mat_dict_idx),
+    .mat(mat_dict_mat)
   );
 
   ray_maker #(
@@ -92,7 +101,11 @@ module rtx_tb_parallel #(
 
     // Scene buffer interface
     .num_objs(num_objs),
-    .obj(obj)
+    .obj(obj),
+
+    // Material dictionary interface
+    .mat_dict_idx(mat_dict_idx),
+    .mat_dict_mat(mat_dict_mat)
   );
 
   // Convert to 565 representation

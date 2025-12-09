@@ -37,6 +37,7 @@ HEIGHT = int(18 * scale)
 
 proj_path = Path(__file__).resolve().parent.parent.parent
 SCENE_BUF_MEM_PATH = str(proj_path / "data" / "scene_buffer.mem")
+MAT_DICT_MEM_PATH = str(proj_path / "data" / "mat_dict.mem")
 
 with open(SCENE_BUF_MEM_PATH, "r") as fin:
     NUM_OBJS = fin.read().strip().count("\n") + 1
@@ -54,10 +55,13 @@ async def test_module(dut):
     dut.max_bounces = 3
 
     dut.cam.value = pack_bits([
-        (make_fp_vec3((0, 0, 0)), FP_VEC3_BITS),            # origin
-        (make_fp_vec3((0, 0, WIDTH / 2)), FP_VEC3_BITS),    # forward
+        (make_fp_vec3((0, -20, 0)), FP_VEC3_BITS),            # origin
+        (make_fp_vec3((0, WIDTH / 2, 0)), FP_VEC3_BITS),    # forward
         (make_fp_vec3((1, 0, 0)), FP_VEC3_BITS),            # right
-        (make_fp_vec3((0, 1, 0)), FP_VEC3_BITS),            # up
+        (make_fp_vec3((0, 0, 1)), FP_VEC3_BITS),            # up
+        # (make_fp_vec3((0, 0, WIDTH / 2)), FP_VEC3_BITS),    # forward
+        # (make_fp_vec3((1, 0, 0)), FP_VEC3_BITS),            # right
+        # (make_fp_vec3((0, 1, 0)), FP_VEC3_BITS),            # up
     ])
     dut.num_objs.value = NUM_OBJS
 
@@ -91,7 +95,7 @@ async def test_module(dut):
         # dut._log.info(f"{pixel_h=}, {pixel_v=}, {pixel_color=}")
         img.putpixel((pixel_h, pixel_v), (r, g, b))
 
-    img.save("test.png")
+    img.save(proj_path / "sim" / "test.png")
 
 
 def runner():
@@ -107,23 +111,21 @@ def runner():
         proj_path / "hdl" / "types" / "types.sv",
         *glob.glob(f"{proj_path}/hdl/math/*.sv", recursive=True),
         *glob.glob(f"{proj_path}/hdl/rng/*.sv", recursive=True),
-        proj_path / "hdl" / "rtx" / "ray_signal_gen.sv",
-        proj_path / "hdl" / "rtx" / "ray_maker.sv",
-        proj_path / "hdl" / "rtx" / "ray_caster.sv",
-
         proj_path / "hdl" / "mem" / "xilinx_true_dual_port_read_first_2_clock_ram.v",
-        proj_path / "hdl" / "rtx" / "scene_buffer.sv",
+        *glob.glob(f"{proj_path}/hdl/rtx/*.sv", recursive=True),
+        # proj_path / "hdl" / "rtx" / "scene_buffer.sv",
 
-        proj_path / "hdl" / "rtx" / "ray_intersector.sv",
-        proj_path / "hdl" / "rtx" / "ray_reflector.sv",
-        proj_path / "hdl" / "rtx" / "ray_tracer.sv",
-        proj_path / "hdl" / "rtx" / "rtx.sv",
-        proj_path / "hdl" / "rtx" / "rtx_tb.sv",
+        # proj_path / "hdl" / "rtx" / "ray_intersector.sv",
+        # proj_path / "hdl" / "rtx" / "ray_reflector.sv",
+        # proj_path / "hdl" / "rtx" / "ray_tracer.sv",
+        # proj_path / "hdl" / "rtx" / "rtx.sv",
+        # proj_path / "hdl" / "rtx" / "rtx_tb.sv",
     ]
     build_test_args = ["-Wall"]
 
     build_dir = proj_path / "sim" / "sim_build"
     shutil.copy(SCENE_BUF_MEM_PATH, build_dir / "scene_buffer.mem")
+    shutil.copy(MAT_DICT_MEM_PATH, build_dir / "mat_dict.mem")
 
     # values for parameters defined earlier in the code.
     parameters = {
