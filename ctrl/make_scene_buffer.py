@@ -84,18 +84,15 @@ class Object:
         return pack_bits(fields, msb=True), sum([width for _, width in fields])
 
 
-def export_scene(scene_file: str):
+def build_material_dict(scene):
     """
-    Export the JSON description of a scene to the .mem file
-        For use in testbenching and initializing BRAM
+    Build material dictionary from scene + deduplicates materials
     """
-    with open(scene_file) as fin:
-        scene = json.load(fin)
-
-    # Construct material dictionary
     mat_idx = 0
     mat_bits2idx = {}
     mat_name2idx = {}
+    mat_width = None
+
     for mat_name, mat_json in scene["materials"].items():
         mat_bits, mat_width = Material(**mat_json).pack_bits()
 
@@ -105,6 +102,20 @@ def export_scene(scene_file: str):
             mat_idx += 1
 
         mat_name2idx[mat_name] = mat_bits2idx[mat_bits]
+
+    return mat_bits2idx, mat_name2idx, mat_width
+
+
+def export_scene(scene_file: str):
+    """
+    Export the JSON description of a scene to the .mem file
+        For use in testbenching and initializing BRAM
+    """
+    with open(scene_file) as fin:
+        scene = json.load(fin)
+
+    # Construct material dictionary
+    mat_bits2idx, mat_name2idx, mat_width = build_material_dict(scene)
 
     from pprint import pprint
     pprint(mat_bits2idx)

@@ -194,11 +194,12 @@ module top_level (
     flash_mat_data = uart_flash_data;
   end
 
-  material_dictionary #(.INIT_FILE("material_dict.mem")) mat_dict (
+  material_dictionary #(.INIT_FILE("mat_dict.mem")) mat_dict (
     .clk(clk_rtx),
     .rst(sys_rst),
     .flash_mat_wen(flash_mat_wen),
     .flash_mat_idx(flash_mat_idx),
+    .flash_mat_data(flash_mat_data),
 
     .mat_idx(mat_idx),
     .mat(mat)
@@ -213,9 +214,9 @@ module top_level (
     // Initialize camera
     if (sys_rst) begin
       cam.origin <= 'h0;
-      cam.forward <= {FP_ZER0, FP_ZER0, FP_HALF_SCREEN_WIDTH};  // (0, 0, 1280/2)
+      cam.forward <= {FP_ZER0, FP_HALF_SCREEN_WIDTH, FP_ZER0};  // (0, 0, 1280/2)
       cam.right <= {FP_ONE, FP_ZER0, FP_ZER0};                  // (1, 0, 0)
-      cam.up <= {FP_ZER0, FP_ONE, FP_ZER0};                     // (0, 1, 0)
+      cam.up <= {FP_ZER0, FP_ZER0, FP_ONE};                     // (0, 1, 0)
 
       // half-sensible defaults
       num_objs <= 16;
@@ -269,7 +270,7 @@ module top_level (
       rtx_overwrite <= sw[1] | scene_changed | uart_flash_wen;
       scene_changed <= 1'b0;
 
-    end else if (uart_flash_wen) begin
+    end else if (uart_flash_wen | !dram_ready) begin
       // Set flag when camera update happens mid-frame
       scene_changed <= 1'b1;
     end

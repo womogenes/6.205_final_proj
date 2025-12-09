@@ -7,7 +7,7 @@ proj_path = Path(__file__).parent.parent
 
 sys.path.append(str(proj_path / "sim"))
 from utils import make_fp, make_fp_vec3, pack_bits, FP_VEC3_BITS
-from make_scene_buffer import Material, Object
+from make_scene_buffer import Material, Object, build_material_dict
 
 import wave
 import serial
@@ -28,7 +28,7 @@ parser.add_argument("scene", nargs="?", type=str)
 args = parser.parse_args()
 
 # Communication Parameters
-SERIAL_PORTNAME = "/dev/ttyUSB0"  # CHANGE ME to match your system's serial port name!
+SERIAL_PORTNAME = "/dev/ttyUSB2"  # CHANGE ME to match your system's serial port name!
 BAUD = 115200  # Make sure this matches your UART receiver
 
 
@@ -70,6 +70,14 @@ if __name__ == "__main__":
         ser.write((0x06).to_bytes(1, "big"))
         ser.write(num_objs.to_bytes(2, "big"))
 
+    def set_mat(mat_idx: int, mat_bits: int, mat_width: int):
+        ser.write((0x08).to_bytes(1, "big"))
+        ser.write(mat_idx.to_bytes(1, "big"))
+
+        mat_num_bytes = ((mat_width + 7) // 8)
+        ser.write((0x09).to_bytes(1, "big"))
+        ser.write(mat_bits.to_bytes(mat_num_bytes, "big"))
+
     def set_max_bounces(max_bounces: int):
         ser.write((0x07).to_bytes(1, "big"))
         ser.write(max_bounces.to_bytes(1, "big"))
@@ -83,7 +91,7 @@ if __name__ == "__main__":
     pitch = scene["camera"].get("pitch", 0)
     yaw = scene["camera"].get("yaw", 0)
     
-    # Create rotation matrices for pitch (rotation around right vector) and yaw (rotation around up vector)
+    # Create rotation matrices for pitch and yaw
     # Pitch rotation matrix around right vector
     cos_pitch = np.cos(pitch)
     sin_pitch = np.sin(pitch)
@@ -117,11 +125,19 @@ if __name__ == "__main__":
         up=up,
     )
 
+    # Build build mat dict
+    mat_bits2idx, mat_name2idx, mat_width = build_material_dict(scene)
+
+    # Flash mat dict
+    mats = sorted(mat_bits2idx.items(), key=lambda x: x[1])
+    for mat_bits, mat_idx_val in mats:
+        set_mat(mat_idx_val, mat_bits, mat_width)
+
     # Flash objects
     objs = scene["objects"]
     for idx, obj in enumerate(objs):
-        # Look up material in dictionary
-        obj["mat"] = Material(**scene["materials"][obj["material"]])
+        # Look up material index in dictionary
+        obj["mat_idx"] = mat_name2idx[obj["material"]]
         del obj["material"]
         set_obj(idx, Object(**obj))
 
