@@ -180,6 +180,30 @@ module top_level (
     .flash_obj_data(flash_obj_data)
   );
 
+  // Material dictionary
+  logic [7:0] mat_idx;
+  material mat;
+
+  // Material dictionary flashing
+  logic flash_mat_wen;
+  logic [7:0] flash_mat_idx;
+  logic [$bits(material)-1:0] flash_mat_data;
+
+  always_comb begin
+    flash_mat_wen = uart_flash_wen && (uart_flash_cmd == 8'h09);
+    flash_mat_data = uart_flash_data;
+  end
+
+  material_dictionary #(.INIT_FILE("material_dict.mem")) mat_dict (
+    .clk(clk_rtx),
+    .rst(sys_rst),
+    .flash_mat_wen(flash_mat_wen),
+    .flash_mat_idx(flash_mat_idx),
+
+    .mat_idx(mat_idx),
+    .mat(mat)
+  );
+
   // max bounces is dynamic now
   logic [7:0] max_bounces;
 
@@ -208,6 +232,8 @@ module top_level (
         // object data is latched by scene_buffer
         8'h06: num_objs <= uart_flash_data;
         8'h07: max_bounces <= uart_flash_data;
+
+        8'h08: flash_mat_idx <= uart_flash_data;
       endcase
     end
   end
@@ -218,6 +244,7 @@ module top_level (
     .cam(cam),
 
     .rtx_pixel(rtx_pixel),
+    
     .pixel_h(rtx_h_count),
     .pixel_v(rtx_v_count),
     .ray_done(rtx_valid),
@@ -226,6 +253,10 @@ module top_level (
 
     .num_objs(num_objs),
     .obj(scene_buf_obj),
+
+    .mat_dict_idx(mat_idx),
+    .mat_dict_mat(mat),
+
     .lfsr_seed(96'h1)
   );
 

@@ -24,6 +24,8 @@ module uart_memflash_rtx (
   localparam integer OBJ_BYTES = ($bits(object) + 7) / 8;
   localparam integer NUM_OBJS_BYTES = (OBJ_IDX_WIDTH + 7) / 8;
   localparam integer MAX_BOUNCES_BYTES = 1;
+  localparam integer MAT_IDX_BYTES = 1;
+  localparam integer MAT_BYTES = ($bits(material) + 7) / 8;
 
   // Maximum number of bytes that can be sent
   localparam integer MAX_DATA_BYTES = MAX_UART_DATA_BYTES;
@@ -68,6 +70,9 @@ module uart_memflash_rtx (
               8'h05: last_byte_idx <= (OBJ_BYTES - 1);
               8'h06: last_byte_idx <= (NUM_OBJS_BYTES - 1);
               8'h07: last_byte_idx <= (MAX_BOUNCES_BYTES - 1);
+
+              8'h08: last_byte_idx <= (MAT_IDX_BYTES - 1);
+              8'h09: last_byte_idx <= (MAT_BYTES - 1);
             endcase
 
             flash_active <= 1'b1;

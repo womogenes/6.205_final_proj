@@ -14,7 +14,7 @@ module ray_reflector (
 
   input fp_vec3 hit_pos,
   input fp_vec3 hit_normal,
-  input logic [7:0] hit_mat_idx,
+  input wire [7:0] hit_mat_idx,
   input wire hit_valid,
 
   output fp_vec3 new_dir,
