@@ -6,16 +6,26 @@ import trimesh
 import sys
 import subprocess
 
-def is_sphere(verts, threshold=0.05):
+import matplotlib.pyplot as plt
+
+def is_sphere(verts, threshold=0.1, outler_ratio=0.15):
     """
-    Check if >20 unique vertices with low radii std deviation
+    Check if high # of unique vertices with low radii std deviation
     """
-    unique = np.unique(verts, axis=0)
-    if len(unique) <= 20:
+    # unique = np.unique(verts, axis=0)
+    unique = verts
+
+    if len(unique) <= 30:
         return False
+    
     center = unique.mean(axis=0)
     radii = np.linalg.norm(unique - center, axis=1)
-    return (radii.std() / radii.mean()) < threshold if radii.mean() > 0 else False
+
+    k = int(len(radii) * (1 - outler_ratio))
+    culled = np.partition(radii, k)[:k]
+
+    score = culled.std() / culled.mean()
+    return (score < threshold) if radii.mean() > 0 else False
 
 def is_parallelogram(verts):
     """
@@ -44,7 +54,7 @@ def sphere_from_verts(verts):
     r = np.linalg.norm(verts - c, axis=1).mean()
     return [round(x, 5) for x in c], float(r)
 
-def convert_obj_to_json(obj_path, out_path, max_bounces=3, camera=None, blender_materials=None):
+def convert_obj_to_json(obj_path, out_path, max_bounces=5, camera=None, blender_materials=None):
     """
     Convert OBJ+MTL to raytracer JSON scene format
     """

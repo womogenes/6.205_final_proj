@@ -1,0 +1,61 @@
+{
+  "camera": {
+    "origin": [0, 0, 0],
+    "forward": [0, 1280, 0],
+    "up": [0, 0, 2],
+    "right": [2, 0, 0],
+    "pitch": 0,
+    "yaw": 0
+  },
+  "max_bounces": 5,
+  "materials": {
+    "mat0": {
+      "color": [1, 1, 1],
+      "emit_color": [1, 1, 1],
+      "smoothness": 1,
+      "specular_prob": 0
+    }
+  },
+  "objects": [
+    {
+      "obj_type": 1,
+      "trig": [
+        [-1, 4, -1],
+        [1, 0, 1],
+        [0, 0, 2]
+      ],
+      "trig_norm": [0, -1, 0],
+      "material": "mat0"
+    },
+    {
+      "obj_type": 1,
+      "trig": [
+        [-1, 4, -1],
+        [1, 0, 1],
+        [2, 0, 0]
+      ],
+      "trig_norm": [0, 1, 0],
+      "material": "mat0"
+    },
+    {
+      "obj_type": 1,
+      "trig": [
+        [0, 6, 2],
+        [-2, -2, -4],
+        [2, -2, -4]
+      ],
+      "trig_norm": [0, -0.9701425001453319, 0.24253562503633297],
+      "material": "mat0"
+    },
+    {
+      "obj_type": 1,
+      "trig": [
+        [-1, -1, -1],
+        [0, 0, 3],
+        [3, 0, 0]
+      ],
+      "trig_norm": [0, 1, 0],
+      "material": "mat0"
+    }
+  ]
+}

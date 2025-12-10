@@ -265,7 +265,7 @@ module traffic_generator(
     assign avg_red = fetched_red >> shift_amt;
     assign avg_green = fetched_green >> shift_amt;
     assign avg_blue = fetched_blue >> shift_amt;
-    assign avg_color = {avg_blue, avg_green, avg_red};    
+    assign avg_color = {avg_blue, avg_green, avg_red};
 
     // queue for fetch commands to be sent for the frame buffer
     logic fetch_fb_fifo_full;
@@ -275,13 +275,18 @@ module traffic_generator(
     logic [23:0] queued_fetch_fb_address;
     logic [15:0] queued_fetch_fb_data;
 
+    // During overwrite, use new pixel directly instead of averaged old data
+    logic [15:0] fb_color_to_write;
+    assign fb_color_to_write = overwrite ? queued_command_data : avg_color;
+
     // saved the queued fb data to be written once there is free time
     // queues the command as soon as a new average is calculated
+    // also writes during overwrite frames to update display buffer immediately
     command_fifo #(.DEPTH(64),.WIDTH(40)) fetch_fb_fifo(
         .clk(clk),
         .rst(rst),
-        .write(frame_power_of_2 && fetch_rtx_req_complete),
-        .command_in({ queued_command_address, avg_color }),
+        .write((frame_power_of_2 || overwrite) && fetch_rtx_req_complete),
+        .command_in({ queued_command_address, fb_color_to_write }),
         .full(fetch_fb_fifo_full),
 
         .command_out({ queued_fetch_fb_address, queued_fetch_fb_data }),

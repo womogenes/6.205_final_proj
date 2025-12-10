@@ -241,7 +241,7 @@ module top_level (
 
   rtx my_rtx(
     .clk(clk_rtx),
-    .rst(sys_rst | !dram_ready),
+    .rst(sys_rst | !dram_ready | uart_flash_wen),
     .cam(cam),
 
     .rtx_pixel(rtx_pixel),
@@ -265,14 +265,17 @@ module top_level (
   logic rtx_overwrite;
   logic scene_changed;
   always_ff @(posedge clk_rtx) begin
-    if (rtx_h_count == 1279 && rtx_v_count == 719 && rtx_valid) begin
-      // At start of new frame, latch overwrite for entire frame
-      rtx_overwrite <= sw[1] | scene_changed | uart_flash_wen;
+    if (sys_rst) begin
+      rtx_overwrite <= 1'b0;
       scene_changed <= 1'b0;
-
     end else if (uart_flash_wen | !dram_ready) begin
-      // Set flag when camera update happens mid-frame
+      // Immediately enable overwrite when scene changes
+      rtx_overwrite <= 1'b1;
       scene_changed <= 1'b1;
+    end else if (rtx_h_count == 1279 && rtx_v_count == 719 && rtx_valid) begin
+      // At frame boundary, update based on switch
+      rtx_overwrite <= sw[1]; // | scene_changed;
+      scene_changed <= 1'b0;
     end
   end
 
