@@ -17,6 +17,25 @@ def is_sphere(verts, threshold=0.05):
     radii = np.linalg.norm(unique - center, axis=1)
     return (radii.std() / radii.mean()) < threshold if radii.mean() > 0 else False
 
+def is_parallelogram(verts):
+    """
+    Check if mesh has exactly 4 unique vertices (a quad/parallelogram)
+    """
+    unique = np.unique(verts, axis=0)
+    return len(unique) == 4
+
+def parallelogram_from_verts(verts):
+    """
+    Convert 4 vertices to parallelogram format: [v0, edge1, edge2]
+    Assumes verts contains 4 unique vertices forming a quad
+    """
+    unique = np.unique(verts, axis=0)
+    # Use first vertex as origin, find two edges
+    v0 = unique[0]
+    edge1 = unique[1] - v0
+    edge2 = unique[2] - v0
+    return [[round(x, 5) for x in v] for v in [v0, edge1, edge2]]
+
 def sphere_from_verts(verts):
     """
     Compute sphere center and radius from vertices
@@ -25,7 +44,7 @@ def sphere_from_verts(verts):
     r = np.linalg.norm(verts - c, axis=1).mean()
     return [round(x, 5) for x in c], float(r)
 
-def convert_obj_to_json(obj_path, out_path, max_bounces=5, camera=None, blender_materials=None):
+def convert_obj_to_json(obj_path, out_path, max_bounces=3, camera=None, blender_materials=None):
     """
     Convert OBJ+MTL to raytracer JSON scene format
     """
@@ -49,7 +68,7 @@ def convert_obj_to_json(obj_path, out_path, max_bounces=5, camera=None, blender_
         if hasattr(mesh, "visual") and hasattr(mesh.visual, "material") and hasattr(mesh.visual.material, "name"):
             mat_name = mesh.visual.material.name
 
-        # Build materials dictionary once per unique material
+        # Build materials dictionary
         if mat_name not in materials:
             m = blender_materials.get(mat_name, {})
             materials[mat_name] = {
@@ -60,11 +79,14 @@ def convert_obj_to_json(obj_path, out_path, max_bounces=5, camera=None, blender_
                 "specular_prob": m.get("specular", 0.5)
             }
 
-        # Detect sphere or export as triangles
+        # Detect sphere, parallelogram, or export as triangles
+        from pprint import pprint
+        # pprint(verts)
+
         if is_sphere(verts):
             c, r = sphere_from_verts(verts)
             objects.append({
-                "is_trig": False,
+                "obj_type": 0,
                 "sphere_center": c,
                 "sphere_rad": r,
                 "material": mat_name
@@ -73,7 +95,7 @@ def convert_obj_to_json(obj_path, out_path, max_bounces=5, camera=None, blender_
             for face in mesh.faces:
                 A, B, C = verts[face]
                 objects.append({
-                    "is_trig": True,
+                    "obj_type": 1,
                     "trig": [[round(x, 5) for x in v] for v in [A, B-A, C-A]],
                     "material": mat_name
                 })
@@ -164,3 +186,9 @@ with open('/tmp/camera.json', 'w') as f:
         camera=camera,
         blender_materials=blender_materials
     )
+
+    save_path = sys.argv[2]
+    
+    import shutil
+    print(f"{save_path=}")
+    shutil.copy("/tmp/output.json", save_path)

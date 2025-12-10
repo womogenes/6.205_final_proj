@@ -83,67 +83,67 @@
   },
   "objects": [
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [0, 10, 6],
       "sphere_rad": 7,
       "material": "light"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [0, -10, 6],
       "sphere_rad": 7,
       "material": "green_matte"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [0, 0, 20],
       "sphere_rad": 8,
       "material": "gray_glossy"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [0, 0, -2000],
       "sphere_rad": 1998,
       "material": "white_glossy"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [-10, 0, 6],
       "sphere_rad": 4,
       "material": "red_glossy"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [10, 0, 6],
       "sphere_rad": 4,
       "material": "blue_glossy"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [-4, 0, 6],
       "sphere_rad": 0.8,
       "material": "shiny_0.0"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [-2, 0, 6],
       "sphere_rad": 0.8,
       "material": "shiny_0.4"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [0, 0, 6],
       "sphere_rad": 0.8,
       "material": "shiny_0.6"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [2, 0, 6],
       "sphere_rad": 0.8,
       "material": "shiny_0.8"
     },
     {
-      "is_trig": 0,
+      "obj_type": 0,
       "sphere_center": [4, 0, 6],
       "sphere_rad": 0.8,
       "material": "shiny_1.0"

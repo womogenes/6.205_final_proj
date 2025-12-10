@@ -40,7 +40,7 @@ async def scene_buffer(dut):
     )
     objs = [
         # Object(
-        #     is_trig=False,
+        #     obj_type=False,
         #     mat=mat0,
         #     trig=None,
         #     trig_norm=None,
@@ -48,7 +48,7 @@ async def scene_buffer(dut):
         #     sphere_rad=1,
         # ),
         # Object(
-        #     is_trig=False,
+        #     obj_type=False,
         #     mat=mat0,
         #     trig=None,
         #     trig_norm=None,
@@ -56,7 +56,7 @@ async def scene_buffer(dut):
         #     sphere_rad=0.5,
         # ),
         Object(
-            is_trig=True,
+            obj_type=1,
             mat=mat0,
             trig=(((-1, 4, -1), (1, 0, 1), (0, 0, 2))),
             trig_norm=(0, -1, 0),
@@ -64,7 +64,7 @@ async def scene_buffer(dut):
             sphere_rad=1
         ),
         Object(
-            is_trig=True,
+            obj_type=1,
             mat=mat0,
             trig=(((-1, 4, -1), (1, 0, 1), (2, 0, 0))),
             trig_norm=(0, 1, 0),
@@ -72,7 +72,7 @@ async def scene_buffer(dut):
             sphere_rad=1
         ),
         Object(
-            is_trig=True,
+            obj_type=1,
             mat=mat0,
             trig=(((0, 6, 2), (-2, -2, -4), (2, -2, -4))),
             trig_norm=(0, -4/np.sqrt(17), 1/np.sqrt(17)),
@@ -80,7 +80,7 @@ async def scene_buffer(dut):
             sphere_rad=1
         ),
         Object(
-            is_trig=True,
+            obj_type=1,
             mat=mat0,
             trig=(((-1, -3, -1), (0, 0, 3), (3, 0, 0))),
             trig_norm=(0, 1, 0),

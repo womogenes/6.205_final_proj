@@ -47,34 +47,28 @@
   },
   "objects": [
     {
-      "obj_type": 0,
-      "sphere_center": [0, 5, -200],
-      "sphere_rad": 199,
-      "material": "ground"
+      "obj_type": 2,
+      "trig": [
+        [-5, 5, -3],
+        [0, 10, 0],
+        [10, 0, 0]
+      ],
+      "material": "blue"
     },
     {
-      "obj_type": 0,
-      "sphere_center": [0, 0, 500],
-      "sphere_rad": 450,
-      "material": "light"
-    },
-    {
-      "obj_type": 0,
-      "sphere_center": [-2, 7, 1],
-      "sphere_rad": 2,
+      "obj_type": 2,
+      "trig": [
+        [-3, -5, 5],
+        [0, 0, 10],
+        [0, 10, 0]
+      ],
       "material": "red"
     },
     {
       "obj_type": 0,
-      "sphere_center": [0, 5, 0],
-      "sphere_rad": 1,
-      "material": "green"
-    },
-    {
-      "obj_type": 0,
-      "sphere_center": [1, 4, -0.5],
-      "sphere_rad": 0.5,
-      "material": "blue"
+      "sphere_center": [0, 10, 13],
+      "sphere_rad": 10,
+      "material": "light"
     }
   ]
 }

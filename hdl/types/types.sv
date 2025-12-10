@@ -43,7 +43,7 @@ typedef struct packed {
 } material;
 
 typedef struct packed {
-  logic is_trig;                    // 1 bit
+  logic [1:0] obj_type;             // 0: sphere, 1: trig, 2: parallelogram, 3: plane
   logic [7:0] mat_idx;              // [several] bits
   logic [(FP_BITS*12)-1:0] stuff;   // max data needed for object geometry (288)
 } object;

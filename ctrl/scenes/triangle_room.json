@@ -55,7 +55,7 @@
   "objects": [
     {
       "name": "light_0",
-      "is_trig": true,
+      "obj_type": true,
       "trig": [
         [-2, 4, 2.875],
         [0, 4, 0],
@@ -65,7 +65,7 @@
     },
     {
       "name": "light_1",
-      "is_trig": true,
+      "obj_type": true,
       "trig": [
         [-2, 4, 2.875],
         [0, 4, 0],
@@ -75,7 +75,7 @@
     },
     {
       "name": "light_2",
-      "is_trig": true,
+      "obj_type": true,
       "trig": [
         [2, 8, 2.875],
         [0, -4, 0],
@@ -85,7 +85,7 @@
     },
     {
       "name": "bottom_wall",
-      "is_trig": true,
+      "obj_type": true,
       "trig": [
         [-6, 12, -3],
         [0, -24, 0],
@@ -95,7 +95,7 @@
     },
     {
       "name": "top_wall",
-      "is_trig": true,
+      "obj_type": true,
       "trig": [
         [-6, 12, 3],
         [24, 0, 0],
@@ -105,7 +105,7 @@
     },
     {
       "name": "back_wall",
-      "is_trig": true,
+      "obj_type": true,
       "trig": [
         [-6, 12, -3],
         [24, 0, 0],
@@ -115,7 +115,7 @@
     },
     {
       "name": "left_wall",
-      "is_trig": true,
+      "obj_type": true,
       "trig": [
         [-6, 12, -3],
         [0, 0, 12],
@@ -125,7 +125,7 @@
     },
     {
       "name": "right_wall",
-      "is_trig": true,
+      "obj_type": true,
       "trig": [
         [6, 12, -3],
         [0, -24, 0],

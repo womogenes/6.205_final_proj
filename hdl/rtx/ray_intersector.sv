@@ -78,7 +78,8 @@ module ray_intersector (
       end
       
       // first object check of this ray
-      if (is_trig_piped) begin
+      if (obj_type_piped != 2'b00) begin
+        // triangle, parallelogram, plane
         if (ray_valid_piped) begin
           if (trig_intx_hit) begin
             hit_mat_idx <= obj_intx_mat_idx;
@@ -102,6 +103,7 @@ module ray_intersector (
           end
         end
       end else begin
+        // sphere
         if (ray_valid_piped) begin
           if (sphere_intx_hit) begin
             hit_mat_idx <= obj_intx_mat_idx;
@@ -163,15 +165,15 @@ module ray_intersector (
   );
 
   // Pipelined object type
-  logic is_trig_piped;
+  logic [1:0] obj_type_piped;
 
   pipeline #(
-    .WIDTH(1),
+    .WIDTH(2),
     .DEPTH(SPHERE_INTX_DELAY)
   ) obj_type_pipe (
     .clk(clk),
-    .in(obj.is_trig),
-    .out(is_trig_piped)
+    .in(obj.obj_type),
+    .out(obj_type_piped)
   );
 
   sphere sphere_cast;
@@ -207,6 +209,7 @@ module ray_intersector (
     .v0v1(trig_cast.points[1]),
     .v0v2(trig_cast.points[0]),
     .normal(trig_cast.normal),
+    .obj_type(obj.obj_type),
 
     .hit(trig_intx_hit_prepipe),
     .hit_pos(trig_intx_hit_pos_prepipe),

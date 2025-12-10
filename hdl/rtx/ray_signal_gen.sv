@@ -15,8 +15,8 @@ module ray_signal_gen #(
 
   always_ff @(posedge clk) begin
     if (rst) begin
-      pixel_h <= 0;
-      pixel_v <= 0;
+      pixel_h <= WIDTH - 1;
+      pixel_v <= HEIGHT - 1;
 
     end else begin
       if (new_ray) begin

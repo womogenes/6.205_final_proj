@@ -15,6 +15,7 @@ module trig_intersector (
   input fp_vec3 v0v1,
   input fp_vec3 v0v2,
   input fp_vec3 normal,
+  input wire [1:0] obj_type,   // 1: trig, 2: parallelogram, 3: plane
 
   output logic hit,
   output fp_vec3 hit_pos,
@@ -68,15 +69,27 @@ module trig_intersector (
   pipeline #(.WIDTH($bits(fp)), .DEPTH(3))
   u_pipe (.clk(clk), .in(u_unnormalized), .out(u_unnormalized_piped));
 
+  logic in_square_u_v; // available after 11 cycles
+  assign in_square_u_v = (
+    fp_greater(det_pipe.pipe[2], u_unnormalized_piped) &&
+    fp_greater(det_pipe.pipe[2], v_unnormalized)
+  );
+
+  logic in_square_u_v_piped;  // available after 13 cycles
+  pipeline #(.WIDTH($bits(fp)), .DEPTH(2)) in_square_u_v_pipe (
+    .clk(clk), .in(in_square_u_v), .out(in_square_u_v_piped)
+  );
+
   fp u_plus_v_unnormalized; // available after 11 + 2 = 13 cycles
   fp_add u_plus_v_add(.clk(clk), .rst(rst), .a(u_unnormalized_piped), .b(v_unnormalized), .is_sub(0), .sum(u_plus_v_unnormalized));
 
   logic det_sign_piped; // available after 13 cycles
   pipeline #(.WIDTH(1), .DEPTH(3))
   det_sign_pipe (.clk(clk), .in(det.sign), .out(det_sign_piped));
+  
   // u and v are both positive
-  logic in_bounds_u_v; // available after 11 cycles
-  assign in_bounds_u_v = (
+  logic is_pos_u_v; // available after 11 cycles
+  assign is_pos_u_v = (
     u_unnormalized_piped.sign == det_sign_piped && 
     v_unnormalized.sign == det_sign_piped);
 
@@ -89,14 +102,27 @@ module trig_intersector (
   assign in_bounds_u_plus_v = (
     ~(fp_greater(u_plus_v_unnormalized, det_piped))
     && fp_greater(det_piped, EPSILON)
-    );
+  );
 
-  logic in_bounds_u_v_piped; // available after 13 cycles
+  logic is_pos_u_v_piped; // available after 13 cycles
   pipeline #(.WIDTH(1), .DEPTH(2))
-  in_bounds_u_v_pipe (.clk(clk), .in(in_bounds_u_v), .out(in_bounds_u_v_piped));
+  is_pos_u_v_pipe (.clk(clk), .in(is_pos_u_v), .out(is_pos_u_v_piped));
+  
+  logic [1:0] obj_type_piped; // available after 13 cycles
+  pipeline #(.WIDTH(2), .DEPTH(13)) obj_type_pipe (
+    .clk(clk), .in(obj_type), .out(obj_type_piped)
+  );
 
   logic in_bounds; // available after 13 cycles
-  assign in_bounds = in_bounds_u_plus_v && in_bounds_u_v_piped;
+  always_comb begin
+    case (obj_type_piped)
+      2'b01: in_bounds = in_bounds_u_plus_v && is_pos_u_v_piped;
+      2'b10: in_bounds = in_square_u_v_piped && is_pos_u_v_piped;
+      2'b11: in_bounds = 1'b1;
+      default: in_bounds = 1'b1;
+    endcase
+  end
+
   logic in_bounds_piped; // available after 17 cycles
   pipeline #(.WIDTH(1), .DEPTH(4))
   in_bounds_pipe (.clk(clk), .in(in_bounds), .out(in_bounds_piped));

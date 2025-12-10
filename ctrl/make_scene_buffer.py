@@ -49,11 +49,11 @@ class Object:
         mat_idx: int,
         sphere_center: tuple[float] = (),
         sphere_rad: float = 1,
-        is_trig: bool = False,
+        obj_type: int = 0,
         trig: tuple[tuple[float]] = None,
         **kwargs,
     ):
-        self.is_trig = is_trig
+        self.obj_type = obj_type
         self.mat_idx = mat_idx
         self.trig = trig or ((0, 0, 0),) * 3
 
@@ -69,12 +69,12 @@ class Object:
 
     def pack_bits(self):
         fields = [
-            (self.is_trig, 1),
+            (self.obj_type, 2),
             (self.mat_idx, 8),
             *[(make_fp_vec3(v), 72) for v in self.trig],
             (make_fp_vec3(self.trig_norm), 72)
-            ] if self.is_trig else [
-                (self.is_trig, 1),
+            ] if self.obj_type else [
+                (self.obj_type, 2),
                 (self.mat_idx, 8),
                 (make_fp_vec3(self.sphere_center), 72),
                 (make_fp(self.sphere_rad_sq), 24),
