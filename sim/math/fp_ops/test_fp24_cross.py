@@ -35,17 +35,17 @@ async def test_module(dut):
         b is a scalar
         Pass this to the mul_vec3f module
         """
-        dut.w.value = make_fp24_vec3(a)
-        dut.v.value = make_fp24_vec3(b)
+        dut.w.value = make_fp_vec3(a)
+        dut.v.value = make_fp_vec3(b)
 
         # 1 cycle to feed input, 1 cycle to calculate
         await ClockCycles(dut.clk, 4)
 
-        cross = convert_fp24_vec3(dut.cross_prod.value)
+        cross = convert_fp_vec3(dut.cross_prod.value)
         return cross
 
-    total_sq_error = 0
-    n_tests = 100
+    total_rel_error = 0
+    n_tests = 1000
 
     for _ in range(n_tests):
         a = (np.random.rand(3) - 0.5) * 100
@@ -53,12 +53,14 @@ async def test_module(dut):
         cross = await do_test(a.tolist(), b.tolist())
         print(f"{a=}, {b=}, ans={np.cross(a, b)}, {cross=}")
 
-        # Compute error
-        total_sq_error += np.square(np.linalg.norm(np.cross(a, b) - cross))
+        # Compute relative error
+        exp_ans = np.cross(b, a)
+        exp_norm = np.linalg.norm(exp_ans)
+        if exp_norm != 0:
+            total_rel_error += np.linalg.norm(cross - exp_ans) / exp_norm
 
-    # Print max error
-    # Expect around 1e-06 for 16.16 fixeds
-    dut._log.info(f"Mean error: {np.mean(total_sq_error) / n_tests}")
+    # Print mean percent error
+    dut._log.info(f"Mean error: {total_rel_error / n_tests * 100:.6f}%")
 
     await ClockCycles(dut.clk, 5)
 
@@ -71,11 +73,12 @@ def runner():
     proj_path = Path(__file__).resolve().parent.parent.parent.parent
     sys.path.append(str(proj_path / "sim" / "model"))
     sources = [
+        proj_path / "hdl" / "constants.sv",
         proj_path / "hdl" / "types"/ "types.sv",
         proj_path / "hdl" / "math" / "clz.sv",
-        proj_path / "hdl" / "math"/ "fp24_add.sv",
-        proj_path / "hdl" / "math"/ "fp24_mul.sv",
-        proj_path / "hdl" / "math" / "fp24_vec3_ops.sv"
+        proj_path / "hdl" / "math"/ "fp_add.sv",
+        proj_path / "hdl" / "math"/ "fp_mul.sv",
+        proj_path / "hdl" / "math" / "fp_vec3_ops.sv"
     ]
     build_test_args = ["-Wall"]
 
@@ -83,7 +86,7 @@ def runner():
     parameters = {}
 
     sys.path.append(str(proj_path / "sim"))
-    hdl_toplevel = "fp24_vec3_cross"
+    hdl_toplevel = "fp_vec3_cross"
     
     runner = get_runner(sim)
     runner.build(

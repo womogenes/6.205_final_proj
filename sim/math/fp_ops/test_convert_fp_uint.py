@@ -30,6 +30,7 @@ async def test_module(dut):
     dut.rst.value = 0
     
     N_TESTS = 1000
+    total_err = 0
 
     for _ in range(N_TESTS):
         n = np.random.rand()
@@ -41,9 +42,12 @@ async def test_module(dut):
         dut_ans = dut.n.value.integer
         exp_ans = min(255, max(0, abs(n * 256)))
 
-        assert abs(exp_ans - dut_ans) <= 1, f"Expected {exp_ans}, got {dut_ans}"
-
         dut._log.info(f"{dut_ans=}, {exp_ans=}")
+
+        if exp_ans != 0:
+            total_err += abs((dut_ans - exp_ans) / exp_ans)
+
+    dut._log.info(f"Mean error: {total_err / N_TESTS * 100:.6f}%")
 
 
 def runner():

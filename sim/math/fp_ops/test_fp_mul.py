@@ -47,15 +47,16 @@ async def test_module(dut):
     for _ in range(n_tests):
         x = (random.random() - 0.5) * 200
         y = (random.random() - 0.5) * 200
-        
+
         exp_ans = x * y
         dut_ans = await do_test(x, y)
 
         dut._log.info(f"{x=:>10.3f} {y=:>10.3f} {exp_ans=:>10.3f} {dut_ans=:>10.3f} diff={exp_ans-dut_ans}")
 
-        total_err += abs(exp_ans - dut_ans)
+        if exp_ans != 0:
+            total_err += abs((dut_ans - exp_ans) / exp_ans)
 
-    dut._log.info(f"Mean error: {total_err / n_tests}")
+    dut._log.info(f"Mean error: {total_err / n_tests * 100:.6f}%")
 
 
 def runner():
