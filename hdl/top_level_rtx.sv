@@ -274,7 +274,7 @@ module top_level (
       scene_changed <= 1'b1;
     end else if (rtx_h_count == 1279 && rtx_v_count == 719 && rtx_valid) begin
       // At frame boundary, update based on switch
-      rtx_overwrite <= sw[1]; // | scene_changed;
+      rtx_overwrite <= sw[1] | scene_changed;
       scene_changed <= 1'b0;
     end
   end
